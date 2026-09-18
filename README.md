@@ -1,20 +1,20 @@
-# Octo Gather
+# Gather Map
 
-Octo Gather is a self-learning resource map overlay for OctoWoW and Vanilla
-WoW 1.12. It remembers successfully gathered herbs, minerals, and Survival
+Gather Map is a self-learning resource map overlay for World of Warcraft
+1.12. It remembers successfully gathered herbs, minerals, and Survival
 trees, plus skinning results, lockpicking practice chests, and ordinary treasure
 chests. Saved locations appear as four difficulty-colored corner dots on the
 minimap and as resource icons framed by matching corner dots on the world map.
 
-Locations are saved account-wide in `OctoGatherDB`, so every character can use
+Locations are saved account-wide in `GatherMapDB`, so every character can use
 the same database and the locations remain available after logout or `/reload`.
 
 ![Saved herbs on the Tanaris world map](Screenshots/world-map-tanaris.png)
 
 ## How it works
 
-- Successfully gather, mine, cut a tree, skin, or open a chest to teach Octo
-  Gather the resource and position.
+- Successfully gather, mine, cut a tree, skin, or open a chest to teach Gather
+  Map the resource and position.
 - Normal interaction and the
   [Interact](https://github.com/lookino/Interact) hotkey are supported.
 - Each location records its main map zone and the smaller minimap subzone name.
@@ -62,7 +62,7 @@ beside the cursor.
 
 The selected zone's world map displays the resource icon between four colored
 corner dots. Move the mouse over a marker to see its resource name. Use the
-**Octo Gather** checkbox in the upper-left corner of the world map to show or
+**Gather Map** checkbox in the upper-left corner of the world map to show or
 hide the overlay; the setting is saved account-wide.
 
 Nearby markers for the same resource merge into a larger rectangular marker
@@ -96,13 +96,13 @@ opacity.
 
 ## Commands
 
-- `/ogather` or `/ogather count` — show counts by resource and current skills.
-- `/ogather on` — show minimap markers.
-- `/ogather off` — hide minimap markers while continuing to learn locations.
+- `/gathermap` or `/gathermap count` — show counts by resource and current skills.
+- `/gathermap on` — show minimap markers.
+- `/gathermap off` — hide minimap markers while continuing to learn locations.
 
 ## Installation
 
-1. Extract or copy the `OctoGather` folder into `World of
+1. Extract or copy the `GatherMap` folder into `World of
    Warcraft\Interface\AddOns`.
 2. Restart WoW or run `/reload` if the add-on was already installed.
 3. Enable **Load out of date AddOns** on the character screen if the client asks
@@ -111,17 +111,44 @@ opacity.
 No other add-on is required. Interact integration is enabled automatically when
 Interact is installed.
 
+## Upgrade from a previous add-on name
+
+If you used this add-on under a previous folder name, migrate your saved data
+before playing with the new installation. A normal file replacement is not
+enough when the folder and saved-variable names change.
+
+1. Fully close the game. Keep the previous add-on installed for this step.
+2. Install the new `GatherMap` folder beside the previous folder.
+3. Open PowerShell in `GatherMap` and run the following, replacing both example values:
+
+   ```powershell
+   .\Upgrade-SavedData.ps1 -ClientPath "C:\Games\World of Warcraft" -PreviousAddonName "PreviousAddonFolder"
+   ```
+
+The helper reads the previous TOC, copies account-wide and per-character saved
+data to the new names, and saves backups under `AddonUpgradeBackups` in the
+game folder. It keeps the original files intact and refuses to overwrite
+existing saved data for the new add-on. It does not execute saved Lua code.
+
+4. Disable the previous add-on and enable **GatherMap** before entering the world.
+5. Check your settings and saved data. Keep the backups until you have verified them.
+
+Further updates using the same add-on name keep your saved data normally.
+On other operating systems, back up the files, then copy the previous add-on's
+`.lua` file in each `WTF/Account/**/SavedVariables` directory to `GatherMap.lua`.
+Change only the top-level variable name declared in the old TOC to the matching
+name in the new TOC; leave its table contents unchanged. Do this with the game closed.
+
 ## Important limitations
 
-Octo Gather markers represent saved possible spawn locations or, for skinning,
+Gather Map markers represent saved possible spawn locations or, for skinning,
 places where a resource was previously obtained. Blizzard's yellow tracking
 dot still indicates whether a tracked herb or mineral is currently spawned;
 the Vanilla 1.12 API does not reveal the identity of an individual live
 tracking dot.
 
 World-map markers appear on a specifically selected zone map, not on the full
-continent view. Octo Gather includes minimap dimensions for the OctoWoW/Turtle
-WoW 1.18.1 outdoor and event maps: Hyjal, Scarlet Enclave, Lapidis Isle,
+continent view. Gather Map includes minimap dimensions for supported custom outdoor and event maps: Hyjal, Scarlet Enclave, Lapidis Isle,
 Gillijim's Isle, Tel'Abim, Alah'Thalas, Gilneas, Icepoint Rock, Blackstone
 Island, Thalassian Highlands, Winter Veil Vale, Grim Reaches, Balor, Northwind,
 and Moonwhisper Coast. Custom areas inside an existing Vanilla zone, such as
@@ -133,5 +160,5 @@ Tirisfal Uplands, automatically use their parent map's dimensions.
 
 - Minimap coordinate scaling and bundled herb artwork are based on the original
   [Gatherer](https://github.com/jsb/Gatherer) project for Vanilla WoW.
-- Grim Reaches dimensions use Turtle WoW map data from
+- Grim Reaches dimensions use map data from
   [MetaHunt](https://github.com/DuvelCorp/MetaHunt).

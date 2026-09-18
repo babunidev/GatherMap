@@ -6,7 +6,7 @@ if len(sys.argv) > 1:
     sys.path.insert(0, sys.argv[1])
 from lupa.lua51 import LuaRuntime
 
-source = (Path(__file__).resolve().parents[1] / "OctoGather.lua").read_text()
+source = (Path(__file__).resolve().parents[1] / "GatherMap.lua").read_text()
 hook = source.split("local function InstallInteractHook()", 1)[1].split(
     "local function ResourceFromLootMessage", 1
 )[0]

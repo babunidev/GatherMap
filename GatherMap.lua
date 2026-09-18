@@ -1,13 +1,13 @@
--- Octo Gather - self-learning Herbalism map markers for Vanilla 1.12.
+-- Gather Map - self-learning Herbalism map markers for Vanilla 1.12.
 
-local ADDON = "Octo Gather"
+local ADDON = "Gather Map"
 local MAX_PINS = 300
 local UPDATE_INTERVAL = 0.10
 local DUPLICATE_DISTANCE = 0.004 -- 0.4 map percentage points, as used by classic Gatherer.
 local CORNER_DOT_SIZE = 3
 local GRAY_MARKER_OPACITY = 0.85
 
-local frame = CreateFrame("Frame", "OctoGatherFrame")
+local frame = CreateFrame("Frame", "GatherMapFrame")
 local pins = {}
 local worldPins = {}
 local worldMapCheckbox = nil
@@ -24,8 +24,8 @@ local lastRecordedTime = 0
 local lastInteractTime = 0
 local interactWrapper = nil
 
--- Zone-name lookup is intentional. OctoWoW inserts extra maps, so its numeric
--- zone indices do not match the original 1.12 indices used by old Gatherer.
+-- Zone-name lookup is intentional. Clients with additional maps may have numeric
+-- zone indices that do not match the original 1.12 indices used by old Gatherer.
 local zoneScale = {
     ["Ashenvale"] = 0.15670371525706, ["Azshara"] = 0.13779501505279,
     ["Darkshore"] = 0.17799008894522, ["Darnassus"] = 0.02876626176374,
@@ -55,8 +55,8 @@ local zoneScale = {
     ["Wetlands"] = 0.11745423014662,
 }
 
--- Exact world dimensions for the outdoor and event zones added by the
--- OctoWoW/Turtle WoW 1.18.1 client. Values are width and height in world yards.
+-- World dimensions for supported custom outdoor and event zones.
+-- Values are width and height in world yards.
 -- Zone additions that remain inside a Vanilla map (for example Tirisfal
 -- Uplands) already use that parent zone's scale and do not need another entry.
 local customZoneSize = {
@@ -103,7 +103,7 @@ local continentScale = {
     },
 }
 
--- Minimum gathering requirements. Unknown/custom OctoWoW resources learn
+-- Minimum gathering requirements. Unknown/custom resources learn
 -- their requirement from the object tooltip and save it with the location.
 local herbRequirements = {
     ["Peacebloom"] = 1, ["Silverleaf"] = 1, ["Earthroot"] = 15,
@@ -200,7 +200,7 @@ local resourceSkills = {
     wood = "Survival",
 }
 
-local iconRoot = "Interface\\AddOns\\OctoGather\\Icons\\"
+local iconRoot = "Interface\\AddOns\\GatherMap\\Icons\\"
 local herbIcons = {
     ["Peacebloom"] = iconRoot .. "HerbPeacebloom",
     ["Silverleaf"] = iconRoot .. "HerbSilverleaf",
@@ -489,8 +489,8 @@ end
 
 local function DatabaseZone(continent, zone, create)
     local key = tostring(continent) .. ":" .. tostring(zone)
-    if create and not OctoGatherDB.nodes[key] then OctoGatherDB.nodes[key] = {} end
-    return OctoGatherDB.nodes[key], key
+    if create and not GatherMapDB.nodes[key] then GatherMapDB.nodes[key] = {} end
+    return GatherMapDB.nodes[key], key
 end
 
 local function RecordNode(name, required, kind, texture)
@@ -498,7 +498,7 @@ local function RecordNode(name, required, kind, texture)
     kind = kind or "herb"
     local continent, zone, zoneName, x, y = GetPosition(true)
     if not continent then
-        Print("Could not read your map position; this zone may need OctoWoW map data.")
+        Print("Could not read your map position; this zone may need additional map data.")
         return
     end
 
@@ -650,7 +650,7 @@ end
 
 -- Self-contained cursor tooltip. This avoids Vanilla tooltip-template and map
 -- mouse-layer differences while leaving GameTooltip free for gathering scans.
-local markerTooltip = CreateFrame("Frame", "OctoGatherMarkerTooltip", UIParent)
+local markerTooltip = CreateFrame("Frame", "GatherMapMarkerTooltip", UIParent)
 markerTooltip:SetFrameStrata("TOOLTIP")
 markerTooltip:SetFrameLevel(100)
 markerTooltip:SetBackdrop({
@@ -796,7 +796,7 @@ end
 
 local function AcquirePin(index)
     if pins[index] then return pins[index] end
-    local pin = CreateFrame("Frame", "OctoGatherPin" .. index, Minimap)
+    local pin = CreateFrame("Frame", "GatherMapPin" .. index, Minimap)
     pin:SetWidth(14)
     pin:SetHeight(14)
     if MiniMapTrackingFrame then
@@ -816,7 +816,7 @@ end
 
 local function AcquireWorldPin(index)
     if worldPins[index] then return worldPins[index] end
-    local pin = CreateFrame("Frame", "OctoGatherWorldPin" .. index, WorldMapButton)
+    local pin = CreateFrame("Frame", "GatherMapWorldPin" .. index, WorldMapButton)
     pin:SetWidth(14)
     pin:SetHeight(14)
     pin:SetFrameLevel(WorldMapButton:GetFrameLevel() + 5)
@@ -888,7 +888,7 @@ local function HideWorldPinsAfter(index)
 end
 
 local function UpdatePins()
-    if not OctoGatherDB or not OctoGatherDB.enabled then
+    if not GatherMapDB or not GatherMapDB.enabled then
         HidePinsAfter(1)
         return
     end
@@ -953,7 +953,7 @@ end
 
 
 local function UpdateWorldMapPins()
-    if not OctoGatherDB or not OctoGatherDB.worldMapEnabled or
+    if not GatherMapDB or not GatherMapDB.worldMapEnabled or
             not WorldMapFrame or not WorldMapFrame:IsVisible() then
         HideWorldPinsAfter(1)
         return
@@ -1006,35 +1006,35 @@ end
 
 local function CreateWorldMapCheckbox()
     if worldMapCheckbox or not WorldMapFrame then return end
-    worldMapCheckbox = CreateFrame("CheckButton", "OctoGatherWorldMapToggle",
+    worldMapCheckbox = CreateFrame("CheckButton", "GatherMapWorldMapToggle",
         WorldMapFrame, "UICheckButtonTemplate")
     worldMapCheckbox:SetWidth(24)
     worldMapCheckbox:SetHeight(24)
     worldMapCheckbox:SetPoint("TOPLEFT", WorldMapFrame, "TOPLEFT", 18, -42)
     worldMapCheckbox:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 10)
-    local label = getglobal("OctoGatherWorldMapToggleText")
+    local label = getglobal("GatherMapWorldMapToggleText")
     if label then
-        label:SetText("Octo Gather")
+        label:SetText("Gather Map")
         label:SetTextColor(0.41, 0.80, 0.44)
     end
-    worldMapCheckbox:SetChecked(OctoGatherDB.worldMapEnabled)
+    worldMapCheckbox:SetChecked(GatherMapDB.worldMapEnabled)
     worldMapCheckbox:SetScript("OnClick", function()
-        OctoGatherDB.worldMapEnabled = this:GetChecked() and true or false
+        GatherMapDB.worldMapEnabled = this:GetChecked() and true or false
         UpdateWorldMapPins()
     end)
 end
 
 local function InitializeDatabase()
-    if type(OctoGatherDB) ~= "table" then OctoGatherDB = {} end
-    if type(OctoGatherDB.nodes) ~= "table" then OctoGatherDB.nodes = {} end
-    if OctoGatherDB.enabled == nil then OctoGatherDB.enabled = true end
-    if OctoGatherDB.worldMapEnabled == nil then OctoGatherDB.worldMapEnabled = true end
-    local databaseVersion = tonumber(OctoGatherDB.version) or 1
+    if type(GatherMapDB) ~= "table" then GatherMapDB = {} end
+    if type(GatherMapDB.nodes) ~= "table" then GatherMapDB.nodes = {} end
+    if GatherMapDB.enabled == nil then GatherMapDB.enabled = true end
+    if GatherMapDB.worldMapEnabled == nil then GatherMapDB.worldMapEnabled = true end
+    local databaseVersion = tonumber(GatherMapDB.version) or 1
     -- Version 1 databases contained herbs only. Mark them explicitly so the
     -- shared node table can safely hold mining, skinning, and chest locations.
     if databaseVersion < 2 then
         local _, zoneNodes
-        for _, zoneNodes in pairs(OctoGatherDB.nodes) do
+        for _, zoneNodes in pairs(GatherMapDB.nodes) do
             local i
             for i = 1, table.getn(zoneNodes) do
                 if not zoneNodes[i].kind then zoneNodes[i].kind = "herb" end
@@ -1046,7 +1046,7 @@ local function InitializeDatabase()
     -- requirement; skinning there again restores the correct dynamic color.
     if databaseVersion < 3 then
         local _, zoneNodes
-        for _, zoneNodes in pairs(OctoGatherDB.nodes) do
+        for _, zoneNodes in pairs(GatherMapDB.nodes) do
             local i
             for i = 1, table.getn(zoneNodes) do
                 if zoneNodes[i].kind == "skin" then
@@ -1055,9 +1055,9 @@ local function InitializeDatabase()
             end
         end
     end
-    OctoGatherDB.version = 3
+    GatherMapDB.version = 3
     CreateWorldMapCheckbox()
-    if worldMapCheckbox then worldMapCheckbox:SetChecked(OctoGatherDB.worldMapEnabled) end
+    if worldMapCheckbox then worldMapCheckbox:SetChecked(GatherMapDB.worldMapEnabled) end
 end
 
 local function ShowStatus()
@@ -1066,7 +1066,7 @@ local function ShowStatus()
         herb = 0, mineral = 0, skin = 0, lock = 0, treasure = 0, wood = 0,
     }
     local _, zoneNodes
-    for _, zoneNodes in pairs(OctoGatherDB.nodes) do
+    for _, zoneNodes in pairs(GatherMapDB.nodes) do
         zones = zones + 1
         nodes = nodes + table.getn(zoneNodes)
         local i
@@ -1083,7 +1083,7 @@ local function ShowStatus()
         currentNodes = zoneNodes and table.getn(zoneNodes) or 0
         supported = zoneScale[zoneName] or customZoneSize[zoneName]
     end
-    Print((OctoGatherDB.enabled and "markers enabled" or "markers hidden") .. "; " ..
+    Print((GatherMapDB.enabled and "markers enabled" or "markers hidden") .. "; " ..
         nodes .. " locations in " .. zones .. " zones (herbs " .. counts.herb ..
         ", minerals " .. counts.mineral .. ", skins " .. counts.skin ..
         ", trees " .. counts.wood ..
@@ -1114,7 +1114,7 @@ frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("WORLD_MAP_UPDATE")
 
 frame:SetScript("OnEvent", function()
-    if event == "ADDON_LOADED" and arg1 == "OctoGather" then
+    if event == "ADDON_LOADED" and arg1 == "GatherMap" then
         InitializeDatabase()
         InstallInteractHook()
     elseif event == "ADDON_LOADED" and arg1 == "Interact" then
@@ -1216,21 +1216,21 @@ frame:SetScript("OnUpdate", function()
     end
 end)
 
-SLASH_OCTOGATHER1 = "/octogather"
-SLASH_OCTOGATHER2 = "/ogather"
-SlashCmdList["OCTOGATHER"] = function(message)
+SLASH_GATHERMAP1 = "/gmap"
+SLASH_GATHERMAP2 = "/gathermap"
+SlashCmdList["GATHERMAP"] = function(message)
     local command = string.lower(message or "")
     if command == "on" or command == "show" then
-        OctoGatherDB.enabled = true
+        GatherMapDB.enabled = true
         UpdatePins()
         Print("minimap markers enabled.")
     elseif command == "off" or command == "hide" then
-        OctoGatherDB.enabled = false
+        GatherMapDB.enabled = false
         UpdatePins()
         Print("minimap markers hidden; gathering locations will still be learned.")
     elseif command == "count" or command == "status" or command == "" then
         ShowStatus()
     else
-        Print("commands: /ogather on, off, or count")
+        Print("commands: /gathermap on, off, or count")
     end
 end
