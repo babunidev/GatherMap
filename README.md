@@ -1,5 +1,7 @@
 # Gather Map
 
+**Author:** Babuni.dev
+
 Gather Map is a self-learning resource map overlay for World of Warcraft
 1.12. It remembers successfully gathered herbs, minerals, and Survival
 trees, plus skinning results, lockpicking practice chests, and ordinary treasure
