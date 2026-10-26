@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: Gather Map
 ## Notes: Learns herbs, minerals, trees, skins, and chests and colors their map markers.
-## Author: Local
+## Author: Babuni.dev
 ## Version: 0.4.3
 ## SavedVariables: GatherMapDB
 ## OptionalDeps: Interact
