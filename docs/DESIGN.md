@@ -14,9 +14,7 @@ A small resource is marked by **four 3-pixel colored corner dots**, leaving its 
 
 Hovering uses a separate compact label frame so the map can display the resource name without competing with the native GameTooltip used during gathering. This is especially appropriate in a 1.12 UI, where tooltip behavior and mouse layers vary.
 
-<box>
 ![Minimap tooltip](../Screenshots/minimap-tooltip.png)
-</box>
 
 ## Dynamic difficulty as a personal reading of the world
 
@@ -32,9 +30,7 @@ Same-type and same-name markers merge when their drawn rectangles overlap. The g
 
 This prevents the visual clutter of duplicate marks without collapsing distinct types into meaningless giant boxes.
 
-<box>
 ![Grouped world map markers](../Screenshots/world-map-merged-markers.png)
-</box>
 
 ## Controls and affordances
 

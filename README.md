@@ -30,7 +30,6 @@ Custom resource tooltips can supply requirements; unknown requirements produce *
 
 ## Two map presentations
 
-<row/>
 
 ### Minimap — subtle four-corner markers
 
