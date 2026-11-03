@@ -1,13 +1,13 @@
 # GatherMap — development instructions for humans and AI collaborators
 
-**Creative direction and authorship:** Babuni.dev.  
+**Creative direction and authorship:** Babuni.  
 **Current installed identity:** GatherMap, formerly OctoGather, manifest version 0.4.3 for Vanilla interface 11200.
 
 ## Read before changing anything
 
 Start with `README.md`, `CONCEPT.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/DEVLOG.md`, `GatherMap.lua`, `GatherMap.toc`, `Upgrade-SavedData.ps1`, and the tests. The project is a self-learning resource map, **not** a static imported map-database frontend.
 
-Do not erase Babuni.dev's creative authorship, invent older conversations, or claim past AI proposals were approved without evidence.
+Do not erase Babuni's creative authorship, invent older conversations, or claim past AI proposals were approved without evidence.
 
 ## Preserve these source-level invariants
 
@@ -24,7 +24,7 @@ Do not erase Babuni.dev's creative authorship, invent older conversations, or cl
 
 ## Development and validation process
 
-1. Record what Babuni.dev wants to change and why, with clear boundaries and any proposed alternatives.
+1. Record what Babuni wants to change and why, with clear boundaries and any proposed alternatives.
 2. Explain whether a change affects resource recognition, persistence, UI, performance, client support or external attribution.
 3. For runtime changes, run the existing focused Interact and migration fixture tests when their Python/Lua/PowerShell dependencies are available, and capture outputs.
 4. Separately test on the intended WoW 1.12-compatible client with positive, negative and migration scenarios; mock/fixture tests aren't equivalent to actual client play.
@@ -34,3 +34,7 @@ Do not erase Babuni.dev's creative authorship, invent older conversations, or cl
 8. Keep private SavedVariables, player coordinates, account information and credentials out of portfolio publications.
 
 The 2026-10-26 pass is **documentation-only**, not permission to alter Lua, binaries, scripts or artwork.
+
+## Repository-local documentation standard
+
+Before writing or changing project documentation, read [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md). These rules travel with this repository and do not depend on the babuni.dev ChatGPT Project. Preserve all project-specific technical, creative, canon, safety, licensing, and historical rules in this file; follow the linked standard for public first-person narrative, human–AI attribution, concise development journals, decision records, and evidence-based verification. **Babuni** is the human creative; **babuni.dev** is the website/portfolio, not the person. Preserve third-party credits and historical legal notices. References above to a dated “documentation-only audit” describe that past task, not a permanent ban on later authorized implementation.
