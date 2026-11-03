@@ -30,7 +30,7 @@ Do not erase Babuni's creative authorship, invent older conversations, or claim 
 4. Separately test on the intended WoW 1.12-compatible client with positive, negative and migration scenarios; mock/fixture tests aren't equivalent to actual client play.
 5. Preserve backups and full original datasets during saved-variable migrations; test changes with copies, not sole surviving files.
 6. Update README, CONCEPT, ROADMAP, CHANGELOG, AGENTS, and `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/CONTENT.md`, `docs/DECISIONS.md`, `docs/DEVLOG.md`, `docs/AI_COLLABORATION.md` for substantial changes.
-7. Credit the creator for the vision, accurately attribute the AI's implementation and documentation work, record rejected alternatives and actual commit/verification results.
+7. Credit the creative for the vision, accurately attribute the AI's implementation and documentation work, record rejected alternatives and actual commit/verification results.
 8. Keep private SavedVariables, player coordinates, account information and credentials out of portfolio publications.
 
 The 2026-10-26 pass is **documentation-only**, not permission to alter Lua, binaries, scripts or artwork.
