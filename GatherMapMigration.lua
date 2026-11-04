@@ -292,7 +292,10 @@ function Migration.VerifyAnchor(key,index)
     if type(node)~="table" or not Coord(node.x) or not Coord(node.y) then
         return false,"invalid historical coordinates"
     end
-    local mapID,x,y=ns.GatherMapPosition and ns.GatherMapPosition()
+    if type(ns.GatherMapPosition)~="function" then
+        return false,"Forever player position unavailable"
+    end
+    local mapID,x,y=ns.GatherMapPosition()
     if mapID~=link.mapID or not Coord(x) or not Coord(y) then
         return false,"stand at the historic node in the linked Forever zone"
     end
