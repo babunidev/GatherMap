@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Frame name="GatherMapForeverWorldPinTemplate" hidden="true" enableMouse="false"
+        mixin="GatherMapForeverWorldPinMixin" virtual="true">
+        <Size x="14" y="14"/>
+    </Frame>
+</Ui>
