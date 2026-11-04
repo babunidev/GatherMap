@@ -32,6 +32,7 @@ local function Frame(parent)
     function f:CreateFontString()
         local t=Frame(self)
         function t:SetText(v) self.text=v end
+        function t:SetTextColor() end
         function t:GetText() return self.text end
         function t:GetStringWidth() return #(self.text or "")*6 end
         return t
