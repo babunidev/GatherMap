@@ -598,7 +598,7 @@ local function MigrationCommand(command)
     if not migration then Print("Migration module unavailable."); return end
     local action,key,confirm=command:match("^migrate%s+(%S+)%s+(%S+)%s*(%S*)$")
     if command=="migrate" or command=="migrate help" then
-        Print("migrate status | link <continent:zone> | preview <key> | apply <key> confirm | rollback <key>")
+        Print("migrate status | link <key> | anchor <key> <node-index> | preview <key> | apply <key> confirm | rollback <key>")
         Print("Make a physical SavedVariables backup with the game closed first.")
         return
     end
@@ -615,6 +615,9 @@ local function MigrationCommand(command)
     if action=="link" then
         local ok,info=migration.Link(key)
         Print(ok and info or ("link refused: "..tostring(info)))
+    elseif action=="anchor" then
+        local ok,result=migration.VerifyAnchor(key,confirm)
+        Print(ok and result or ("anchor refused: "..tostring(result)))
     elseif action=="preview" then
         local summary,err=migration.Preview(key)
         if not summary then Print("preview refused: "..tostring(err)); return end
@@ -623,7 +626,8 @@ local function MigrationCommand(command)
             summary.added.." new, "..summary.merged.." merged, "..
             summary.skipped.." invalid (kept in legacy data), "..
             summary.occurrences.." observations.")
-        Print("Map coordinate equivalence is NOT confirmed by name. Inspect the area before applying.")
+        Print("Coordinate evidence: "..tostring(summary.geometryReason)..
+            ". Name match alone never authorizes import.")
     elseif action=="apply" then
         local ok,result=migration.Apply(key,confirm)
         if ok then
