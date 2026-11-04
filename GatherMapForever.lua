@@ -1,10 +1,11 @@
 -- GatherMap — Forever 1.60.1 API compatibility layer.
 -- Renders native map-ID records and the opt-in experimental recorder.
--- Legacy continent-zone migration is deliberately disabled until verified.
+-- Legacy continent-zone keys are copied only by explicit, backed-up opt-in.
 local addonName, ns = ...
 local R = ns.resources
 local difficulty = ns.GatherMapDifficulty
 local markers = ns.GatherMapMarkers
+local migration = ns.GatherMapMigration
 local db, provider, checkbox
 local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
@@ -453,7 +454,8 @@ local function Initialize()
         Print("Invalid saved database; leaving existing data untouched.")
         return
     end
-    if GatherMapDB==nil then GatherMapDB={} end
+    local isNew = GatherMapDB==nil
+    if isNew then GatherMapDB={} end
     db=GatherMapDB
     if db.nodes~=nil and type(db.nodes)~="table" then
         Print("Invalid saved nodes; leaving existing data untouched.")
@@ -463,7 +465,10 @@ local function Initialize()
     if db.nodes==nil then db.nodes={} end
     if db.enabled==nil then db.enabled=true end
     if db.worldMapEnabled==nil then db.worldMapEnabled=true end
-    if db.version==nil then db.version=3 end
+    -- The absent version of an existing database means schema v1, NOT v3.
+    -- Preserve it until an explicit, non-destructive migration applies.
+    if isNew then db.version=3 end
+    if migration then migration.Init(db, MarkDirty) end
     difficulty.Refresh()
     SetupWorld()
     dirty=true
@@ -489,8 +494,57 @@ local function Status()
     Print("Herbalism "..SkillText("herb")..", Mining "..SkillText("mineral")..
         ", Skinning "..SkillText("skin")..", Lockpicking "..SkillText("lock"))
     if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
-    Print("Legacy saved-location migration is pending.")
+    if migration then
+        local state = migration.Status()
+        if state then
+            Print("Historical zones "..state.zones..": "..state.migrated..
+                " copied, "..state.unmatched.." unmapped; "..state.records..
+                " original records preserved.")
+        end
+    end
 end
+local function MigrationCommand(command)
+    if not migration then Print("Migration module unavailable."); return end
+    local action,key,confirm=command:match("^migrate%s+(%S+)%s+(%S+)%s*(%S*)$")
+    if command=="migrate" or command=="migrate help" then
+        Print("migrate status | link <continent:zone> | preview <key> | apply <key> confirm | rollback <key>")
+        Print("Make a physical SavedVariables backup with the game closed first.")
+        return
+    end
+    if command=="migrate status" then
+        local summary=migration.Status()
+        if summary then
+            Print(summary.zones.." historical zones, "..summary.records..
+                " original records; "..summary.links.." links, "..
+                summary.migrated.." copied, "..summary.unmatched.." still unmatched.")
+        end
+        return
+    end
+    if not key then Print("Invalid migration command; /gmap migrate help"); return end
+    if action=="link" then
+        local ok,info=migration.Link(key)
+        Print(ok and info or ("link refused: "..tostring(info)))
+    elseif action=="preview" then
+        local summary,err=migration.Preview(key)
+        if not summary then Print("preview refused: "..tostring(err)); return end
+        Print("Preview "..key.." -> "..summary.zone.." UiMapID "..
+            summary.mapID..": "..summary.source.." source nodes, "..
+            summary.added.." new, "..summary.merged.." merged, "..
+            summary.skipped.." invalid (kept in legacy data), "..
+            summary.occurrences.." observations.")
+        Print("Map coordinate equivalence is NOT confirmed by name. Inspect the area before applying.")
+    elseif action=="apply" then
+        local ok,result=migration.Apply(key,confirm)
+        if ok then
+            Print("Copied "..result.valid.." legacy nodes into "..result.target..
+                "; original locations and SavedVariables snapshots preserved.")
+        else Print("apply refused: "..tostring(result)) end
+    elseif action=="rollback" then
+        local ok,result=migration.Rollback(key)
+        Print(ok and result or ("rollback refused: "..tostring(result)))
+    else Print("Invalid migration action; /gmap migrate help") end
+end
+
 SLASH_GATHERMAP1="/gmap"
 SLASH_GATHERMAP2="/gathermap"
 SlashCmdList["GATHERMAP"]=function(message)
@@ -517,6 +571,8 @@ SlashCmdList["GATHERMAP"]=function(message)
         MarkDirty()
         DrawWorld()
         Print("world-map overlay "..(db.worldMapEnabled and "enabled." or "hidden."))
+    elseif command=="migrate" or command:match("^migrate%s") then
+        MigrationCommand(command)
     elseif command=="capture on" then
         if ns.GatherMapSetCapture then ns.GatherMapSetCapture(true) end
     elseif command=="capture off" then
@@ -525,7 +581,7 @@ SlashCmdList["GATHERMAP"]=function(message)
         if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap on, off, world on|off, status, testpin, clear, capture on|off|status") end
+    else Print("commands: /gmap on, off, world on|off, status, testpin, clear, migrate help, capture on|off|status") end
 end
 
 f:RegisterEvent("ADDON_LOADED")

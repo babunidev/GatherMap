@@ -17,6 +17,7 @@ CAPTURE = ROOT / "GatherMapCapture.lua"
 DATA = ROOT / "GatherMapData.lua"
 DIFFICULTY = ROOT / "GatherMapDifficulty.lua"
 MARKERS = ROOT / "GatherMapMarkers.lua"
+MIGRATION = ROOT / "GatherMapMigration.lua"
 XML = ROOT / "GatherMapWorldPins.xml"
 
 
@@ -28,7 +29,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, MARKERS.name, DIFFICULTY.name, XML.name, RUNTIME.name, CAPTURE.name])
+        self.assertEqual(files, [DATA.name, MARKERS.name, DIFFICULTY.name, MIGRATION.name, XML.name, RUNTIME.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
@@ -110,6 +111,23 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertIn("MAX_PINS", runtime)
         self.assertIn("GatherMapMarkers.lua", MANIFEST.read_text())
 
+    def test_legacy_migration_integrity(self):
+        runtime = RUNTIME.read_text()
+        source = MIGRATION.read_text()
+        self.assertIn("migration.Init(db, MarkDirty)", runtime)
+        self.assertIn("MigrationCommand(command)", runtime)
+        self.assertIn("migration.Apply(key,confirm)", runtime)
+        self.assertIn("db.migrationBackups", source)
+        self.assertIn("db.migrationLedger", source)
+        self.assertIn('db.nodes[result.targetKey]=result.after', source)
+        self.assertNotIn('db.nodes[key]=nil', source)
+        self.assertIn("local function SourceVersion()", source)
+        self.assertIn('if version<3 and kind=="skin"', source)
+        self.assertIn("if isNew then db.version=3 end", runtime)
+        helper = (ROOT / "Upgrade-SavedData.ps1").read_text()
+        self.assertIn("_Camelot.toc", helper)
+        self.assertTrue((ROOT / "Backup-GatherMap.ps1").is_file())
+
     def test_resource_assets_still_present(self):
         icons = list((ROOT / "Icons").glob("Herb*.tga"))
         self.assertEqual(len(icons), 29)
@@ -120,7 +138,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          if shutil.which(command)), None)
         if not compiler:
             self.skipTest("No luac executable available; syntax not checked")
-        for path in (RUNTIME, DATA, MARKERS, DIFFICULTY, CAPTURE):
+        for path in (RUNTIME, DATA, MARKERS, DIFFICULTY, MIGRATION, CAPTURE):
             result = subprocess.run(
                 [compiler, "-p", str(path)],
                 capture_output=True, text=True, check=False)

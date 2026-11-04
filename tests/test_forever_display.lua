@@ -131,6 +131,7 @@ ns.GatherMapDifficulty={
     Skill=function() return {present=false} end,
 }
 assert(loadfile("GatherMapMarkers.lua"))("GatherMap",ns)
+assert(loadfile("GatherMapMigration.lua"))("GatherMap",ns)
 local first={name="Battered Chest",kind="treasure",x=0.5,y=0.5,count=1}
 local second={name="Battered Chest",kind="treasure",x=0.518,y=0.5,count=1}
 GatherMapDB={nodes={["map:37"]={first,second},["1:2"]={
@@ -149,6 +150,8 @@ assert(GatherMapDB.enabled==false and GatherMapDB.worldMapEnabled==true,
     "two display preferences must be independent")
 assert(#GatherMapDB.nodes["map:37"]==2,"visual merging must not change stored nodes")
 assert(GatherMapDB.nodes["1:2"][1].name=="Legacy Herb")
+assert(ns.GatherMapMigration.Status().unmatched==1,
+    "legacy locations must still be present")
 -- Scale callback schedules refresh; the next 0.35s update splits markers.
 scale=1
 WorldMapFrame.provider:OnCanvasScaleChanged()
@@ -193,6 +196,11 @@ assert(GatherMapDB.worldMapEnabled==true)
 assert(GatherMapDB.nodes==sameNodes)
 assert(GatherMapDB.nodes["map:37"][1]==first)
 assert(first.x==0.5 and second.x==0.518)
+SlashCmdList.GATHERMAP("migrate status")
+SlashCmdList.GATHERMAP("migrate link 1:2")
+assert(GatherMapDB.nodes["1:2"][1].name=="Legacy Herb")
+assert(not GatherMapDB.migrationLedger,
+    "unknown legacy zone labels must not be migrated")
 -- Preview pin must never add a permanent SavedVariables record.
 WorldMapFrame:Show()
 SlashCmdList.GATHERMAP("testpin")

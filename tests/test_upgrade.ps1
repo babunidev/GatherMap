@@ -1,7 +1,14 @@
 $ErrorActionPreference = 'Stop'
 $addonRoot = Split-Path -Parent $PSScriptRoot
-$toc = Get-ChildItem -LiteralPath $addonRoot -Filter '*.toc' -File | Select-Object -First 1
-$newName = $toc.BaseName
+$newName = Split-Path -Leaf $addonRoot
+$tocPath = Join-Path $addonRoot ($newName + '_Camelot.toc')
+if (-not (Test-Path -LiteralPath $tocPath -PathType Leaf)) {
+    $tocPath = Join-Path $addonRoot ($newName + '.toc')
+}
+$toc = Get-Item -LiteralPath $tocPath
+if (@(Get-ChildItem -LiteralPath $addonRoot -Filter '*.toc' -File).Count -lt 2) {
+    throw 'Fixture must exercise the Forever directory with multiple manifests.'
+}
 $declaration = [regex]::Match([IO.File]::ReadAllText($toc.FullName), '(?m)^## (SavedVariables(?:PerCharacter)?): (\w+)')
 if (-not $declaration.Success) { throw 'Missing saved-variable declaration.' }
 $newVariable = $declaration.Groups[2].Value
@@ -38,4 +45,25 @@ if (-not $refused) { throw 'Existing destination was not protected.' }
 $refused=$false
 try { & (Join-Path $addonRoot 'Upgrade-SavedData.ps1') -ClientPath $testRoot -PreviousAddonName '..\escape' } catch { $refused=$true }
 if (-not $refused) { throw 'Invalid folder name was accepted.' }
-Write-Output "PASS: $newName migration preserves tables, Unicode, original files and backups; refuses overwrite and path traversal."
+# Back up active GatherMap and historical OctoGather variables separately;
+# verify no originals are modified and rerunning creates new backup directories.
+$extraDir = Join-Path $testRoot $locations[0]
+[IO.File]::WriteAllText((Join-Path $extraDir 'OctoGather.lua'), 'OctoGatherDB = { ["count"]=12 }')
+[IO.File]::WriteAllText((Join-Path $extraDir 'GatherMap.lua.bak'), 'GatherMapDB = { ["old"]=true }')
+& (Join-Path $addonRoot 'Backup-GatherMap.ps1') -ClientPath $testRoot
+$backupSets = @(Get-ChildItem -LiteralPath (Join-Path $testRoot 'GatherMapBackups') -Directory)
+if ($backupSets.Count -ne 1) { throw 'Expected one physical backup directory.' }
+$backedUp = @(Get-ChildItem -LiteralPath $backupSets[0].FullName -Recurse -File)
+if ($backedUp.Count -ne 4) { throw "Expected four source files in physical backup, found $($backedUp.Count)." }
+foreach ($file in $backedUp) {
+    $relative=$file.FullName.Substring($backupSets[0].FullName.Length).TrimStart('\','/')
+    $source=Join-Path (Join-Path $testRoot 'WTF\Account') $relative
+    if (-not (Test-Path -LiteralPath $source)) { throw "Backup source missing: $relative" }
+    if ([IO.File]::ReadAllBytes($source).Length -ne [IO.File]::ReadAllBytes($file.FullName).Length) {
+        throw "Backup changed file size: $relative"
+    }
+}
+& (Join-Path $addonRoot 'Backup-GatherMap.ps1') -ClientPath $testRoot
+$backupSets = @(Get-ChildItem -LiteralPath (Join-Path $testRoot 'GatherMapBackups') -Directory)
+if ($backupSets.Count -ne 2) { throw 'Repeated physical backups must not overwrite.' }
+Write-Output "PASS: Forever multi-TOC rename, Unicode, original preservation, physical backups and no overwrite."

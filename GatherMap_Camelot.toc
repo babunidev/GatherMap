@@ -8,6 +8,7 @@
 GatherMapData.lua
 GatherMapMarkers.lua
 GatherMapDifficulty.lua
+GatherMapMigration.lua
 GatherMapWorldPins.xml
 GatherMapForever.lua
 GatherMapCapture.lua
