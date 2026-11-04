@@ -19,6 +19,16 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## Forever legacy migration (Phase 6, source implementation)
+
+`GatherMapMigration.lua` is the account-wide historical import boundary, loaded before `GatherMapForever.lua`. It operates only on the existing `GatherMapDB.nodes` table, preserving original `continent:zone` locations. `Migration.Link` requires a homogeneous legacy zoneName and a matching current `C_Map.GetMapInfo` zone map (`mapType == 3`) before storing a proposed modern UiMapID link. `Migration.Preview` produces a dry-run summary. `Migration.Apply(key, "confirm")` copies into `map:<UiMapID>` only after explicit confirmation, without touching the legacy key.
+
+The schema source version is `legacySchemaVersion or version or 1`. An existing old SavedVariables table lacking a `version` field remains recognized as v1; new blank databases start at v3. A v1 missing kind is interpreted as herb on copies, v2 Skinning copies discard unreliable required values, and v3 values stay intact. Identical kind/name nodes within 0.004 normalized coordinates merge by occurrence-weighted centroid and count; different kinds/names never merge. Only eligible flat numeric-map keys are considered; malformed records and uncertain names remain in the original history.
+
+Every application captures a source and before/after destination snapshot in `migrationBackups`, records `migrationLedger` to stop duplicate imports, and notifies the overlay renderer. Guarded rollback checks the current history and destination against immutable snapshots; if any later gathering changes them, it refuses to discard those discoveries. The snapshots are themselves stored in the same SavedVariables file, so an **independent filesystem backup remains essential**. `Backup-GatherMap.ps1` copies files while the game is closed; `Upgrade-SavedData.ps1` handles only the historical OctoGather folder/variable rename.
+
+The map identity check is a **conservative candidate validation**, not evidence that old and Forever normalized map coordinates align. In-game checks of geography, save/reload and multiple characters remain outstanding.
+
 ## Forever map presentation (Phase 5, source implementation)
 
 - `GatherMapMarkers.lua`: independent spatial grouping and pixel projection. A 14px resource hit rectangle is associated only with the same `kind` and `name`; a 14px grid and union-find combine any transitive overlap without changing account-wide saved node entries. Priority follows the existing color table. Group display is capped at 300 frames per map; database storage is not capped.

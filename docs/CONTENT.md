@@ -20,6 +20,12 @@ An account-wide record contains `name`, normalized `x`, `y`, resource `kind`, re
 
 The addon retains observations rather than current-spawn truth. Mining loot can be ambiguous (e.g. Thorium Ore doesn't reveal whether a vein was Small or Rich). For skinning the saved record is tied to **actual looted material** and a position where a creature was skinned; the creature can move.
 
+## Forever migration representation (unreleased, November 4, 2026)
+
+The original `GatherMapDB.nodes["continent:zone"]` representation is retained as historical data. New Forever observations use `GatherMapDB.nodes["map:" .. UiMapID]`. A manually approved `migrationLinks` entry associates a legacy key with a modern zone by matching historical `zoneName` against `C_Map.GetMapInfo`, but **matching a zone label alone cannot prove normalized coordinate identity**.
+
+`migrationLedger` records successfully copied keys, and `migrationBackups` retains copies of original and before/after destination data for guarded rollback. The legacy source is never deleted. Unknown or custom zones remain in their original representation until actual Forever map/coordinate evidence exists. Actual private SavedVariables must never be committed to this repository.
+
 ## Supported tree families
 
 The custom Survival collection includes **Simple, Bright, Shade, Tropical, Dead and Star Wood Trees**. They depend on the custom client's Woodcutting/Survival behavior; standard Vanilla 1.12 cannot be assumed to have all of them.

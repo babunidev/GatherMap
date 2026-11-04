@@ -1,6 +1,6 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phases 2–5 implemented in source, with mocked/static verification for displays and difficulty; none verified in the live game. Legacy map-key migration remains disabled.  
+**Status:** Phases 2–6 implemented in source; Phase 6 is an explicit opt-in import with backup safeguards and no automatically inferred zone mapping. None of these phases has been tested in the live Forever client.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
@@ -17,6 +17,7 @@ The `feat/forever-port` branch now includes:
 | `GatherMapData.lua` | Original resource names, minimums, icons and colors retained from legacy 0.4.3 for data/migration context |
 | `GatherMapDifficulty.lua` | Current-character profession reads, skill modifiers and Forever-specific known color thresholds; separate from account-wide SavedVariables |
 | `GatherMapMarkers.lua` | Pixel-space geometry, same-resource transitive overlap grouping and zoom/rotation projection |
+| `GatherMapMigration.lua` | Explicit, reversible zone-key import and in-SavedVariables backup/ledger |
 | `GatherMapWorldPins.xml` | Virtual map-canvas pin template |
 | `GatherMapForever.lua` | Modern event callbacks, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
 | `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
@@ -32,6 +33,46 @@ The latest publicly tracked pre-launch data build on November 4 was `1.60.1.7075
 - Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
+
+## Phase 6 — guarded legacy SavedVariables migration (November 4, 2026)
+
+The original `GatherMapDB.nodes["continent:zone"]` keys are **legacy map indexes**, not stable modern `UiMapID` values. The new recorder writes `GatherMapDB.nodes["map:" .. UiMapID]`. No numeric reinterpretation of historical indexes is allowed. The Forever API `C_Map.GetMapInfo(uiMapID)` provides the zone's `mapID`, `name`, `mapType` and `parentMapID`; it does **not** establish that old normalized map coordinates are identical in every Forever zone. See [the Forever API extract](https://github.com/Atraeau/WoW-Addons/blob/main/docs/api/Map-Instances-World/C_Map.md) and [MapInfo reference](https://warcraft.wiki.gg/wiki/API:C_Map.GetMapInfo).
+
+**Migration implementation:** `GatherMapMigration.lua` is loaded before the Forever runtime, remains idle until a migration command, and reads only account-wide `GatherMapDB`. A link may be made only while inside a Forever zone with a valid zone `UiMapID`, when every legacy node in the requested old key carries the *same, nonempty historical zone name* matching the current map name exactly. No special-zone, alias, similar-name or continent-index guesses are used. `preview` calculates valid/skipped records, duplicates and occurrence counts without writing the new zone. An explicit `apply <legacyKey> confirm` clones eligible nodes into `map:<UiMapID>` and keeps the original legacy zone unchanged. It preserves v1 missing-kind=herb behavior; for v2 data, it drops unreliable copied skinning requirements while retaining the original raw value; v3 values remain unchanged. Same-kind/name observations within the historical 0.004 positional tolerance merge with count-weighted coordinates; requirements from modern observations take precedence if conflicting. Historical wood nodes are retained, though their profession remains unsupported on Forever.
+
+Each successful application stores **in-SavedVariables snapshots** of the source, destination before copying and destination after copying, along with an idempotency ledger. A guarded rollback restores the pre-import destination only when both the original history and destination have not changed since application; otherwise it refuses, protecting later discoveries. Backup history is retained. Bounded in-game processing rejects zones over 10,000 candidates and unknown/invalid data structures rather than silently truncating. Unmatched, unsupported, name-ambiguous and malformed original locations remain readable in their original keys and are never deleted.
+
+**Physical backup requirement:** The game cannot create a separate file outside its SavedVariables sandbox. With Forever **fully closed**, run the repository's `Backup-GatherMap.ps1` against your game client root. It copies `GatherMap.lua` and `OctoGather.lua` plus their `.bak` files from account and character SavedVariables into a new unique `GatherMapBackups` directory, without overwriting originals. **In-game backup snapshots are not substitutes for this separate physical backup.**
+
+Example (replace `/path/to/Forever` with the real client root; on Linux use `pwsh`):
+
+```powershell
+./Backup-GatherMap.ps1 -ClientPath "/path/to/Forever"
+```
+
+After closing and backing up the game, restart it, stand in a Forever zone corresponding to an old known location, and inspect:
+
+```text
+/gmap migrate status
+/gmap migrate link 1:2
+/gmap migrate preview 1:2
+/gmap migrate apply 1:2 confirm
+/gmap migrate rollback 1:2
+```
+
+The numeric `1:2` is **only an example**, not a verified mapping for a named zone. `link` and `preview` do not copy discoveries; `apply` is an explicit operation that must wait for visual coordinate comparison and a physical backup. Rollback is optional and can refuse if newer discoveries exist. A successful migration is not evidence that the points are spatially correct in Forever.
+
+**Historical rename helper:** `Upgrade-SavedData.ps1` still copies `OctoGatherDB`/old addon variables to `GatherMapDB` when migrating the **addon name**, not zone map keys. It selects the installed addon folder's `GatherMap_Camelot.toc` instead of assuming only one TOC exists; refuses existing destination filenames and backs up originals. It never executes stored Lua. Use it only if an old-name addon and SavedVariables still exist; it is separate from in-game zone mapping.
+
+**Verification:** `tests/test_forever_migration.lua` covers v1/v2/v3 normalization on copies, target duplicates, weighted counts, missed/unknown zones, explicit confirmation, repeated import refusal, rollback conflict handling and simulated Lua SavedVariables serialization/reinitialization. `tests/test_upgrade.ps1` tests multi-TOC selection, old-name copies, Unicode and physical source backups using disposable temporary folders. This is **mock and fixture** evidence, not an actual client logout, real-user backup or verified coordinate transform. No historical user database was accessed.
+
+### Actual Forever verification remaining
+
+- Confirm `C_Map.GetMapInfo` and exact zone labels match source metadata for each candidate, without conflating duplicate names.
+- Visually compare several known landmarks and saved resource positions before considering any historical coordinate system equivalent.
+- Confirm schema-v1/v2/v3 data, linked/unlinked records, counts, colors and original rows after real logout/reload and across two characters.
+- Confirm both the physical PowerShell backup and stored snapshots recover data safely from an actual test copy.
+- Keep custom and ambiguous historical zones unmatched until a reviewed zone geometry mapping exists.
 
 ## Phase 5 — four-corner map display (November 4, 2026)
 

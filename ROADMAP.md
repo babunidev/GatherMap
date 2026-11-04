@@ -14,9 +14,24 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [x] Implement candidate resource identification and success/loot correlation in source; verify real Forever behavior in-game separately.
 - [x] Implement profession reads, effective-skill difficulty and stable modern map identities in source; client verification pending.
 - [x] Implement minimap/world-map four-corner rendering and correct same-resource-only grouping in source; live verification pending.
-- [ ] Add backed-up legacy node migration; preserve unmatched areas and historical record kinds.
+- [x] Implement explicit, backed-up legacy node migration in source with unmatched-area preservation; in-game verification and coordinate mapping still pending.
 - [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+
+### Phase 6 — database migration and integrity (November 4, 2026)
+
+- [x] Retain account-wide `GatherMapDB` and schema-v1 herb defaults, schema-v2 Skinning requirement correction and schema-v3 metadata.
+- [x] Keep modern node keys under explicit `map:<UiMapID>` and never interpret historical `continent:zone` indexes as UiMapIDs.
+- [x] Implement conservative manual historical-zone linking, exact `C_Map.GetMapInfo` name checks and a preview before copying.
+- [x] Preserve unlinked, ambiguous, custom and malformed historical records in their original keys.
+- [x] Retain the separate OctoGatherDB → GatherMapDB rename workflow; fix multi-TOC discovery for Forever.
+- [x] Implement a physical PowerShell backup helper and in-SavedVariables source/destination snapshots before copying; reject overwrite of existing files.
+- [x] Add occurrence-count weighting, spatial duplicate merging, idempotency ledger and guarded rollback without mutating historical records.
+- [x] Add Lua 5.1/5.4 migration fixture tests (v1/v2/v3, mixed/unknown zones, repeat imports, rollback) and PowerShell temp-file fixtures.
+- [ ] Confirm exact zone-to-UiMapID links, shared geography and positional equivalence on **actual Forever maps**; add reviewed mapping evidence.
+- [ ] Confirm saved records persist across real Forever logout/reload and character switching with physical file backups.
+
+All completed checkboxes mean **implemented/tested in mocks**; no real Forever user data was migrated or game-tested.
 
 ### Phase 5 — minimap and world-map presentation (November 4, 2026)
 

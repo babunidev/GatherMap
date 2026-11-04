@@ -106,3 +106,9 @@ During the Forever port, AI-assisted research found that the color thresholds ar
 What mattered to me about GatherMap's markers was always their small footprint. The colors belong at the corners, with enough space left for the world underneath. Bringing them to Forever required new map-canvas positioning, but not a new visual language.
 
 AI-assisted work rebuilt the grouping around those same boundaries, replaced shared-tooltip handling with a small private label, and separated quick cursor feedback from slower map redraws. Tests simulate different map sizes and zoom levels, including the same saved discoveries displayed on a new canvas. The actual Forever map still needs to show whether those corners sit where they should.
+
+## November 4, 2026: keeping the old map on the shelf
+
+An old place on my map should not vanish merely because the game now gives it a different number. Those saved encounters belong to the journeys that led there, including the uncertain ones and the gathering spots that may no longer exist.
+
+The Forever port now offers an AI-assisted, deliberately guarded way to copy some of that history. A zone must first be matched by its recorded name, then previewed and explicitly confirmed, while the original record stays untouched. Backups and a refusal to overwrite later discoveries matter more here than the convenience of an automatic conversion. The script and mock-data tests help establish those protections, but whether the old coordinates still land on the right patch of ground remains a question for the actual game.

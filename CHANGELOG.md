@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 6 saved-data migration safeguards (November 4, 2026)
+
+- Added `GatherMapMigration.lua` for explicit legacy `continent:zone` → `map:<UiMapID>` copying with exact zone-name validation, preview and typed confirmation. Unmatched, unsupported and ambiguous history remains intact.
+- Preserved v1 herb defaults, the v2 Skinning correction and v3 data. Weighted merging retains occurrence counts/coordinates; repeated imports are blocked by a ledger.
+- Preserved the original legacy zone tables. Backed-up source/target snapshots and guarded rollback prevent overwriting later discoveries.
+- Added `Backup-GatherMap.ps1` for physical account/character SavedVariables backups with the game closed. Updated `Upgrade-SavedData.ps1` to select the Forever manifest while retaining the old OctoGather rename flow.
+- Added mock Lua saved-variable round-trip/migration regression tests and disposable PowerShell filesystem tests.
+- **Known limitation:** a matching historical zone name does not establish map-art/coordinate equivalence. No automatic mapping or live Forever SavedVariables migration was performed; public release remains unapproved.
+
 ## Unreleased — Step 5 map overlay (November 4, 2026)
 
 - Restored the original four-corner visual treatment on native Forever world-map pins and minimap overlays, including world icons and muted gray dots.

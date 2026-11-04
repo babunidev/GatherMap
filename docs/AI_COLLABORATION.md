@@ -38,3 +38,9 @@ Document, alongside source changes:
 Retrospective writing must cite real sources and remain privacy-safe: don't publish raw private conversations, local user paths, credentials or actual SavedVariables without permission. Portfolio material can summarize creative evolution and use the project's committed screenshots while retaining source credits.
 
 The current audit is documentation-only and does not license third-party art or approve a redesign.
+
+## November 4, 2026 — Forever data migration implementation
+
+The Forever-only port remains under Babuni's creative direction: earlier discoveries, resource identities and the personal-learning design must survive changes to the game's map APIs. This checkpoint adds AI-implemented `GatherMapMigration.lua`, a physical SavedVariables backup helper, a multi-manifest correction to the historical OctoGather rename script, and regression fixtures for schemas and map-key safety.
+
+Automated testing used dummy records and disposable PowerShell folders. It verifies copy-on-import, explicit mapping, weighted counts, refusal to repeat an import, guarded rollback and preservation of original files. It **does not** imply the AI tested the user's actual game installation, accessed personal SavedVariables, proved historical/Forever coordinate equivalence or obtained authorization for a public version.

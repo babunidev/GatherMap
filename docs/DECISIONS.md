@@ -43,6 +43,12 @@ The Phase 5 port keeps the already-established corner-marker design and independ
 
 A mouse-disabled independent hover label was selected instead of changing the game's shared GameTooltip. No new resource style, map information source, automatic database or dependency was introduced. Mocked tests cover geometry and data safety, but actual alignment, tooltip coexistence and unfamiliar map layouts are **not verified in game**.
 
+## November 4, 2026 — do not guess the player's map history
+
+Legacy continent/zone indexes cannot be assumed to equal Forever's numeric map IDs. The migration implementation therefore requires a manually linked, exact-name Forever zone, displays a dry-run count and requires explicit confirmation before copying any historic discoveries. An ambiguous or unsupported zone remains in the original database. The old name-change helper and the new zone-key importer serve different purposes.
+
+Copies are non-destructive and preserve raw v1/v2/v3 history, with weighted merging of duplicate observations and an idempotency ledger. Snapshots allow rollback only if no newer data would be overwritten. An independent physical backup is still necessary because an in-SavedVariables snapshot does not protect against file loss. The exact equality of historical and Forever coordinate systems remains unverified; no public migration readiness is claimed.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |
