@@ -76,3 +76,9 @@ A complete public account must preserve several boundaries. The saved map is a *
 What does the player experience on a crowded minimap with hundreds of saved locations? How does the marker system feel for a Skinner who is chasing moving creatures rather than revisiting static resource nodes? How should custom map aliases be tested across game clients? When should the system prefer an unknown purple marker over a guessed requirement? These are productive next questions, not approvals to replace the existing system.
 
 The most revealing part of this project may be its pattern of iteration: **learn a herb, learn more kinds of world object, refine the marks, fix compatibility, preserve the player's memories through a rename**. That progression is worthy of a portfolio entry because the software's small map symbols tell a much larger story about preserving discovery.
+
+## November 4, 2026: keeping the discoveries, changing the client
+
+GatherMap's next development home is World of Warcraft Forever. With the older 1.12 code and its published releases preserved, the plan is to carry the personal gathering memory into the new client rather than turn it into a premade database of every spawn. The changing skill colors and four-corner markers are part of what makes that familiar map worth keeping.
+
+Before touching the Lua, an AI-assisted repository review checked the manifest, code, earlier decisions, migration scripts and known third-party sources. A separate Forever branch was created for the work. The review also found permissions that cannot be assumed from attribution alone, so the inherited icons and measurements remain a documented question. This entry records preparation only; no part of the addon has been verified in Forever yet.

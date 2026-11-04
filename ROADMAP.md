@@ -3,6 +3,23 @@
 **Creator and approval authority:** Babuni.dev  
 **Status of this file:** Technical verification backlog and possible alternatives, **not** creator-approved implementations.
 
+## Forever port — approved direction, implementation pending (November 4, 2026)
+
+Target only World of Warcraft Forever. The branch `feat/forever-port` is a preparation branch; no gameplay APIs or interfaces have been ported yet. The following checklist is planned work, not completed functionality.
+
+- [x] Review repository instructions, legacy source, history, manifest and existing verification scripts.
+- [x] Record the Forever-only scope, legacy preservation requirements and source/asset provenance issues.
+- [x] Create an isolated development branch; `main`, tags and releases remain untouched.
+- [ ] Confirm the live Forever build, `_Camelot.toc` or `_Forever.toc` packaging behavior, APIs and runtime restrictions.
+- [ ] Port resource identification and verified gathering/loot success detection; retain skinning and chest semantics.
+- [ ] Rebuild profession reads, effective-skill difficulty and stable modern map coordinates.
+- [ ] Rebuild minimap/world-map four-corner rendering and correct same-resource-only grouping.
+- [ ] Add backed-up legacy node migration; preserve unmatched areas and historical record kinds.
+- [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
+- [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+
+The older 1.12 verification backlog below is retained as an audit and regression reference, **not** a plan to continue supporting that client. Technical findings and evidence: [docs/FOREVER_PORT.md](docs/FOREVER_PORT.md).
+
 ## Implemented in source as of October 26, 2026
 
 - Vanilla 1.12 manifest, **0.4.3**, account-wide `GatherMapDB`, optional `Interact`.

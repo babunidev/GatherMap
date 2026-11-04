@@ -2,6 +2,19 @@
 
 **Creative authority:** Babuni.dev. This is a retrospective code/commit record, not an invented series of meetings.
 
+## November 4, 2026 — confirmed Forever-only development direction
+
+Babuni directed the port of GatherMap to **World of Warcraft Forever exclusively**, with a repository audit and preparation before runtime changes. This is a confirmed target decision, not confirmation that any feature is already working on Forever.
+
+- Create a separate `feat/forever-port` development branch from `main` at `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.
+- Preserve the original self-learning discovery design, difficulty-colored four-corner visuals, account-wide records and the `OctoGather` → `GatherMap` history.
+- Keep 0.4.3/Interface 11200 runtime, older release tags and public downloads unchanged while the port remains unverified.
+- Reverify the modern Forever APIs and game-specific systems; do not infer a working client from a TOC change.
+- Keep rights and licensing questions open until the exact inherited assets and upstream conditions are verified.
+- Require separate, explicit approval before any version is published.
+
+No decision was made to import static spawn databases, remove saved resource kinds, select a mapping library or publish the port. See [FOREVER_PORT.md](FOREVER_PORT.md).
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

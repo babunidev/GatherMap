@@ -3,6 +3,13 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — November 4, 2026: Forever port preparation (development branch)
+
+- Established a separate Forever development branch without altering the old `main` runtime, release tags or public releases.
+- Recorded Forever-only scope, the legacy compatibility boundary, porting risks, migration requirements and a staged technical roadmap.
+- Reviewed the 29 inherited Gatherer herb icons, historical scaling credits, and MetaHunt data attribution. Redistribution permissions remain **unresolved** pending an asset/license audit.
+- **Documentation only:** no Lua/TOC/runtime changes, in-game tests, new public version or deployment.
+
 ## 2026-10-26 — expanded documentation
 
 - Rebuilt/expanded README, concept, roadmap, changelog and AGENTS rules, plus `docs/ARCHITECTURE.md`, `DESIGN.md`, `CONTENT.md`, `DECISIONS.md`, `DEVLOG.md` and `AI_COLLABORATION.md`.

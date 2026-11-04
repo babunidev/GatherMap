@@ -51,3 +51,12 @@ The **attribution distinction matters** for Babuni.dev's portfolio: the creative
 Actual `GatherMapDB` saved records live in the user's WoW SavedVariables files, not in this repository. A public portfolio must not upload the creator's actual account data, private gameplay route history or other players' details without review.
 
 The repository contains **no LICENSE** as of the October 26 audit. Resolve first-party and upstream licenses/redistribution terms before declaring assets free to reuse.
+
+## November 4, 2026 — third-party provenance check for Forever
+
+- **Gatherer icon files:** the 29 `Icons/Herb*.tga` filenames correspond to files in [jsb/Gatherer](https://github.com/jsb/Gatherer/tree/master/Icons). That repository's root did not show a LICENSE file. The [Gatherer CurseForge project](https://www.curseforge.com/wow/addons/gatherer) lists **GPLv2**, but a complete file-by-file license chain for this historical fork and its icons was **not** verified. Retain Gatherer/Norganna attribution and investigate the exact permission and license obligations before distributing a Forever package.
+- **Gatherer map scaling:** original mapping/scaling constants are credited to historical Gatherer sources; verify their provenance separately from artwork.
+- **MetaHunt map measurements:** `DuvelCorp/MetaHunt` on GitHub was not accessible at review time. A [MetaHunt mirror](https://octowow.st/git/Meta/MetaHunt) identifies its upstream as [Codeberg Duvelcorp/MetaHunt](https://codeberg.org/Duvelcorp/MetaHunt). The cited measurements and reuse terms were **not** independently matched to a specific licensed file. Preserve attribution and do not assert a redistribution grant.
+- **GatherMap itself:** no root LICENSE was present at the reviewed commit. Do not invent or assign a project license; retain all source and historical credits while rights are investigated.
+
+This is a provenance investigation, **not** permission to remove credited assets, claim ownership of them or publish a new release.

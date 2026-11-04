@@ -42,3 +42,7 @@ In September the project moved from **Octo Gather** to the more provider-neutral
 These principles are grounded in the original README, feature history and current source. The available commits do **not** reproduce all of Babuni.dev's original thinking or show who drafted every function. The creator's core ideas and direction remain credited to Babuni.dev. The AI documentation assistant's later analysis and wording are a separate contribution.
 
 Do not replace this living exploration record with a generic imported-mining database, excessive map clutter or a conventional web-map dashboard without the creator's decision.
+
+## Current platform direction (November 2026)
+
+Future development targets **World of Warcraft Forever exclusively**. The original self-learning map, account-wide memory, current-character difficulty colors and four-corner presentation remain the concept. Previous 1.12 implementation details are retained as history, not an instruction to support another client. This decision authorizes preparation, not a completed port or public version.

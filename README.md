@@ -13,6 +13,12 @@ Instead of opaque dots, the overlay uses **four small difficulty-colored corner 
 
 ![Saved herbs on the Tanaris world map](Screenshots/world-map-tanaris.png)
 
+## Forever development status
+
+**Target: World of Warcraft Forever only.** A port is being prepared on [`feat/forever-port`](https://github.com/babunidev/GatherMap/tree/feat/forever-port). **No Forever-compatible GatherMap runtime has been implemented or tested yet.** The current `GatherMap.lua` and `GatherMap.toc` (version 0.4.3, Interface 11200) are the preserved legacy implementation and must not be installed as a working Forever addon.
+
+The earlier 1.12 installation, behavior and custom-zone notes below describe the historical implementation, not current Forever support. The port will retain the account-wide self-learned discoveries, skill-aware four-corner markers, original features where the new game supports them, and safe data migration. See [Forever port preparation](docs/FOREVER_PORT.md) for scope, compatibility questions and upstream rights checks. No public release has been authorized.
+
 ## What is recorded
 
 | Resource kind | How it is learned | How color is determined | When it is visible |

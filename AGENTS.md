@@ -9,6 +9,14 @@ Start with `README.md`, `CONCEPT.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `doc
 
 Do not erase Babuni's creative authorship, invent older conversations, or claim past AI proposals were approved without evidence.
 
+## Forever-only development scope (November 4, 2026)
+
+All **new** implementation, testing, maintenance and future releases target **World of Warcraft Forever exclusively**. The historical 0.4.3 runtime and original 1.12 interface remain preserved on `main` and earlier tags; their presence is historical, **not** Forever compatibility. Development lives on `feat/forever-port` until explicitly reviewed and merged. See [docs/FOREVER_PORT.md](docs/FOREVER_PORT.md) for the technical preparation record.
+
+Check the active Forever build/interface, Lua capabilities, events, map/profession APIs and addon restrictions before implementation. Baseline at preparation: **1.60.1 / Interface 16001**; the live build and package details require verification after client updates. Do not convert the legacy TOC to 16001 without porting its runtime, or describe proposed features as implemented.
+
+Keep account-wide discovery data, the original personal-learning concept, marker colors/merging, historical attributions and migrations intact. Never create publishing tags, GitHub Releases or CurseForge uploads without explicit approval for that version.
+
 ## Preserve these source-level invariants
 
 - **Record confirmed gathering/loot interactions**, not speculative available live spawns. Skinning saved points are hunting-location hints, not fixed nodes.

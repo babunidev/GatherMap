@@ -2,6 +2,10 @@
 
 **Source audited:** `GatherMap.lua` (1,237 lines), `GatherMap.toc`, saved-data helper and tests, October 26, 2026. **Static code review, not client execution.**
 
+## Status of this architecture
+
+This document describes the **preserved legacy 1.12 implementation** in `GatherMap.lua` and `GatherMap.toc`, version 0.4.3, not a tested Forever runtime. New development targets **Forever only** and must replace the old map, skill and cast/event integrations after independent client/API verification. The current code is the functional specification for intended behavior, not proof of compatibility. See [FOREVER_PORT.md](FOREVER_PORT.md).
+
 ## Lifecycle, events and state
 
 ```text
