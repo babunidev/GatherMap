@@ -9,6 +9,7 @@ local db, provider, checkbox
 local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
+local hoverTick = 0
 local renderRevision = 0
 local miniCache
 local mapLabel, mapLabelText
@@ -348,10 +349,12 @@ local function SetupWorld()
         "TOPLEFT", 14, -30)
     checkbox:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 10)
     local label = _G.GatherMapForeverMapToggleText
-    if label then
-        label:SetText("Gather Map")
-        label:SetTextColor(0.41, 0.80, 0.44)
+    if not label then
+        label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        label:SetPoint("LEFT", checkbox, "RIGHT", 2, 0)
     end
+    label:SetText("Gather Map")
+    label:SetTextColor(0.41, 0.80, 0.44)
     checkbox:SetChecked(db.worldMapEnabled)
     checkbox:SetScript("OnClick", function(self)
         db.worldMapEnabled = not not self:GetChecked()
@@ -371,6 +374,21 @@ local function MarkerLabel()
     local background = mapLabel:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(mapLabel)
     background:SetColorTexture(0.05, 0.05, 0.05, 0.92)
+    -- Lightweight original-style tooltip border, without GameTooltip.
+    local borders = {
+        {"TOPLEFT", "TOPRIGHT", 1, true},
+        {"BOTTOMLEFT", "BOTTOMRIGHT", 1, true},
+        {"TOPLEFT", "BOTTOMLEFT", 1, false},
+        {"TOPRIGHT", "BOTTOMRIGHT", 1, false},
+    }
+    for i = 1, #borders do
+        local line = mapLabel:CreateTexture(nil, "BORDER")
+        line:SetColorTexture(0.4, 0.4, 0.4, 1)
+        local edge = borders[i]
+        line:SetPoint(edge[1], mapLabel, edge[1])
+        line:SetPoint(edge[2], mapLabel, edge[2])
+        if edge[4] then line:SetHeight(1) else line:SetWidth(1) end
+    end
     mapLabelText = mapLabel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     mapLabelText:SetPoint("CENTER", mapLabel, "CENTER")
     mapLabel:Hide()
@@ -549,6 +567,11 @@ end)
 f:SetScript("OnUpdate",function(self,dt)
     if not db then return end
     tick=tick+dt
+    hoverTick=hoverTick+dt
+    if hoverTick>=0.10 then
+        hoverTick=0
+        Hover()
+    end
     if skillDirty then
         skillDirty=false
         if difficulty.Refresh() then MarkDirty() end
@@ -564,5 +587,4 @@ f:SetScript("OnUpdate",function(self,dt)
         DrawWorld()
     end
     DrawMinimap()
-    Hover()
 end)

@@ -192,5 +192,44 @@ assert(GatherMapDB.worldMapEnabled==true)
 assert(GatherMapDB.nodes==sameNodes)
 assert(GatherMapDB.nodes["map:37"][1]==first)
 assert(first.x==0.5 and second.x==0.518)
-print("PASS: world scale/resize, native provider, grouped pins, independent saved controls, minimap toggle and data safety")
+-- Preview pin must never add a permanent SavedVariables record.
+WorldMapFrame:Show()
+SlashCmdList.GATHERMAP("testpin")
+WorldMapFrame.provider:RefreshAllData()
+assert(#WorldMapFrame.pins==2,"preview and ordinary chest must stay distinct")
+assert(#GatherMapDB.nodes["map:37"]==2)
+SlashCmdList.GATHERMAP("clear")
+WorldMapFrame.provider:RefreshAllData()
+assert(#WorldMapFrame.pins==1 and #GatherMapDB.nodes["map:37"]==2)
+
+-- Test scaled cursor coordinates against a real in-memory map pin and ensure
+-- the private hover tooltip uses no game tooltip or mouse interception.
+local pin=WorldMapFrame.pins[1]
+local uiScale=0.75
+function UIParent:GetEffectiveScale() return uiScale end
+function pin:GetEffectiveScale() return uiScale end
+function pin:GetLeft() return self.posX*canvas.width-self.width/2 end
+function pin:GetRight() return self.posX*canvas.width+self.width/2 end
+function pin:GetBottom() return (1-self.posY)*canvas.height-self.height/2 end
+function pin:GetTop() return (1-self.posY)*canvas.height+self.height/2 end
+WorldMapFrame.ScrollContainer.mouseOver=true
+GetCursorPosition=function()
+    return pin.posX*canvas.width*uiScale,(1-pin.posY)*canvas.height*uiScale
+end
+local totalBefore=#frames
+mainFrame.scripts.OnUpdate(mainFrame,0.15)
+local label
+for i=totalBefore+1,#frames do
+    local region=frames[i]
+    if region.parent==UIParent and region.mouseEnabled==false and region:IsShown() then
+        label=region
+    end
+end
+assert(label and label.mouseEnabled==false,
+    "scaled world-map hover should show a non-interactive private label")
+GetCursorPosition=function() return 0,0 end
+mainFrame.scripts.OnUpdate(mainFrame,0.15)
+assert(not label:IsShown(),"hover label must hide when the cursor leaves")
+assert(GatherMapDB.nodes==sameNodes)
+print("PASS: world zoom/resize, native provider, custom tooltips, UI scale, stored toggles, preview and data safety")
 
