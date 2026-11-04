@@ -19,7 +19,9 @@ Development happens on [`feat/forever-port`](https://github.com/babunidev/Gather
 
 **Implemented in source:** `GatherMap_Camelot.toc` loads `GatherMapData.lua`, `GatherMapWorldPins.xml`, and `GatherMapForever.lua` instead of the legacy runtime. The new shell reads effective profession ranks through `C_SkillInfo`, uses `C_Map` map IDs/positions, places four-corner pins with native map providers and `C_Minimap` radius, keeps independent map visibility controls, and retains the original same-resource merging logic. `Interact` is not a dependency for Forever.
 
-**Not implemented:** automatic gathering/loot recording, validation of new Forever resources, and import of old `continent:zone` database keys. All legacy saved records are preserved without guessing new map identities. The minimap/world-map implementation remains **untested in the game**.
+**Step 3 source implemented, not in-game verified:** a separate `GatherMapCapture.lua` observes `UNIT_SPELLCAST_SUCCEEDED` and matching `LOOT_READY` sources before recording newly discovered resources. Herbs, minerals, skinned materials (approximate hunting spots), ordinary treasure and lockpicking are included. Failed, unconfirmed, stale and unrelated-source actions are rejected by design. **Recording defaults OFF** until explicitly enabled using `/gmap capture on`. Disable it with `/gmap capture off`, and inspect `/gmap capture status`.
+
+**Not implemented or verified:** legacy `continent:zone` migration, actual in-game event signatures/ordering, localized tooltip text, custom Forever resources and Survival/Woodcutting. Existing saved records remain untouched. The recorded observations use `map:<UiMapID>` keys; recording requires a successful player gathering spell and a matching loot source.
 
 For an unsaved preview marker at your current position, use `/gmap testpin` and open the world map or inspect the minimap; use `/gmap clear` to remove it. `/gmap status` reports legacy versus modern data. These preview markers are never stored.
 

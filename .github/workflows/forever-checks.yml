@@ -27,5 +27,8 @@ jobs:
         run: |
           luac5.4 -p GatherMapData.lua
           luac5.4 -p GatherMapForever.lua
+          luac5.4 -p GatherMapCapture.lua
+      - name: Test recording events with mocked Forever APIs
+        run: lua5.4 tests/test_forever_capture.lua
       - name: Verify manifests, pin template and preserved assets
         run: python3 -m unittest discover -s tests -p 'test_forever_*.py'

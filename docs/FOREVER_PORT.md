@@ -1,6 +1,6 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phase 2 compatibility shell implemented in source; untested in game. Resource recording and legacy migration remain disabled.  
+**Status:** Phase 2 compatibility shell and opt-in Phase 3 recorder implemented in source; neither game-verified. Legacy map-key migration remains disabled.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
@@ -30,6 +30,23 @@ The latest publicly tracked pre-launch data build on November 4 was `1.60.1.7075
 - Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
+
+## Phase 3 — experimental resource recorder (November 4, 2026)
+
+`GatherMapCapture.lua` implements an **opt-in** gathering pipeline. `UNIT_SPELLCAST_SENT` records a potential interaction context, `UNIT_SPELLCAST_SUCCEEDED` confirms spell completion, and `LOOT_READY` inspects `GetLootSourceInfo` for a matching GameObject (herb, mineral, chest, lock) or Creature (skin). `UNIT_SPELLCAST_FAILED` and `UNIT_SPELLCAST_INTERRUPTED` discard an attempt, while stale, unrelated and already-consumed loot is ignored.
+
+Recording requires `GatherMapDB.recordingEnabled == true`, configured by `/gmap capture on|off`. It is disabled by default. Entries are written to `GatherMapDB.nodes["map:" .. UiMapID]` through a validated/deduplicating writer. The original `continent:zone` records remain unmodified. Legacy tree data remains preserved but no Survival mechanic has been confirmed. Basic node classification can use the source name or recognized gathered material; unknown names are discarded rather than guessed. Chest classification requires a recognized chest-like name; an earlier successful Pick Lock can temporarily classify a subsequent Opening as `lock`.
+
+**Evidence distinction:** exact spell IDs and available events were cross-checked against existing Forever collectors (`tobarisu1/wow_forever_addons` GatherMemory and `Imemoth/wow-foreverdb`). This confirms a plausible Forever-specific approach, **not** successful operation in a running game. `GetLootSourceInfo`, `UnitGUID("npc")`, `C_TooltipInfo.GetWorldCursor`, secret values, event ordering and loot-source identity require direct validation on the target client. Missing source information currently fails closed: no record.
+
+### Verification backlog
+
+1. Execute `lua5.4 tests/test_forever_capture.lua` and the Forever static checks; capture CI output separately.
+2. In-game: unsuccessful cast, interrupted cast, normal herb/mineral gather, Skinning, ordinary chest, Pick Lock → Opening, autoloot, repeated same node, adjacent nodes, delayed loot and unrelated loot.
+3. Confirm stable GameObject and Creature source GUIDs, event argument types and name/requirement detection across each path.
+4. Recheck the client build and secret-value restrictions; revise any unsupported behavior rather than replacing confirmation with guessing.
+5. Verify saved node counts, map rendering, logout/reload and cross-character data without modifying old legacy records.
+6. Resolve custom-resource and localization coverage before changing the default recording policy.
 
 ## Scope and preservation requirements
 

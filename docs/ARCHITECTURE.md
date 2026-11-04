@@ -19,6 +19,14 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## Forever resource capture (unreleased, source implementation)
+
+`GatherMapCapture.lua` is loaded **after** `GatherMapForever.lua` in the Forever manifest and communicates with it through `ns.GatherMapPosition` and `ns.GatherMapRecord`. The recorder is OFF by default, opt-in via slash command and unrelated to the optional legacy `Interact` hook.
+
+The state machine is `UNIT_SPELLCAST_SENT` (candidate) → `UNIT_SPELLCAST_SUCCEEDED` (completed) → `LOOT_READY` (confirm matching loot source) → validated observation. A failed/interrupted cast cancels pending work; timeouts and `LOOT_CLOSED` clear context. Only GameObject GUIDs are accepted for gathering and chests; Creature GUIDs for Skinning. Skinning saves material-based hunting-location hints. The Pick Lock spell may be correlated with a later Opening for the same source during a bounded window. Named treasure checks reject generic opening of quest objects.
+
+The writer validates map IDs, normalized positions, resource names, difficulty requirements and optional texture; deduplicates on same kind/name/map within 0.004 normalized units and a short event window. It does not modify legacy numeric continent-zone records. The live Forever client's spell/loot behavior remains unverified, and new data writes must not be enabled by default before that verification.
+
 ## Lifecycle, events and state
 
 ```text

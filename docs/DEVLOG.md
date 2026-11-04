@@ -88,3 +88,9 @@ Before touching the Lua, an AI-assisted repository review checked the manifest, 
 Moving GatherMap to Forever requires more than changing the interface number. The older addon remembers what was gathered and how difficult it felt for each character, and those memories should not become casualties of a new map system. This development checkpoint keeps the old implementation intact while adding a separate Forever entry point.
 
 AI-assisted work introduced modern map and profession access, a native map-pin overlay and a temporary test marker that never touches saved discoveries. Automatic gathering recognition remains deliberately inactive until it can distinguish confirmed successes from misleading spell and loot events. The source is now prepared for client testing, but no successful Forever gameplay test has been claimed. GitHub Actions subsequently passed Lua syntax and source/manifest checks for this checkpoint; the real map behavior and resource capture still require evidence from the Forever client.
+
+## November 4, 2026: making a remembered place earn its place
+
+A discovered herb or ore vein ought to appear because it was actually gathered, not just because a cast started and happened to stop nearby. That difference matters more once the map begins accumulating a character's history. The Forever implementation now has a separate, opt-in recorder that waits for spell success and the corresponding loot source before saving a new point.
+
+AI-assisted work added classification for herbs, minerals, skinning materials and chests, plus checks for interruption, unrelated loot and duplicate events. The first recorder is deliberately cautious: missing evidence leaves the map unchanged. It still needs testing in the client before ordinary gathering can be relied upon, and the older discoveries remain preserved for a separate migration.

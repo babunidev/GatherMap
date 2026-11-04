@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 3 experimental gathering recorder (November 4, 2026)
+
+- Added a separate Forever recorder using player cast events, `LOOT_READY`, and loot-source GUID checks.
+- Added herb, mining, skinning, ordinary-chest and lockpicking classification, including short-lived Pick Lock → Opening correlation.
+- Added an opt-in switch (`/gmap capture on|off|status`). Automatic recording remains OFF by default until real client tests establish reliability.
+- Added guarded new-`UiMapID` observation writes with spatial/time duplicate protection; historical numeric zone records remain unchanged.
+- Added Lua mock-event fixtures for successful, interrupted, stale, duplicated and unrelated actions to the CI workflow.
+- This is an **unreleased, source-level implementation**. Exact Forever gameplay behavior has not yet been verified.
+
 ## Unreleased — 0.5.0-alpha Forever compatibility development (November 4, 2026)
 
 - Added a Forever-only `GatherMap_Camelot.toc`, separate Lua runtime, resource tables and map-pin XML template.

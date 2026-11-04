@@ -125,6 +125,72 @@ local function PlayerMapPosition()
     local pos=C_Map.GetPlayerMapPosition(id,"player")
     if pos and Valid(pos.x) and Valid(pos.y) then return id,pos.x,pos.y end
 end
+-- A normalized observation writer shared with the separate Forever capture module.
+-- Never interprets or alters the legacy "continent:zone" map keys.
+local RECENT_DISTANCE, RECENT_SECONDS = 0.004, 2
+local recorded, lastRecorded = nil, nil
+local allowedKind = { herb=true, mineral=true, skin=true, lock=true, treasure=true }
+ns.GatherMapPosition = PlayerMapPosition
+ns.GatherMapRecord = function(observation)
+    if type(observation)~="table" or not db or type(db.nodes)~="table" then
+        return false,"database"
+    end
+    local kind,name=observation.kind,observation.name
+    if not allowedKind[kind] or type(name)~="string"
+        or #name==0 or #name>128 or name:find("[%c]") then
+        return false,"invalid resource"
+    end
+    local id,x,y=observation.mapID,observation.x,observation.y
+    if type(id)~="number" or id<1 or id~=math.floor(id)
+        or not Valid(x) or not Valid(y) then return false,"position" end
+    local key="map:"..id
+    local nodes=db.nodes[key]
+    if nodes==nil then nodes={};db.nodes[key]=nodes end
+    if type(nodes)~="table" then return false,"invalid saved zone" end
+
+    local now=GetTime()
+    if lastRecorded and lastRecorded.kind==kind and lastRecorded.name==name
+        and lastRecorded.key==key and now-lastRecorded.at<RECENT_SECONDS
+        and math.abs(lastRecorded.x-x)<=RECENT_DISTANCE
+        and math.abs(lastRecorded.y-y)<=RECENT_DISTANCE then
+        return false,"duplicate event"
+    end
+    local required=tonumber(observation.required)
+    if required and (required<1 or required>999) then required=nil end
+    local texture=observation.texture
+    if type(texture)~="number" and type(texture)~="string" then texture=nil end
+    local zoneName=type(observation.zoneName)=="string" and observation.zoneName or ""
+    local areaName=type(observation.areaName)=="string" and observation.areaName or ""
+    for i=1,#nodes do
+        local node=nodes[i]
+        if type(node)=="table" and node.kind==kind and node.name==name
+            and Valid(node.x) and Valid(node.y)
+            and math.abs(node.x-x)<=RECENT_DISTANCE
+            and math.abs(node.y-y)<=RECENT_DISTANCE then
+            local count=tonumber(node.count) or 1
+            if count<1 then count=1 end
+            if count>100000000 then count=100000000 end
+            node.x=(node.x*count+x)/(count+1)
+            node.y=(node.y*count+y)/(count+1)
+            node.count=count+1
+            if required then node.required=required end
+            if texture then node.texture=texture end
+            if zoneName~="" then node.zoneName=zoneName end
+            if areaName~="" then node.areaName=areaName end
+            lastRecorded={kind=kind,name=name,key=key,x=x,y=y,at=now}
+            dirty=true
+            return true,"updated"
+        end
+    end
+    nodes[#nodes+1]={
+        kind=kind,name=name,x=x,y=y,required=required,texture=texture,
+        zoneName=zoneName,areaName=areaName,count=1,
+    }
+    lastRecorded={kind=kind,name=name,key=key,x=x,y=y,at=now}
+    dirty=true
+    return true,"learned"
+end
+
 local function WorldPosition(id,x,y,node)
     if not C_Map.GetWorldPosFromMapPos then return end
     if node then
@@ -373,7 +439,8 @@ local function Status()
         " untouched legacy records. Map "..tostring(PlayerMapID()))
     Print("Herbalism "..ranks.herb..", Mining "..ranks.mineral..
         ", Skinning "..ranks.skin..", Lockpicking "..ranks.lock)
-    Print("Automatic gathering capture and legacy migration are pending.")
+    if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
+    Print("Legacy saved-location migration is pending.")
 end
 SLASH_GATHERMAP1="/gmap"
 SLASH_GATHERMAP2="/gathermap"
@@ -395,9 +462,15 @@ SlashCmdList["GATHERMAP"]=function(message)
     elseif command=="clear" then
         previewMarker=nil;dirty=true
         Print("Temporary marker cleared.")
+    elseif command=="capture on" then
+        if ns.GatherMapSetCapture then ns.GatherMapSetCapture(true) end
+    elseif command=="capture off" then
+        if ns.GatherMapSetCapture then ns.GatherMapSetCapture(false) end
+    elseif command=="capture status" then
+        if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap on, off, status, testpin, clear") end
+    else Print("commands: /gmap on, off, status, testpin, clear, capture on|off|status") end
 end
 
 f:RegisterEvent("ADDON_LOADED")

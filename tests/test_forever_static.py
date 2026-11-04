@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "GatherMap_Camelot.toc"
 RUNTIME = ROOT / "GatherMapForever.lua"
+CAPTURE = ROOT / "GatherMapCapture.lua"
 DATA = ROOT / "GatherMapData.lua"
 XML = ROOT / "GatherMapWorldPins.xml"
 
@@ -25,7 +26,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, XML.name, RUNTIME.name])
+        self.assertEqual(files, [DATA.name, XML.name, RUNTIME.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
@@ -65,7 +66,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, source)
         self.assertIn("function(self,event,loaded)", source)
-        self.assertIn("legacy migration are pending", source)
+        self.assertIn("Legacy saved-location migration is pending", source)
         self.assertIn("resourceSkills", DATA.read_text())
 
     def test_resource_assets_still_present(self):
@@ -78,7 +79,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          if shutil.which(command)), None)
         if not compiler:
             self.skipTest("No luac executable available; syntax not checked")
-        for path in (RUNTIME, DATA):
+        for path in (RUNTIME, DATA, CAPTURE):
             result = subprocess.run(
                 [compiler, "-p", str(path)],
                 capture_output=True, text=True, check=False)

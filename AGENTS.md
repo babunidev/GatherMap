@@ -23,6 +23,10 @@ This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `Gath
 
 The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. Future recording/migration phases require separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
 
+## Phase 3 recorder safety boundary
+
+`GatherMapCapture.lua` is the experimental Forever-only recorder. It defaults to `recordingEnabled = false` and must not write a discovery from cast-start, cast-stop, generic loot text or a nearby object alone. Require a completed recognized player spell and correlated, appropriate-type loot source. Preserve historical `GatherMapDB.nodes` data, suppress duplicate observations and keep the legacy wood category without inventing a Forever Survival API. Before changing the default setting, record genuine Forever in-game success and failure evidence for each supported category.
+
 ## Preserve these source-level invariants
 
 - **Record confirmed gathering/loot interactions**, not speculative available live spawns. Skinning saved points are hunting-location hints, not fixed nodes.

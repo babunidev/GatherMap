@@ -18,6 +18,21 @@ Target only World of Warcraft Forever. The branch `feat/forever-port` is a prepa
 - [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
 
+### Phase 3 — gathering recorder (November 4, 2026)
+
+- [x] Implement opt-in player cast-success and matching-loot-source correlation in `GatherMapCapture.lua`.
+- [x] Implement herb, mineral, skinning-material, treasure and lockpicking observation paths in source.
+- [x] Reject failed/interrupted, cast-only, stale and unrelated-source events; deduplicate repeated observations.
+- [x] Add recent Pick Lock → Opening correlation; keep skinning records as hunting hints.
+- [x] Record only new `map:<UiMapID>` keys; leave legacy `continent:zone` records unchanged.
+- [x] Leave Survival/Woodcutting inactive until a genuine Forever mechanic is confirmed.
+- [x] Add deterministic Lua fixture tests to the development CI workflow.
+- [ ] Test actual Forever event signatures, GUIDs, autoloot, success versus failed casts and source attribution in-game.
+- [ ] Test custom resources, localized loot/tooltip formats and chest/lockpicking variations in-game.
+- [ ] Review whether safe recording can become enabled by default after gameplay evidence.
+
+Source-complete items are **not game-tested**. The capture feature defaults OFF and requires `/gmap capture on`; no released version is authorized.
+
 ### Phase 2 — implementation checkpoint (November 4, 2026)
 
 - [x] Add `GatherMap_Camelot.toc` with Interface `16001` and no old Interact dependency.

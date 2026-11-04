@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Gather Map
-## Notes: Forever development preview: map and skill compatibility only; automatic discovery pending.
+## Notes: Forever development preview: opt-in confirmed gathering and map overlay; live validation pending.
 ## Author: Babuni
 ## Version: 0.5.0-alpha
 ## SavedVariables: GatherMapDB
@@ -8,3 +8,4 @@
 GatherMapData.lua
 GatherMapWorldPins.xml
 GatherMapForever.lua
+GatherMapCapture.lua

@@ -25,6 +25,12 @@ The port retains the original resource artwork, difficulty presentation and merg
 - A non-persistent `/gmap testpin` command permits visual testing before legacy data can be migrated; it does not record discoveries.
 - The development manifest uses `0.5.0-alpha`, without tagging or publishing a version. Live client/API verification and third-party asset rights remain open.
 
+## November 4, 2026 — conservative recording until verification
+
+The Step 3 code introduces **source-correlated**, opt-in recording rather than the older model of recording directly on cast-stop, from arbitrary chat lines, or from an `Interact` timestamp. This retains the self-learning concept while avoiding known false-positive paths. An unrecognized source, unknown resource or unsupported old Survival action is kept out of new records rather than speculatively inferred.
+
+Exact event behavior, lockpicking workflows and localized resource names remain unverified and therefore cannot justify enabling this feature by default. Legacy database keys are kept intact. This is an engineering safety choice, not a decision to remove any of the established resource categories.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |
