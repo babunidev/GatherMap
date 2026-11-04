@@ -106,6 +106,21 @@ sent(2366);succeeded(2366);loot();check("herb","Peacebloom")
 loot();assert(#records==1)
 clear()
 
+-- Delayed loot within the bounded success window is accepted.
+target,tooltipName,lootName="Silverleaf","Silverleaf","Silverleaf"
+npcGuid,lootGuid="GameObject-silver","GameObject-silver"
+sent(2366);succeeded(2366)
+now=now+4
+loot();check("herb","Silverleaf")
+clear()
+
+-- FAILED and INTERRUPTED events both suppress recording.
+sent(2366)
+event("UNIT_SPELLCAST_FAILED","player","cast-"..now,2366)
+loot()
+assert(#records==0)
+clear()
+
 -- Failure/interruption: never save.
 sent(2366)
 event("UNIT_SPELLCAST_INTERRUPTED","player","cast-"..now,2366)
