@@ -93,7 +93,8 @@ local function Encode(value)
     return "{"..table.concat(cells).."}"
 end
 local exported="return "..Encode(old)
-local restored=assert(loadstring(exported))()
+local loader=loadstring or load
+local restored=assert(loader(exported))()
 Init(restored)
 Check(restored.migrationLedger["1:2"].mapID==37
     and restored.nodes["map:37"][1].count==9,
