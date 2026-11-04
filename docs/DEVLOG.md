@@ -94,3 +94,9 @@ AI-assisted work introduced modern map and profession access, a native map-pin o
 A discovered herb or ore vein ought to appear because it was actually gathered, not just because a cast started and happened to stop nearby. That difference matters more once the map begins accumulating a character's history. The Forever implementation now has a separate, opt-in recorder that waits for spell success and the corresponding loot source before saving a new point.
 
 AI-assisted work added classification for herbs, minerals, skinning materials and chests, plus checks for interruption, unrelated loot and duplicate events. The first recorder is deliberately cautious: missing evidence leaves the map unchanged. It still needs testing in the client before ordinary gathering can be relied upon, and the older discoveries remain preserved for a separate migration. The automated development checks passed with a mock client, but the real gathering and loot sequence is still an open in-game test.
+
+## November 4, 2026: the same discoveries, different hands
+
+One of GatherMap's oldest ideas is that the world remembers a place, while each character sees it differently. A new herbalist should not read a patch of herbs the way a practiced one does, and a borrowed pair of enchanted gloves may alter that answer for a while.
+
+During the Forever port, AI-assisted research found that the color thresholds are not always separated by the neat intervals used in the old client code. The new module keeps the four-corner design, reads the current character's profession bonuses, and uses documented thresholds where available. Unknown resources remain purple rather than being assigned a convenient guess. Automated fixtures check the same saved nodes under different skill profiles; the actual game still has to confirm the behavior.

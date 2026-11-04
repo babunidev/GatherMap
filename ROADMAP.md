@@ -12,11 +12,26 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [x] Create an isolated development branch; `main`, tags and releases remain untouched.
 - [ ] Confirm the live Forever build, `_Camelot.toc` or `_Forever.toc` packaging behavior, APIs and runtime restrictions.
 - [x] Implement candidate resource identification and success/loot correlation in source; verify real Forever behavior in-game separately.
-- [ ] Rebuild profession reads, effective-skill difficulty and stable modern map coordinates.
+- [x] Implement profession reads, effective-skill difficulty and stable modern map identities in source; client verification pending.
 - [ ] Rebuild minimap/world-map four-corner rendering and correct same-resource-only grouping.
 - [ ] Add backed-up legacy node migration; preserve unmatched areas and historical record kinds.
 - [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+
+### Phase 4 — skill-aware marker colors (November 4, 2026)
+
+- [x] Read learned Herbalism, Mining, Skinning and Lockpicking through `C_SkillInfo`, with `C_TradeSkillUI` fallback for gathering professions.
+- [x] Account for rank, persistent modifiers and temporary skill bonuses without adding skills to `GatherMapDB`.
+- [x] Cross-check Forever-specific resource tables: 28 herbs and 9 ore nodes have documented complete thresholds.
+- [x] Implement all six marker colors with resource-specific boundaries (including Dreamfoil's 270/290/315/370).
+- [x] Refresh on skill, buff, equipment, level and profession-equipment events; remove unnecessary 3-second skill polling.
+- [x] Preserve per-character profession filtering and independent level-based ordinary treasure coloring.
+- [x] Use purple for unknown thresholds instead of extrapolating; preserve unknown resources and legacy wood records.
+- [x] Add mock tests across the same account-wide discoveries with two skill profiles and 37 reference entries.
+- [ ] Verify the actual Forever profession API values, skill modifiers, threshold boundaries and equipment changes **in-game**.
+- [ ] Verify two real characters on one account see different colors and profession filters for shared locations.
+
+Completed implementation checkboxes are supported by source and mock tests; **not** client verification.
 
 ### Phase 3 — gathering recorder (November 4, 2026)
 

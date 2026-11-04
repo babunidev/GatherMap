@@ -3,6 +3,16 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 4 dynamic difficulty (November 4, 2026)
+
+- Added `GatherMapDifficulty.lua` for per-character learned profession detection and effective skill (base rank + modifier + temporary points).
+- Added complete skill-up color boundaries for 28 herbs and nine ore nodes, cross-checked with Forever-specific Warcraft Wiki community tables. Previously uniform offsets were inaccurate for resources such as Dreamfoil.
+- Preserved red/orange/yellow/green/gray/purple display, with purple for unverified thresholds and no unsupported Survival/Woodcutting assumptions.
+- Updated skill, equipment, aura and player-level event handling to trigger recoloring without a separate periodic skill scan.
+- Continued account-wide `GatherMapDB` storage without saving character-specific skills or modifying discoveries.
+- Added Lua mock tests for 37 resource thresholds, bonuses, visibility, treasure levels, unknown requirements and character switching.
+- In-game API values, real-player character switching, colors and rendering remain **unverified**. No public release.
+
 ## Unreleased — Step 3 experimental gathering recorder (November 4, 2026)
 
 - Added a separate Forever recorder using player cast events, `LOOT_READY`, and loot-source GUID checks.

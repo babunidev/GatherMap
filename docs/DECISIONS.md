@@ -31,6 +31,12 @@ The Step 3 code introduces **source-correlated**, opt-in recording rather than t
 
 Exact event behavior, lockpicking workflows and localized resource names remain unverified and therefore cannot justify enabling this feature by default. Legacy database keys are kept intact. This is an engineering safety choice, not a decision to remove any of the established resource categories.
 
+## November 4, 2026 — resource-specific colors without guessed progression
+
+The established four-corner color language is retained, but the old assumption that all resources change from orange to yellow to green to gray at fixed skill offsets has been replaced for documented Forever herbs and ores. Their individual published thresholds are more precise: Dreamfoil turns yellow at 290, not 295. Unknown names, special veins and conflicting observed requirements keep purple rather than inventing certainty.
+
+Profession knowledge and effective rank are now separate concerns. Base rank, gear modifiers and temporary bonuses affect the current character's color, while the account-wide database stores discoveries only. Chest tiers remain level-based; historical woodcutting data remains stored but not presented as a supported Forever profession. These are implementation details consistent with the established design, **not new user-approved content or promises of in-game functionality**.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

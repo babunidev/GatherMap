@@ -70,6 +70,23 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertIn("Legacy saved-location migration is pending", source)
         self.assertIn("resourceSkills", DATA.read_text())
 
+    def test_skill_event_driven_refresh(self):
+        runtime = RUNTIME.read_text()
+        self.assertIn("difficulty.Refresh()", runtime)
+        self.assertIn("difficulty.Color(", runtime)
+        self.assertIn("difficulty.IsVisible(", runtime)
+        for event in (
+            "SKILL_LINES_CHANGED",
+            "CHAT_MSG_SKILL",
+            "PLAYER_EQUIPMENT_CHANGED",
+            "PROFESSION_EQUIPMENT_CHANGED",
+            "UNIT_AURA",
+            "PLAYER_LEVEL_UP",
+        ):
+            self.assertIn(f'f:RegisterEvent("{event}")', runtime)
+        self.assertNotIn("skillTick", runtime)
+        self.assertIn("GatherMapDifficulty.lua", MANIFEST.read_text())
+
     def test_resource_assets_still_present(self):
         icons = list((ROOT / "Icons").glob("Herb*.tga"))
         self.assertEqual(len(icons), 29)

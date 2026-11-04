@@ -1,6 +1,6 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phase 2 compatibility shell and opt-in Phase 3 recorder implemented in source; neither game-verified. Legacy map-key migration remains disabled.  
+**Status:** Phase 2 map compatibility, opt-in Phase 3 recorder and Phase 4 skill-aware colors implemented in source; not game-verified. Legacy map-key migration remains disabled.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
@@ -14,7 +14,8 @@ The `feat/forever-port` branch now includes:
 | File | Role |
 | --- | --- |
 | `GatherMap_Camelot.toc` | Forever-only manifest, Interface `16001`, development version `0.5.0-alpha`, `GatherMapDB` |
-| `GatherMapData.lua` | Resource requirements, icons and colors retained from legacy 0.4.3 without claiming their thresholds were verified on Forever |
+| `GatherMapData.lua` | Original resource names, minimums, icons and colors retained from legacy 0.4.3 for data/migration context |
+| `GatherMapDifficulty.lua` | Current-character profession reads, skill modifiers and Forever-specific known color thresholds; separate from account-wide SavedVariables |
 | `GatherMapWorldPins.xml` | Virtual map-canvas pin template |
 | `GatherMapForever.lua` | Modern event callbacks, `C_SkillInfo` rank reads, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
 | `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
@@ -30,6 +31,34 @@ The latest publicly tracked pre-launch data build on November 4 was `1.60.1.7075
 - Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
+
+## Phase 4 — dynamic difficulty system (November 4, 2026)
+
+The new `GatherMapDifficulty.lua` is loaded before the Forever runtime. It computes a **current-character-only** snapshot of learned professions and their effective skill: `rank + modifier + tempPoints`, from `C_SkillInfo.GetNumSkillLines`, `GetSkillLineInfo`, and `GetSkillLineInfoByID`. `C_TradeSkillUI.GetProfessionInfoBySkillLineID` supplies a fallback for gathering professions when skill-line data is unavailable. A profession is shown only when a valid learned rank is present. `GatherMapDB` continues to hold discoveries, never skill snapshots.
+
+Rather than applying the original fixed `+25/+50/+100` estimates to every node, the implementation uses explicit **minimum / yellow / green / gray** reference thresholds for 28 herbs and nine mining nodes. The Forever-specific [herb table](https://warcraft.wiki.gg/wiki/Forever_herbalism_techniques) and [ore table](https://warcraft.wiki.gg/wiki/Forever_mining_techniques) were consulted November 4, 2026. Examples:
+
+| Resource | Minimum | Yellow | Green | Gray |
+| --- | ---: | ---: | ---: | ---: |
+| Peacebloom | 1 | 25 | 50 | 100 |
+| Dreamfoil | 270 | 290 | 315 | 370 |
+| Tin Vein | 65 | 90 | 115 | 165 |
+| Rich Thorium Vein | 275 | 300 | 325 | 375 |
+
+At skill below the minimum a marker is red; from the minimum through below the yellow boundary it is orange, then yellow, green, and gray at or above the listed boundaries. A mismatched observed minimum or an unknown reference (including variants, Gold Veins, special ore, and the newer Heavy Thorium Veins without published thresholds) is **purple**, except that an independently recorded minimum can still establish *red* when the player's skill is too low. Skinning/Lockpicking lack verified complete skill-up transitions: their markers can indicate red from an observed minimum, otherwise purple until direct game testing establishes more. The older Survival/Woodcutting category remains preserved, not actionable.
+
+Ordinary treasure retains the historical **character-level chest tier** color calculation, not profession-based coloring. Its tier metadata still requires client validation. Character visibility uses learned profession ownership; an unknown profession state does not invent a skill. `SKILL_LINES_CHANGED`, `CHAT_MSG_SKILL`, `PLAYER_EQUIPMENT_CHANGED`, `PROFESSION_EQUIPMENT_CHANGED`, player `UNIT_AURA` and `PLAYER_LEVEL_UP` trigger updates. The 3-second profession poll was removed; the existing throttled map redraw remains.
+
+**Evidence:** `C_SkillInfo` return fields and equipment events are supported by Forever API documentation, but the thresholds come from community-edited Forever pages, **not independent gameplay observations or an official per-node server data export**. Values may change between builds. The `tests/test_forever_difficulty.lua` fixture simulates different characters against identical shared nodes; this is not a real multi-character in-game test.
+
+### Phase 4 live verification
+
+- Confirm `/gmap status` and character Skill panel agree for base rank, item/enchant bonus and temporary bonuses.
+- Inspect a known herb (e.g. Peacebloom) at the published yellow/green/gray boundaries and compare the marker with the real tooltip.
+- Check an exception such as Dreamfoil (yellow at 290) and a resource whose requirement is unknown (purple).
+- Log out and log in as a character without Herbalism or with a different skill; the shared data must be preserved, while visibility and colors change.
+- Verify chest tiers across character levels and skinning/lockpicking unknown indicators.
+- Record actual target build and all deviations; only then mark in-game validation complete.
 
 ## Phase 3 — experimental resource recorder (November 4, 2026)
 

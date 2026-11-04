@@ -23,6 +23,10 @@ This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `Gath
 
 The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder now exists but remains opt-in and game-unverified; legacy migration still requires separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
 
+## Phase 4 color system and evidence standard
+
+`GatherMapDifficulty.lua` is the current-character skill and threshold authority. Load it before `GatherMapForever.lua`. Do not store skill ranks in `GatherMapDB`; show only learned professions and compute effective skill from rank + verified modifiers/temporary points. Keep all six colors, character-level treasure tiers, and unknown purple; the explicit Forever herb/ore tables are community-documented, **not yet verified live**, and missing thresholds must not be invented. Test exceptions (e.g., Dreamfoil) and different characters' views of shared records.
+
 ## Phase 3 recorder safety boundary
 
 `GatherMapCapture.lua` is the experimental Forever-only recorder. It defaults to `recordingEnabled = false` and must not write a discovery from cast-start, cast-stop, generic loot text or a nearby object alone. Require a completed recognized player spell and correlated, appropriate-type loot source. Preserve historical `GatherMapDB.nodes` data, suppress duplicate observations and keep the legacy wood category without inventing a Forever Survival API. Before changing the default setting, record genuine Forever in-game success and failure evidence for each supported category.
@@ -45,7 +49,7 @@ The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate
 1. Record what Babuni wants to change and why, with clear boundaries and any proposed alternatives.
 2. Explain whether a change affects resource recognition, persistence, UI, performance, client support or external attribution.
 3. For runtime changes, run the existing focused Interact and migration fixture tests when their Python/Lua/PowerShell dependencies are available, and capture outputs.
-4. Separately test on the intended WoW 1.12-compatible client with positive, negative and migration scenarios; mock/fixture tests aren't equivalent to actual client play.
+4. Separately test all new functionality **exclusively in World of Warcraft Forever** with positive, negative and migration scenarios; historic 1.12 code is for source/reference comparison only. Mock/fixture tests are not game tests.
 5. Preserve backups and full original datasets during saved-variable migrations; test changes with copies, not sole surviving files.
 6. Update README, CONCEPT, ROADMAP, CHANGELOG, AGENTS, and `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/CONTENT.md`, `docs/DECISIONS.md`, `docs/DEVLOG.md`, `docs/AI_COLLABORATION.md` for substantial changes.
 7. Credit the creative for the vision, accurately attribute the AI's implementation and documentation work, record rejected alternatives and actual commit/verification results.

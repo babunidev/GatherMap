@@ -8,16 +8,24 @@ This document describes the **preserved legacy 1.12 implementation** in `GatherM
 
 ## Forever compatibility shell (unreleased, November 4, 2026)
 
-The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lookup tables and icon references), `GatherMapWorldPins.xml` (virtual native map pin template), then `GatherMapForever.lua` (non-recording development runtime). The old `GatherMap.lua` and `GatherMap.toc` remain unchanged for provenance.
+The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lookup tables and icon references), `GatherMapDifficulty.lua` (modern character-aware thresholds), `GatherMapWorldPins.xml` (virtual native map pin template), then `GatherMapForever.lua` (Forever map runtime). The old `GatherMap.lua` and `GatherMap.toc` remain unchanged for provenance.
 
 - **Map:** `C_Map.GetBestMapForUnit` and `C_Map.GetMapInfo` identify zone `UiMapID`; `C_Map.GetPlayerMapPosition` and `GetWorldPosFromMapPos` provide normalized and world positions. Only `GatherMapDB.nodes["map:" .. UiMapID]` renders; legacy keys are retained without interpretation. Minimap locations use `C_Minimap.GetViewRadius` and player-facing rotation.
-- **Skills:** `C_SkillInfo.GetSkillLineInfoByID` reads skill line attributes, falling back to `GetSkillLineInfo` name matching. Effective presentation includes known skill modifiers; exact Forever thresholds are not yet game-verified. No Survival skill is assumed.
+- **Skills:** `GatherMapDifficulty.lua` reads `C_SkillInfo` skills and modifiers (with `C_TradeSkillUI` fallback), uses 37 community-documented resource tables, and leaves unknown thresholds purple. No Survival skill is assumed. Live values are unverified.
 - **Map UI:** Native `MapCanvasDataProviderMixin` and `MapCanvasPinMixin` create world-map pins; pooled minimap frames draw four 3px colored corners. Same-resource-only transitive merging is retained. The world-map checkbox and `/gmap on/off` remain independent. The hover pass avoids taking native map mouse clicks.
-- **Events:** Frame callbacks explicitly accept `(self, event, ...)`. `ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, map/zone events and skill events trigger refresh. A throttled minimap update handles player movement; a periodic skill refresh catches increases that do not fire `SKILL_LINES_CHANGED`.
+- **Events:** Frame callbacks explicitly accept `(self, event, ...)`. `ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, map/zone events and skill/equipment/aura/level events trigger refresh. A throttled minimap update handles player movement; the former periodic skill scan was removed.
 - **Recording at the Phase 2 checkpoint:** The compatibility shell itself has no gathering hooks or Interact wrapping. Phase 3 adds a **separate, opt-in** recording module, `GatherMapCapture.lua`, which is disabled by default until in-game verification. `/gmap testpin` remains an unsaved presentation fixture; no legacy records are deleted or rewritten.
 - **Restrictions:** Avoids opening player/map panels programmatically, defers map-provider creation while in combat and skips combat redraw. Exact event behavior, pin pooling and map alignment are still unverified inside Forever.
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
+
+## Forever dynamic difficulty (Phase 4, source implementation)
+
+`GatherMapDifficulty.lua` loads between the retained resource table and the Forever map runtime. It exposes `Refresh`, `Skill`, `IsVisible`, `Color` and `Reference` via the addon namespace. Profession ranks (learned state, base rank, modifier, temporary points and effective rank) stay in memory and are **not** persisted in the shared discovery database. Skill information comes from `C_SkillInfo`, with profession-specific fallback when necessary; zero/absent ranks do not make an unknown profession visible.
+
+For herbs and minerals with Forever-specific published tables, colors use exact minimum/yellow/green/gray boundaries. Unknown or conflicting thresholds are purple rather than inferred from a legacy approximate offset; a known observed minimum may still establish red. Skinning and Lockpicking cannot be assigned full threshold color ranges without a verified model. Ordinary treasure still uses player level and chest tier, independent of gathering profession.
+
+Skill changes, item/equipment changes, aura changes, and level changes mark the map for redraw. An additional skill-rank poll is no longer used. The existing 0.35-second minimap movement refresh is separate. All actual client behavior, including event delivery and modifiers, remains to be tested.
 
 ## Forever resource capture (unreleased, source implementation)
 

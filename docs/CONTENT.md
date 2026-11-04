@@ -60,3 +60,9 @@ The repository contains **no LICENSE** as of the October 26 audit. Resolve first
 - **GatherMap itself:** no root LICENSE was present at the reviewed commit. Do not invent or assign a project license; retain all source and historical credits while rights are investigated.
 
 This is a provenance investigation, **not** permission to remove credited assets, claim ownership of them or publish a new release.
+
+## November 4, 2026 — Forever resource difficulty references
+
+`GatherMapDifficulty.lua` adds separate **Forever-specific full skill-color boundaries** for 28 herbs and nine ore nodes, taken from the community-maintained Warcraft Wiki [Forever herbalism techniques](https://warcraft.wiki.gg/wiki/Forever_herbalism_techniques) and [Forever mining techniques](https://warcraft.wiki.gg/wiki/Forever_mining_techniques), consulted November 4, 2026. This information is distinct from the inherited, unverified minimum-requirement lookup in `GatherMapData.lua`. Actual colors and all thresholds still require in-game comparison.
+
+Dreamfoil demonstrates why the old uniform skill offsets are insufficient: its minimum/yellow/green/gray levels are **270/290/315/370**. Some ore veins, variants and new Forever resources have no published complete row, and Skinning/Lockpicking have no validated full progression. Those cases are purple unless a directly observed minimum establishes red. Do not fill missing data by guessing. The data is used for presentation only and does not change account-wide node records.
