@@ -340,9 +340,20 @@ local function Hover()
 end
 
 local function Initialize()
-    if type(GatherMapDB)~="table" then GatherMapDB={} end
+    -- Keep malformed existing SavedVariables intact for manual recovery.
+    -- Silently replacing them could erase the player's discovery history.
+    if GatherMapDB~=nil and type(GatherMapDB)~="table" then
+        Print("Invalid saved database; leaving existing data untouched.")
+        return
+    end
+    if GatherMapDB==nil then GatherMapDB={} end
     db=GatherMapDB
-    if type(db.nodes)~="table" then db.nodes={} end
+    if db.nodes~=nil and type(db.nodes)~="table" then
+        Print("Invalid saved nodes; leaving existing data untouched.")
+        db=nil
+        return
+    end
+    if db.nodes==nil then db.nodes={} end
     if db.enabled==nil then db.enabled=true end
     if db.worldMapEnabled==nil then db.worldMapEnabled=true end
     if db.version==nil then db.version=3 end
