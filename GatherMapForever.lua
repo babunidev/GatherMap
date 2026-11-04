@@ -1,17 +1,25 @@
 -- GatherMap — Forever 1.60.1 API compatibility layer.
--- This phase displays native map-ID records. New gathering capture and legacy
--- key migration are deliberately disabled until separately verified.
+-- Renders native map-ID records and the opt-in experimental recorder.
+-- Legacy continent-zone migration is deliberately disabled until verified.
 local addonName, ns = ...
 local R = ns.resources
 local difficulty = ns.GatherMapDifficulty
+local markers = ns.GatherMapMarkers
 local db, provider, checkbox
 local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
+local renderRevision = 0
+local miniCache
+local mapLabel, mapLabelText
 local previewMarker -- temporary test fixture; never saved
 local MAX_PINS, DOT_SIZE = 300, 3
 local f = CreateFrame("Frame")
 
+local function MarkDirty()
+    renderRevision = renderRevision + 1
+    dirty = true
+end
 local function Print(s)
     if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff68cc70Gather Map:|r "..s) end
 end
@@ -66,16 +74,22 @@ local function PlayerMapID()
         id=info.parentMapID
     end
 end
+local function VectorXY(value)
+    if not value then return nil end
+    if value.GetXY then return value:GetXY() end
+    return value.x, value.y
+end
 local function PlayerMapPosition()
     local id=PlayerMapID()
     if not id or not C_Map.GetPlayerMapPosition then return end
     local pos=C_Map.GetPlayerMapPosition(id,"player")
-    if pos and Valid(pos.x) and Valid(pos.y) then return id,pos.x,pos.y end
+    local x,y=VectorXY(pos)
+    if Valid(x) and Valid(y) then return id,x,y end
 end
 -- A normalized observation writer shared with the separate Forever capture module.
 -- Never interprets or alters the legacy "continent:zone" map keys.
 local RECENT_DISTANCE, RECENT_SECONDS = 0.004, 2
-local recorded, lastRecorded = nil, nil
+local lastRecorded
 local allowedKind = { herb=true, mineral=true, skin=true, lock=true, treasure=true }
 ns.GatherMapPosition = PlayerMapPosition
 ns.GatherMapRecord = function(observation)
@@ -125,7 +139,7 @@ ns.GatherMapRecord = function(observation)
             if zoneName~="" then node.zoneName=zoneName end
             if areaName~="" then node.areaName=areaName end
             lastRecorded={kind=kind,name=name,key=key,x=x,y=y,at=now}
-            dirty=true
+            MarkDirty()
             return true,"updated"
         end
     end
@@ -134,7 +148,7 @@ ns.GatherMapRecord = function(observation)
         zoneName=zoneName,areaName=areaName,count=1,
     }
     lastRecorded={kind=kind,name=name,key=key,x=x,y=y,at=now}
-    dirty=true
+    MarkDirty()
     return true,"learned"
 end
 
@@ -146,156 +160,169 @@ local function WorldPosition(id,x,y,node)
             return cached.instance,cached.wx,cached.wy
         end
     end
-    local instance,pos=C_Map.GetWorldPosFromMapPos(id,{x=x,y=y})
-    if not (instance and pos and type(pos.x)=="number" and type(pos.y)=="number") then return end
-    if node then worldCache[node]={id=id,x=x,y=y,instance=instance,wx=pos.x,wy=pos.y} end
-    return instance,pos.x,pos.y
+    local mapPosition = CreateVector2D and CreateVector2D(x, y) or {x=x, y=y}
+    local instance,pos=C_Map.GetWorldPosFromMapPos(id,mapPosition)
+    local wx,wy=VectorXY(pos)
+    if not (instance and markers.Finite(wx) and markers.Finite(wy)) then return end
+    if node then worldCache[node]={id=id,x=x,y=y,instance=instance,wx=wx,wy=wy} end
+    return instance,wx,wy
 end
-local function Overlaps(a,b)
-    return a.left<=b.right and a.right>=b.left and a.bottom<=b.top and a.top>=b.bottom
-end
-local function AddGroup(groups,x,y,node)
-    local kind=node.kind or "herb"
-    local group={left=x-7,right=x+7,bottom=y-7,top=y+7,
-        key=kind..":"..node.name,name=node.name,icon=Icon(node),color=Difficulty(node)}
-    local merged=true
-    while merged do
-        merged=false
-        for i=#groups,1,-1 do
-            local other=groups[i]
-            if group.key==other.key and Overlaps(group,other) then
-                group.left=math.min(group.left,other.left)
-                group.right=math.max(group.right,other.right)
-                group.bottom=math.min(group.bottom,other.bottom)
-                group.top=math.max(group.top,other.top)
-                if R.difficultyPriority[other.color]>R.difficultyPriority[group.color] then
-                    group.color=other.color
-                end
-                table.remove(groups,i); merged=true
-            end
-        end
-    end
-    groups[#groups+1]=group
-end
+-- The four 3px dots intentionally leave the marker centre clear.
 local function AddCorners(pin)
-    pin.corners={}
-    local points={"TOPLEFT","TOPRIGHT","BOTTOMLEFT","BOTTOMRIGHT"}
-    for i=1,4 do
-        local tex=pin:CreateTexture(nil,"OVERLAY")
-        tex:SetSize(DOT_SIZE,DOT_SIZE)
-        tex:SetPoint(points[i],pin,points[i])
-        pin.corners[i]=tex
+    pin.corners = {}
+    local points = {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
+    for i = 1, 4 do
+        local dot = pin:CreateTexture(nil, "OVERLAY")
+        dot:SetSize(DOT_SIZE, DOT_SIZE)
+        dot:SetPoint(points[i], pin, points[i], 0, 0)
+        pin.corners[i] = dot
     end
 end
-local function Style(pin,g)
-    local c=R.colors[g.color]
-    pin.name=g.name
-    pin:SetSize(math.max(14,g.right-g.left),math.max(14,g.top-g.bottom))
-    pin:SetAlpha(g.color=="gray" and 0.85 or 1)
-    for i=1,4 do pin.corners[i]:SetColorTexture(c[1],c[2],c[3],1) end
-    if pin.icon then pin.icon:SetTexture(g.icon) end
+local function Style(pin, group)
+    local color = R.colors[group.color] or R.colors.unknown
+    pin.name = group.name
+    pin:SetSize(math.max(14, group.right - group.left),
+        math.max(14, group.top - group.bottom))
+    pin:SetAlpha(group.color == "gray" and 0.85 or 1)
+    for i = 1, 4 do
+        pin.corners[i]:SetColorTexture(color[1], color[2], color[3], 1)
+    end
+    if pin.icon then pin.icon:SetTexture(group.icon) end
 end
 local function AcquireMini(index)
-    if miniPins[index] then return miniPins[index] end
-    local pin=CreateFrame("Frame",nil,Minimap)
-    pin:SetFrameLevel(Minimap:GetFrameLevel()+5)
+    local pin = miniPins[index]
+    if pin then return pin end
+    pin = CreateFrame("Frame", nil, Minimap)
+    pin:SetFrameLevel(Minimap:GetFrameLevel() + 5)
     pin:EnableMouse(false)
     AddCorners(pin)
-    miniPins[index]=pin
+    miniPins[index] = pin
     return pin
 end
-local function HideMini(start)
-    for i=start,#miniPins do miniPins[i]:Hide() end
+local function HideMini(first)
+    for i = first, #miniPins do miniPins[i]:Hide() end
+end
+local function ClearMini()
+    miniCache = nil
+    HideMini(1)
 end
 local function DrawMinimap()
     if InCombatLockdown and InCombatLockdown() then return end
     if not (db and db.enabled and Minimap and Minimap:IsShown()
-        and C_Minimap and C_Minimap.GetViewRadius) then HideMini(1); return end
-    local mapID,px,py=PlayerMapPosition()
-    local nodes=mapID and MapNodes(mapID)
-    if not nodes then HideMini(1); return end
-    local instance,wx,wy=WorldPosition(mapID,px,py)
-    local radius=C_Minimap.GetViewRadius()
-    if not(instance and wx and wy and type(radius)=="number" and radius>0) then
-        HideMini(1); return
+        and C_Minimap and C_Minimap.GetViewRadius) then
+        ClearMini()
+        return
     end
-    local w,h=Minimap:GetWidth()/2,Minimap:GetHeight()/2
-    local rotate=GetCVarBool and GetCVarBool("rotateMinimap")
-    local facing=rotate and GetPlayerFacing and GetPlayerFacing() or 0
-    if type(facing)~="number" or (issecretvalue and issecretvalue(facing)) then facing=0 end
-    local s,c=math.sin(facing),math.cos(facing)
-    local groups={}
-    for _,node in ipairs(nodes) do
-        if type(node)=="table" and type(node.name)=="string" and
-            Valid(node.x) and Valid(node.y) and ShowNode(node) then
-            local other,x,y=WorldPosition(mapID,node.x,node.y,node)
-            if other==instance then
-                local dx,dy=x-wx,y-wy
-                if dx*dx+dy*dy<=radius*radius then
-                    -- World X increases north; world Y increases west.
-                    local sx,sy=-dy/radius*w,dx/radius*h
-                    if rotate then sx,sy=sx*c-sy*s,sx*s+sy*c end
-                    AddGroup(groups,sx,sy,node)
-                end
-            end
-        end
+    local mapID, px, py = PlayerMapPosition()
+    local nodes = mapID and MapNodes(mapID)
+    if not nodes then ClearMini(); return end
+    local instance, wx, wy = WorldPosition(mapID, px, py)
+    local radius = C_Minimap.GetViewRadius()
+    if not (instance and markers.Finite(wx) and markers.Finite(wy)
+        and markers.Finite(radius) and radius > 0) then
+        ClearMini()
+        return
     end
-    local count=math.min(MAX_PINS,#groups)
-    for i=1,count do
-        local g=groups[i]
-        local pin=AcquireMini(i)
-        Style(pin,g)
+    local width, height = Minimap:GetWidth(), Minimap:GetHeight()
+    if not (width > 0 and height > 0) then ClearMini(); return end
+    local rotate = GetCVarBool and GetCVarBool("rotateMinimap") or false
+    local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
+    if not markers.Finite(facing) then facing = 0 end
+    local previous = miniCache
+    if previous and previous.mapID == mapID and previous.instance == instance
+        and previous.x == wx and previous.y == wy
+        and previous.radius == radius and previous.width == width
+        and previous.height == height and previous.rotation == facing
+        and previous.revision == renderRevision then return end
+    miniCache = {mapID = mapID, instance = instance,
+        x = wx, y = wy, radius = radius, width = width, height = height,
+        rotation = facing, revision = renderRevision}
+
+    local function Project(node)
+        if not (type(node.x) == "number" and type(node.y) == "number"
+            and Valid(node.x) and Valid(node.y)) then return nil end
+        local nodeInstance, x, y = WorldPosition(mapID, node.x, node.y, node)
+        if nodeInstance ~= instance then return nil end
+        return markers.MiniPoint(x - wx, y - wy, radius, width, height,
+            facing, rotate)
+    end
+    local groups = markers.Group(nodes, Project, ShowNode, Difficulty, Icon)
+    local count = math.min(#groups, MAX_PINS)
+    for i = 1, count do
+        local group, pin = groups[i], AcquireMini(i)
+        Style(pin, group)
         pin:ClearAllPoints()
-        pin:SetPoint("CENTER",Minimap,"CENTER",
-            (g.left+g.right)/2,(g.bottom+g.top)/2)
+        pin:SetPoint("CENTER", Minimap, "CENTER",
+            (group.left + group.right) / 2, (group.bottom + group.top) / 2)
         pin:Show()
     end
-    HideMini(count+1)
+    HideMini(count + 1)
 end
 
--- Map mixins are installed when Blizzard's MapCanvas code is available.
-GatherMapForeverWorldPinMixin={}
+-- Native Blizzard map-canvas pins follow zoom, panning and map selection.
+-- Frame templates are mouse-disabled to preserve the game's map controls.
+GatherMapForeverWorldPinMixin = {}
 function GatherMapForeverWorldPinMixin:OnLoad()
     self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
-    self:SetScalingLimits(1,1,1.2)
+    self:SetScalingLimits(1, 1, 1)
     self:EnableMouse(false)
-    self.icon=self:CreateTexture(nil,"ARTWORK")
-    self.icon:SetPoint("TOPLEFT",self,"TOPLEFT",3,-3)
-    self.icon:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-3,3)
-    self.icon:SetTexCoord(0.08,0.92,0.08,0.92)
+    self.icon = self:CreateTexture(nil, "ARTWORK")
+    self.icon:SetPoint("TOPLEFT", self, "TOPLEFT", 3, -3)
+    self.icon:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -3, 3)
+    self.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     AddCorners(self)
 end
-function GatherMapForeverWorldPinMixin:OnAcquired(g,width,height)
-    self:SetPosition((g.left+g.right)/(2*width),(g.bottom+g.top)/(2*height))
-    Style(self,g)
-    mapPins[#mapPins+1]=self
+function GatherMapForeverWorldPinMixin:OnAcquired(group, canvasWidth, canvasHeight)
+    self:SetPosition((group.left + group.right) / (2 * canvasWidth),
+        (group.bottom + group.top) / (2 * canvasHeight))
+    Style(self, group)
+    mapPins[#mapPins + 1] = self
 end
-local providerMethods={}
+local providerMethods = {}
 function providerMethods:RemoveAllData()
-    self:GetMap():RemoveAllPinsByTemplate("GatherMapForeverWorldPinTemplate")
-    for i=#mapPins,1,-1 do mapPins[i]=nil end
+    -- Reused pool frames may represent different resource groups.
+    activeTooltip = nil
+    if mapLabel then mapLabel:Hide() end
+    local map = self:GetMap()
+    if map then map:RemoveAllPinsByTemplate("GatherMapForeverWorldPinTemplate") end
+    for i = #mapPins, 1, -1 do mapPins[i] = nil end
 end
 function providerMethods:RefreshAllData()
     self:RemoveAllData()
-    if not(db and db.worldMapEnabled) then return end
-    local map=self:GetMap()
-    local nodes=MapNodes(map:GetMapID())
+    if not (db and db.worldMapEnabled) then return end
+    local map = self:GetMap()
+    if not map then return end
+    local nodes = MapNodes(map:GetMapID())
     if not nodes then return end
-    local canvas=map.ScrollContainer
-    local w=canvas and canvas:GetWidth() or map:GetWidth()
-    local h=canvas and canvas:GetHeight() or map:GetHeight()
-    if not(w and h and w>0 and h>0) then return end
-    local groups={}
-    for _,node in ipairs(nodes) do
-        if type(node)=="table" and type(node.name)=="string" and
-            Valid(node.x) and Valid(node.y) and ShowNode(node) then
-            AddGroup(groups,node.x*w,node.y*h,node)
-        end
+    local canvas = map.GetCanvas and map:GetCanvas()
+    if not canvas then return end
+    local width, height = canvas:GetWidth(), canvas:GetHeight()
+    local scale = map.GetCanvasScale and map:GetCanvasScale() or 1
+    if not (markers.Finite(width) and markers.Finite(height)
+        and markers.Finite(scale) and width > 0 and height > 0
+        and scale > 0) then return end
+
+    -- Collision geometry is measured in visible (zoomed) pixels.
+    -- Coordinates remain normalized when assigned to MapCanvas pins.
+    local function Project(node)
+        return markers.WorldPoint(node.x, node.y, width, height, scale)
     end
-    for i=1,math.min(MAX_PINS,#groups) do
-        map:AcquirePin("GatherMapForeverWorldPinTemplate",groups[i],w,h)
+    local groups = markers.Group(nodes, Project, ShowNode, Difficulty, Icon)
+    local scaledWidth, scaledHeight = width * scale, height * scale
+    for i = 1, math.min(#groups, MAX_PINS) do
+        map:AcquirePin("GatherMapForeverWorldPinTemplate",
+            groups[i], scaledWidth, scaledHeight)
     end
 end
+function providerMethods:OnCanvasScaleChanged()
+    -- Map canvas zoom animates across frames. Recompute at the next 0.35s
+    -- map tick rather than allocating groups for every animation frame.
+    self.needsResizeRefresh = true
+end
+function providerMethods:OnCanvasSizeChanged()
+    self.needsResizeRefresh = true
+end
+
 local function DrawWorld()
     if InCombatLockdown and InCombatLockdown() then return end
     if provider and WorldMapFrame and WorldMapFrame:IsShown() then
@@ -304,52 +331,101 @@ local function DrawWorld()
 end
 local function SetupWorld()
     if InCombatLockdown and InCombatLockdown() then return end
-    if provider or not(db and WorldMapFrame and WorldMapFrame.AddDataProvider
-        and MapCanvasPinMixin and MapCanvasDataProviderMixin and CreateFromMixins) then return end
-    for name,method in pairs(MapCanvasPinMixin) do
-        if GatherMapForeverWorldPinMixin[name]==nil then
-            GatherMapForeverWorldPinMixin[name]=method
+    if provider or not (db and WorldMapFrame and WorldMapFrame.AddDataProvider
+        and MapCanvasPinMixin and MapCanvasDataProviderMixin
+        and CreateFromMixins) then return end
+    for name, method in pairs(MapCanvasPinMixin) do
+        if GatherMapForeverWorldPinMixin[name] == nil then
+            GatherMapForeverWorldPinMixin[name] = method
         end
     end
-    provider=CreateFromMixins(MapCanvasDataProviderMixin,providerMethods)
+    provider = CreateFromMixins(MapCanvasDataProviderMixin, providerMethods)
     WorldMapFrame:AddDataProvider(provider)
-    checkbox=CreateFrame("CheckButton","GatherMapForeverMapToggle",
-        WorldMapFrame,"UICheckButtonTemplate")
-    checkbox:SetSize(24,24)
-    checkbox:SetPoint("TOPLEFT",WorldMapFrame,"TOPLEFT",46,-26)
-    local label=_G.GatherMapForeverMapToggleText
-    if label then label:SetText("Gather Map");label:SetTextColor(0.41,0.80,0.44) end
+    checkbox = CreateFrame("CheckButton", "GatherMapForeverMapToggle",
+        WorldMapFrame, "UICheckButtonTemplate")
+    checkbox:SetSize(24, 24)
+    checkbox:SetPoint("TOPLEFT", WorldMapFrame.ScrollContainer or WorldMapFrame,
+        "TOPLEFT", 14, -30)
+    checkbox:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 10)
+    local label = _G.GatherMapForeverMapToggleText
+    if label then
+        label:SetText("Gather Map")
+        label:SetTextColor(0.41, 0.80, 0.44)
+    end
     checkbox:SetChecked(db.worldMapEnabled)
-    checkbox:SetScript("OnClick",function(self)
-        db.worldMapEnabled=not not self:GetChecked()
+    checkbox:SetScript("OnClick", function(self)
+        db.worldMapEnabled = not not self:GetChecked()
+        MarkDirty()
         DrawWorld()
     end)
 end
 
--- Passive hover preserves native map clicks and dragging.
+-- A private label avoids reading or modifying GameTooltip during gathering.
+-- It has no mouse input and cannot prevent dragging or clicking map art.
+local function MarkerLabel()
+    if mapLabel then return mapLabel end
+    mapLabel = CreateFrame("Frame", nil, UIParent)
+    mapLabel:SetFrameStrata("TOOLTIP")
+    mapLabel:EnableMouse(false)
+    mapLabel:SetSize(44, 22)
+    local background = mapLabel:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints(mapLabel)
+    background:SetColorTexture(0.05, 0.05, 0.05, 0.92)
+    mapLabelText = mapLabel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mapLabelText:SetPoint("CENTER", mapLabel, "CENTER")
+    mapLabel:Hide()
+    return mapLabel
+end
+local function HideLabel()
+    if mapLabel then mapLabel:Hide() end
+    activeTooltip = nil
+end
 local function Hover()
-    if not (GetCursorPosition and UIParent and GameTooltip) then return end
-    local x,y=GetCursorPosition()
-    local scale=UIParent:GetEffectiveScale()
-    if not scale or scale<=0 then return end
-    x,y=x/scale,y/scale
-    local pool=WorldMapFrame and WorldMapFrame:IsShown() and mapPins or miniPins
+    if not (GetCursorPosition and UIParent) then return end
+    local worldOpen = WorldMapFrame and WorldMapFrame:IsShown()
+    local worldCanvas = worldOpen and WorldMapFrame.ScrollContainer
+    local worldAllowed = worldOpen and worldCanvas
+        and worldCanvas.IsMouseOver and worldCanvas:IsMouseOver()
+    local miniAllowed = not worldOpen and Minimap and Minimap:IsShown()
+        and Minimap.IsMouseOver and Minimap:IsMouseOver()
+    if not worldAllowed and not miniAllowed then HideLabel(); return end
+    local pool = worldAllowed and mapPins or miniPins
+    local cx, cy = GetCursorPosition()
     local candidate
-    for _,pin in ipairs(pool) do
+    for i = 1, #pool do
+        local pin = pool[i]
         if pin:IsShown() and pin.name and pin:GetLeft() and pin:GetRight()
-            and pin:GetBottom() and pin:GetTop()
-            and x>=pin:GetLeft() and x<=pin:GetRight()
-            and y>=pin:GetBottom() and y<=pin:GetTop() then
-            candidate=pin;break
+            and pin:GetBottom() and pin:GetTop() then
+            local scale = pin:GetEffectiveScale()
+            if scale and scale > 0 then
+                local x, y = cx / scale, cy / scale
+                if x >= pin:GetLeft() - 3 and x <= pin:GetRight() + 3
+                    and y >= pin:GetBottom() - 3 and y <= pin:GetTop() + 3 then
+                    candidate = pin
+                    break
+                end
+            end
         end
     end
-    if candidate==activeTooltip then return end
-    activeTooltip=candidate
-    if candidate then
-        GameTooltip:SetOwner(UIParent,"ANCHOR_CURSOR")
-        GameTooltip:SetText(candidate.name)
-        GameTooltip:Show()
-    elseif GameTooltip:IsOwned(UIParent) then GameTooltip:Hide() end
+    if not candidate then HideLabel(); return end
+    local label = MarkerLabel()
+    if activeTooltip ~= candidate or mapLabelText:GetText() ~= candidate.name then
+        activeTooltip = candidate
+        mapLabelText:SetText(candidate.name)
+        label:SetWidth(math.max(44, mapLabelText:GetStringWidth() + 18))
+        label:Show()
+    end
+    local uiScale = UIParent:GetEffectiveScale()
+    if not uiScale or uiScale <= 0 then HideLabel(); return end
+    local x, y = cx / uiScale, cy / uiScale
+    if x + label:GetWidth() + 18 > UIParent:GetWidth() then
+        x = x - label:GetWidth() - 14
+    else x = x + 14 end
+    if y + label:GetHeight() + 18 > UIParent:GetHeight() then
+        y = y - label:GetHeight() - 14
+    else y = y + 14 end
+    label:ClearAllPoints()
+    label:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
 end
 
 local function Initialize()
@@ -403,20 +479,26 @@ SlashCmdList["GATHERMAP"]=function(message)
     if not db then return end
     local command=(message or ""):lower():match("^%s*(.-)%s*$")
     if command=="on" or command=="show" then
-        db.enabled=true;dirty=true;Print("minimap overlay enabled.")
+        db.enabled=true;MarkDirty();Print("minimap overlay enabled.")
     elseif command=="off" or command=="hide" then
-        db.enabled=false;dirty=true;Print("minimap overlay hidden.")
+        db.enabled=false;MarkDirty();Print("minimap overlay hidden.")
     elseif command=="testpin" then
         local mapID,x,y=PlayerMapPosition()
         if not mapID then Print("No usable zone map position."); return end
         previewMarker={mapID=mapID,node={
             name="GatherMap preview",kind="treasure",x=x,y=y,count=1,
         }}
-        dirty=true
+        MarkDirty()
         Print("Temporary purple test marker created at your position; not saved.")
     elseif command=="clear" then
-        previewMarker=nil;dirty=true
+        previewMarker=nil;MarkDirty()
         Print("Temporary marker cleared.")
+    elseif command=="world on" or command=="world off" then
+        db.worldMapEnabled = command == "world on"
+        if checkbox then checkbox:SetChecked(db.worldMapEnabled) end
+        MarkDirty()
+        DrawWorld()
+        Print("world-map overlay "..(db.worldMapEnabled and "enabled." or "hidden."))
     elseif command=="capture on" then
         if ns.GatherMapSetCapture then ns.GatherMapSetCapture(true) end
     elseif command=="capture off" then
@@ -425,7 +507,7 @@ SlashCmdList["GATHERMAP"]=function(message)
         if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap on, off, status, testpin, clear, capture on|off|status") end
+    else Print("commands: /gmap on, off, world on|off, status, testpin, clear, capture on|off|status") end
 end
 
 f:RegisterEvent("ADDON_LOADED")
@@ -469,11 +551,18 @@ f:SetScript("OnUpdate",function(self,dt)
     tick=tick+dt
     if skillDirty then
         skillDirty=false
-        if difficulty.Refresh() then dirty=true end
+        if difficulty.Refresh() then MarkDirty() end
     end
+    -- The world-map canvas is sometimes lazy-loaded after ADDON_LOADED.
+    if not provider and WorldMapFrame and db then SetupWorld() end
     if tick<0.35 and not dirty then return end
     tick=0
     if dirty then SetupWorld();DrawWorld();dirty=false end
+    if provider and provider.needsResizeRefresh and WorldMapFrame
+        and WorldMapFrame:IsShown() then
+        provider.needsResizeRefresh=false
+        DrawWorld()
+    end
     DrawMinimap()
     Hover()
 end)

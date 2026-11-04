@@ -26,17 +26,25 @@ jobs:
       - name: Validate Forever Lua syntax
         run: |
           luac5.4 -p GatherMapData.lua
+          luac5.4 -p GatherMapMarkers.lua
           luac5.4 -p GatherMapDifficulty.lua
           luac5.4 -p GatherMapForever.lua
           luac5.4 -p GatherMapCapture.lua
       - name: Validate Lua 5.1 compatibility
         run: |
           luac5.1 -p GatherMapData.lua
+          luac5.1 -p GatherMapMarkers.lua
           luac5.1 -p GatherMapDifficulty.lua
           luac5.1 -p GatherMapForever.lua
           luac5.1 -p GatherMapCapture.lua
+          lua5.1 tests/test_forever_markers.lua
+          lua5.1 tests/test_forever_display.lua
           lua5.1 tests/test_forever_difficulty.lua
           lua5.1 tests/test_forever_capture.lua
+      - name: Test grouping and map canvas behavior with mocked APIs
+        run: |
+          lua5.4 tests/test_forever_markers.lua
+          lua5.4 tests/test_forever_display.lua
       - name: Test skill and difficulty behavior with mocked Forever APIs
         run: lua5.4 tests/test_forever_difficulty.lua
       - name: Test recording events with mocked Forever APIs

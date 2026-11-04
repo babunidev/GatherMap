@@ -16,6 +16,7 @@ RUNTIME = ROOT / "GatherMapForever.lua"
 CAPTURE = ROOT / "GatherMapCapture.lua"
 DATA = ROOT / "GatherMapData.lua"
 DIFFICULTY = ROOT / "GatherMapDifficulty.lua"
+MARKERS = ROOT / "GatherMapMarkers.lua"
 XML = ROOT / "GatherMapWorldPins.xml"
 
 
@@ -27,7 +28,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, DIFFICULTY.name, XML.name, RUNTIME.name, CAPTURE.name])
+        self.assertEqual(files, [DATA.name, MARKERS.name, DIFFICULTY.name, XML.name, RUNTIME.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
@@ -87,6 +88,28 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("skillTick", runtime)
         self.assertIn("GatherMapDifficulty.lua", MANIFEST.read_text())
 
+    def test_marker_geometry_and_map_canvas_invariants(self):
+        runtime = RUNTIME.read_text()
+        grouping = MARKERS.read_text()
+        for symbol in (
+            "markers.Group(",
+            "markers.MiniPoint(",
+            "markers.WorldPoint(",
+            "OnCanvasScaleChanged",
+            "OnCanvasSizeChanged",
+            "map:GetCanvas()",
+            "map:GetCanvasScale()",
+            'CreateFrame("Frame", nil, UIParent)',
+            "local function Union(",
+        ):
+            self.assertIn(symbol, runtime + grouping)
+        self.assertNotIn("GameTooltip:SetOwner", runtime)
+        self.assertNotIn("GameTooltip:Hide", runtime)
+        self.assertIn('db.enabled=true;MarkDirty()', runtime)
+        self.assertIn('db.worldMapEnabled = not not self:GetChecked()', runtime)
+        self.assertIn("MAX_PINS", runtime)
+        self.assertIn("GatherMapMarkers.lua", MANIFEST.read_text())
+
     def test_resource_assets_still_present(self):
         icons = list((ROOT / "Icons").glob("Herb*.tga"))
         self.assertEqual(len(icons), 29)
@@ -97,7 +120,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          if shutil.which(command)), None)
         if not compiler:
             self.skipTest("No luac executable available; syntax not checked")
-        for path in (RUNTIME, DATA, DIFFICULTY, CAPTURE):
+        for path in (RUNTIME, DATA, MARKERS, DIFFICULTY, CAPTURE):
             result = subprocess.run(
                 [compiler, "-p", str(path)],
                 capture_output=True, text=True, check=False)
