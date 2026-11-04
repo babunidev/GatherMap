@@ -1,6 +1,6 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phase 2 map compatibility, opt-in Phase 3 recorder and Phase 4 skill-aware colors implemented in source; not game-verified. Legacy map-key migration remains disabled.  
+**Status:** Phases 2–5 implemented in source, with mocked/static verification for displays and difficulty; none verified in the live game. Legacy map-key migration remains disabled.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
@@ -16,6 +16,7 @@ The `feat/forever-port` branch now includes:
 | `GatherMap_Camelot.toc` | Forever-only manifest, Interface `16001`, development version `0.5.0-alpha`, `GatherMapDB` |
 | `GatherMapData.lua` | Original resource names, minimums, icons and colors retained from legacy 0.4.3 for data/migration context |
 | `GatherMapDifficulty.lua` | Current-character profession reads, skill modifiers and Forever-specific known color thresholds; separate from account-wide SavedVariables |
+| `GatherMapMarkers.lua` | Pixel-space geometry, same-resource transitive overlap grouping and zoom/rotation projection |
 | `GatherMapWorldPins.xml` | Virtual map-canvas pin template |
 | `GatherMapForever.lua` | Modern event callbacks, `C_SkillInfo` rank reads, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
 | `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
@@ -31,6 +32,20 @@ The latest publicly tracked pre-launch data build on November 4 was `1.60.1.7075
 - Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
+
+## Phase 5 — four-corner map display (November 4, 2026)
+
+`GatherMapMarkers.lua` holds pure Lua screen-space layout and a nine-cell neighbor search with union-find. Original 14px rectangles overlap inclusively and merge **transitively only when both kind and name match**. The merged bounding rectangle uses the strongest known color priority; the underlying SavedVariables are not modified. The 300-group limit applies only to frames displayed, never to saved records. Four 3px corner dots, 85% alpha for gray and centered world-map resource icons remain the intended appearance.
+
+`GatherMapForever.lua` draws minimap groups using modern `C_Map` world coordinates and `C_Minimap.GetViewRadius()`. Its geometry accounts for character direction when minimap rotation is on, circular-edge clipping, map width/height, and coordinate validation. An unchanged map/position/zoom/rotation/size/data revision returns cached results instead of repeatedly building every group. Skinning records remain hunting hints; legacy `continent:zone` keys remain unmapped.
+
+The native `WorldMapFrame` provider uses `map:GetCanvas()` for the real artwork canvas, `map:GetCanvasScale()` for zoom-dependent screen-space clustering, and `MapCanvasPinMixin:SetPosition` for normalized positions. The provider follows map changes and pan through the game's own canvas; size/scale change events schedule a bounded refresh instead of regrouping on every zoom animation frame. This design follows the [Blizzard map-canvas reference](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_MapCanvas/Blizzard_MapCanvas.lua) and Forever-targeting addon research, but the details are **not yet proven on the current live Forever client**.
+
+The mouse-disabled custom hover label has its own small background and border, preserving 0.10-second cursor responsiveness without reading or changing the native `GameTooltip`. Overlay controls remain independent: `/gmap on|off` governs minimap pins; the world-map `Gather Map` checkbox and `/gmap world on|off` govern world-map pins. Both preferences remain in `GatherMapDB`, and neither turns off gathering capture.
+
+**Automated verification:** `tests/test_forever_markers.lua` checks transitive grouping, kind/name separation, difficult-group priority, dense chains and the 300-display-cap boundary; pure map geometry covers world-map zoom, rotation, non-square minimaps and edge clipping. `tests/test_forever_display.lua` uses mocked Blizzard frames to exercise provider refreshes, zoom/resize regrouping, UI scale, hover, display controls, preview pin and SavedVariables safety. Python static checks and Lua 5.1/5.4 syntax tests remain in CI. These mocks are not screenshots or evidence of in-game success.
+
+**Remaining live work:** Confirm the current `GetBuildInfo()` and canvas API; compare original screenshots to the Forever four-corner design on circular/square minimaps and zones/cities/new Forever maps; test zoom, pan, varying UI scale, tooltip/click layers, map inset and switching maps. Do not claim true visual or combat compatibility without that evidence.
 
 ## Phase 4 — dynamic difficulty system (November 4, 2026)
 

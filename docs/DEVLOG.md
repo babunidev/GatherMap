@@ -100,3 +100,9 @@ AI-assisted work added classification for herbs, minerals, skinning materials an
 One of GatherMap's oldest ideas is that the world remembers a place, while each character sees it differently. A new herbalist should not read a patch of herbs the way a practiced one does, and a borrowed pair of enchanted gloves may alter that answer for a while.
 
 During the Forever port, AI-assisted research found that the color thresholds are not always separated by the neat intervals used in the old client code. The new module keeps the four-corner design, reads the current character's profession bonuses, and uses documented thresholds where available. Unknown resources remain purple rather than being assigned a convenient guess. Automated fixtures check the same saved nodes under different skill profiles; the actual game still has to confirm the behavior.
+
+## November 4, 2026: four corners on a different map
+
+What mattered to me about GatherMap's markers was always their small footprint. The colors belong at the corners, with enough space left for the world underneath. Bringing them to Forever required new map-canvas positioning, but not a new visual language.
+
+AI-assisted work rebuilt the grouping around those same boundaries, replaced shared-tooltip handling with a small private label, and separated quick cursor feedback from slower map redraws. Tests simulate different map sizes and zoom levels, including the same saved discoveries displayed on a new canvas. The actual Forever map still needs to show whether those corners sit where they should.

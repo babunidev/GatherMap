@@ -38,6 +38,14 @@ The minimap overlay is governed by `/gmap on` / `off`, while a **Gather Map** ch
 
 The status command prints total saved points, type counts, skill ranks and whether the current zone has known scaling. This makes the system slightly diagnosable without introducing another settings window.
 
+## Forever map presentation checkpoint (November 4, 2026)
+
+The existing four-corner design is retained: 3px corner dots, no central minimap icon, a small resource icon on world-map markers, transitive visual grouping for matching kinds/names, and 85%-opacity gray. The new Forever map uses Blizzard's native map-canvas pins rather than an independent overlay on the old `WorldMapButton`.
+
+The cursor label is a private, mouse-disabled miniature tooltip. It avoids interfering with Blizzard's GameTooltip while gathering and leaves map click/drag handling alone. Minimap and world-map switches retain their original independent scope and SavedVariables. A 300-group display limit does not discard recorded discoveries.
+
+Lua fixtures cover grouping and mathematical positions at different zooms, sizes and UI scales. **The live Forever appearance is not yet approved or verified:** screenshots, clipping under custom minimap masks, city/zone maps and other map addons still require actual client tests. These tests are about fidelity to the existing design, not permission to redesign it.
+
 ## Areas requiring genuine user testing
 
 - Dense nodes vs. 300-group drawing cap.

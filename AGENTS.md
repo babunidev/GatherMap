@@ -23,6 +23,10 @@ This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `Gath
 
 The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder now exists but remains opt-in and game-unverified; legacy migration still requires separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
 
+## Phase 5 map presentation boundaries
+
+`GatherMapMarkers.lua` is the Forever-only screen-space geometry/grouping module. Retain four 3px corner dots, world-map resource icons, 85%-opacity gray, resource name/kind separation, transitive overlap merging and the 300 **displayed-group** limit. Do not merge saved nodes to optimize visual clustering. The minimap and world-map preferences remain independent of each other and of discovery recording. Use a private mouse-disabled hover label; do not take ownership of native map clicks/dragging or GameTooltip. Run `tests/test_forever_markers.lua` and `tests/test_forever_display.lua` with Lua 5.1/5.4, then verify real map zoom, scaling, city/custom zones and other addons in Forever before claiming visual fidelity.
+
 ## Phase 4 color system and evidence standard
 
 `GatherMapDifficulty.lua` is the current-character skill and threshold authority. Load it before `GatherMapForever.lua`. Do not store skill ranks in `GatherMapDB`; show only learned professions and compute effective skill from rank + verified modifiers/temporary points. Keep all six colors, character-level treasure tiers, and unknown purple; the explicit Forever herb/ore tables are community-documented, **not yet verified live**, and missing thresholds must not be invented. Test exceptions (e.g., Dreamfoil) and different characters' views of shared records.

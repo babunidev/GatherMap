@@ -13,10 +13,27 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [ ] Confirm the live Forever build, `_Camelot.toc` or `_Forever.toc` packaging behavior, APIs and runtime restrictions.
 - [x] Implement candidate resource identification and success/loot correlation in source; verify real Forever behavior in-game separately.
 - [x] Implement profession reads, effective-skill difficulty and stable modern map identities in source; client verification pending.
-- [ ] Rebuild minimap/world-map four-corner rendering and correct same-resource-only grouping.
+- [x] Implement minimap/world-map four-corner rendering and correct same-resource-only grouping in source; live verification pending.
 - [ ] Add backed-up legacy node migration; preserve unmatched areas and historical record kinds.
 - [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+
+### Phase 5 — minimap and world-map presentation (November 4, 2026)
+
+- [x] Recreate four 3px colored corner dots, 85%-opacity gray and world-map resource icons.
+- [x] Implement screen-space transitive overlap merging with a spatial grid, without merging different names or kinds.
+- [x] Preserve the 300 displayed-group cap without capping or altering SavedVariables.
+- [x] Keep a separate, mouse-disabled hover label, independently of GameTooltip or native map drag/click actions.
+- [x] Restore the independent minimap switch and world-map checkbox; add `/gmap world on|off` for diagnostics.
+- [x] Persist minimap/world overlay preferences in the existing `GatherMapDB` fields.
+- [x] Respond to map-canvas zoom and resize while letting native pin positions follow pan.
+- [x] Cache unchanged minimap layouts; defer repeated world regrouping during zoom animations; separate 0.10s hover from 0.35s drawing.
+- [x] Add Lua 5.1/5.4 deterministic geometry tests and a simulated canvas/provider/UI-scale fixture.
+- [ ] Verify real Forever minimap scale, round/square mask variations, rotated minimap, UI scale, world zoom, panning, map changes and map-inset behavior.
+- [ ] Verify UI controls, tooltip coexistence and visual fidelity with screenshots in the running Forever client.
+- [ ] Verify unusual/client-specific maps and compatibility with other minimap/map addons.
+
+Source and mock-test completion **does not** establish in-game success.
 
 ### Phase 4 — skill-aware marker colors (November 4, 2026)
 

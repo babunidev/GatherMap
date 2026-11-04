@@ -19,6 +19,15 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## Forever map presentation (Phase 5, source implementation)
+
+- `GatherMapMarkers.lua`: independent spatial grouping and pixel projection. A 14px resource hit rectangle is associated only with the same `kind` and `name`; a 14px grid and union-find combine any transitive overlap without changing account-wide saved node entries. Priority follows the existing color table. Group display is capped at 300 frames per map; database storage is not capped.
+- Minimap: pooled mouse-disabled frames draw four 3px corner textures, gray at alpha 0.85. `C_Map` world positions are projected through `C_Minimap.GetViewRadius()`, facing and the minimap width/height, rejecting off-map/invalid positions. Cached unchanged view/data revisions skip expensive regrouping. Moves/zooms are redrawn at about 0.35 seconds, independently of hover.
+- World map: an ordinary `MapCanvasDataProviderMixin` drives a virtual `MapCanvasPinMixin` template. The marker's center is normalized to `map:GetCanvas()`; grouping is measured in canvas pixels multiplied by `map:GetCanvasScale()`. MapCanvas handles pan and map changes; group recomputation on scale/size changes is deferred until the next bounded tick.
+- Hover: separate, lazy-created label frame with texture border, mouse disabled, checked against visible pin bounds using each pin's effective scale. Its position refreshes approximately every 0.10 seconds without using GameTooltip, allowing normal map clicking and gathering tooltip use.
+- Display preferences: `GatherMapDB.enabled` and `GatherMapDB.worldMapEnabled` remain independent. The world-map checkbox has a guaranteed visible text label and optional `/gmap world on|off` commands; neither mutates discoveries or `recordingEnabled`.
+- Tests: pure marker geometry, simulated map canvas/UI scale, runtime/static assertions and Lua 5.1/5.4 compilation. These are mocked/off-client checks; no in-game fidelity or compatibility is established by passing them.
+
 ## Forever dynamic difficulty (Phase 4, source implementation)
 
 `GatherMapDifficulty.lua` loads between the retained resource table and the Forever map runtime. It exposes `Refresh`, `Skill`, `IsVisible`, `Color` and `Reference` via the addon namespace. Profession ranks (learned state, base rank, modifier, temporary points and effective rank) stay in memory and are **not** persisted in the shared discovery database. Skill information comes from `C_SkillInfo`, with profession-specific fallback when necessary; zero/absent ranks do not make an unknown profession visible.

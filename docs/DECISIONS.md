@@ -37,6 +37,12 @@ The established four-corner color language is retained, but the old assumption t
 
 Profession knowledge and effective rank are now separate concerns. Base rank, gear modifiers and temporary bonuses affect the current character's color, while the account-wide database stores discoveries only. Chest tiers remain level-based; historical woodcutting data remains stored but not presented as a supported Forever profession. These are implementation details consistent with the established design, **not new user-approved content or promises of in-game functionality**.
 
+## November 4, 2026 — preserve the corners, modernize the overlay
+
+The Phase 5 port keeps the already-established corner-marker design and independent minimap/world-map visibility controls. Repeated pairwise clustering was replaced by a spatial neighborhood search plus union-find, preserving same-resource-only transitive grouping without changing the underlying saved discoveries. World-map pins now rely on the native Forever-era map canvas for pan/position; clustering is recalculated after canvas scale and size changes rather than every frame.
+
+A mouse-disabled independent hover label was selected instead of changing the game's shared GameTooltip. No new resource style, map information source, automatic database or dependency was introduced. Mocked tests cover geometry and data safety, but actual alignment, tooltip coexistence and unfamiliar map layouts are **not verified in game**.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

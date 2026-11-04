@@ -3,6 +3,17 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 5 map overlay (November 4, 2026)
+
+- Restored the original four-corner visual treatment on native Forever world-map pins and minimap overlays, including world icons and muted gray dots.
+- Added `GatherMapMarkers.lua`: screen-space grouping with a spatial grid and union-find, preserving transitive overlaps only for identical resource names and kinds; no saved nodes are merged.
+- Corrected world-map clustering geometry to use the actual canvas and zoom scale, rebuilding on canvas size/scale changes rather than per-frame animations.
+- Cached unchanged minimap layouts and cached world-position conversions; separated frequent passive hover updates from minimap redraws.
+- Replaced use of GameTooltip with a compact private mouse-pass-through label, leaving the game's tooltip and map interactions untouched.
+- Restored persistent independent minimap/world-map visibility controls and added optional `/gmap world on|off` diagnostic commands.
+- Added Lua 5.1/5.4 grouping, geometry and mocked map-provider tests, including different UI scales, zooming, resizing, and unchanged SavedVariables.
+- **Not yet tested in-game:** precise alignment on the active Forever build, mouse-layer behavior, custom minimap masks and unusual zone layouts. No public release.
+
 ## Unreleased — Step 4 dynamic difficulty (November 4, 2026)
 
 - Added `GatherMapDifficulty.lua` for per-character learned profession detection and effective skill (base rank + modifier + temporary points).
