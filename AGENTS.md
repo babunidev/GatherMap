@@ -21,7 +21,7 @@ Keep account-wide discovery data, the original personal-learning concept, marker
 
 This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `GatherMapWorldPins.xml`, and `GatherMapForever.lua`. The old `GatherMap.toc` and `GatherMap.lua` are intentionally preserved as the **legacy 0.4.3 source**, not loaded by the Forever manifest.
 
-The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. Future recording/migration phases require separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
+The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder now exists but remains opt-in and game-unverified; legacy migration still requires separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
 
 ## Phase 3 recorder safety boundary
 

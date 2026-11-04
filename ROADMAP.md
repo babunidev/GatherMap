@@ -3,15 +3,15 @@
 **Creator and approval authority:** Babuni.dev  
 **Status of this file:** Technical verification backlog and possible alternatives, **not** creator-approved implementations.
 
-## Forever port — approved direction, implementation pending (November 4, 2026)
+## Forever port — active development (November 4, 2026)
 
-Target only World of Warcraft Forever. The branch `feat/forever-port` is a preparation branch; no gameplay APIs or interfaces have been ported yet. The following checklist is planned work, not completed functionality.
+Target only World of Warcraft Forever. The `feat/forever-port` development branch contains a modern UI/API compatibility shell and an opt-in source-correlated gathering recorder. No live Forever gameplay has yet been verified. The original preparatory checklist below tracks the work against that distinction.
 
 - [x] Review repository instructions, legacy source, history, manifest and existing verification scripts.
 - [x] Record the Forever-only scope, legacy preservation requirements and source/asset provenance issues.
 - [x] Create an isolated development branch; `main`, tags and releases remain untouched.
 - [ ] Confirm the live Forever build, `_Camelot.toc` or `_Forever.toc` packaging behavior, APIs and runtime restrictions.
-- [ ] Port resource identification and verified gathering/loot success detection; retain skinning and chest semantics.
+- [x] Implement candidate resource identification and success/loot correlation in source; verify real Forever behavior in-game separately.
 - [ ] Rebuild profession reads, effective-skill difficulty and stable modern map coordinates.
 - [ ] Rebuild minimap/world-map four-corner rendering and correct same-resource-only grouping.
 - [ ] Add backed-up legacy node migration; preserve unmatched areas and historical record kinds.
@@ -31,6 +31,8 @@ Target only World of Warcraft Forever. The branch `feat/forever-port` is a prepa
 - [ ] Test custom resources, localized loot/tooltip formats and chest/lockpicking variations in-game.
 - [ ] Review whether safe recording can become enabled by default after gameplay evidence.
 
+**CI results:** [successful Step 3 run](https://github.com/babunidev/GatherMap/actions/runs/41901589381) confirmed Lua 5.4 compilation, the mocked capture fixture and manifest/static tests. No in-game behavior is established by this run.
+
 Source-complete items are **not game-tested**. The capture feature defaults OFF and requires `/gmap capture on`; no released version is authorized.
 
 ### Phase 2 — implementation checkpoint (November 4, 2026)
@@ -46,7 +48,7 @@ Source-complete items are **not game-tested**. The capture feature defaults OFF 
 - [x] Compile the Forever Lua files with `luac5.4 -p` and run the Python static checks in GitHub Actions ([Forever static CI run](https://github.com/babunidev/GatherMap/actions/runs/41898899469); success).
 - [ ] Verify minimap/world-map alignment, hover and combat behavior in the actual Forever client.
 - [ ] Verify live build interface, map-canvas loading, profession ranks, modifiers and SavedVariables persistence.
-- [ ] Phase 3: verified gathering success/loot detection and automatic node recording.
+- [x] Phase 3: implement opt-in source-correlated recorder in code; in-game verification remains pending.
 
 Completed checkbox items describe **source implementation**, not in-game verification. No release is authorized.
 

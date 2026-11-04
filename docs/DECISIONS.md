@@ -21,7 +21,7 @@ The port retains the original resource artwork, difficulty presentation and merg
 
 - Native `MapCanvas` providers were selected instead of adding a new third-party map dependency for the first compatibility layer.
 - New database reads use explicit `map:<UiMapID>` keys, rather than falsely treating old continent/zone indices as compatible; old values are preserved for a later backed-up migration.
-- The old `Interact` wrapper and 1.12 gathering event handlers are not loaded on Forever. Recording is disabled until success detection is verified.
+- The old `Interact` wrapper and 1.12 gathering event handlers are not loaded on Forever. The new separate recorder is opt-in and defaults OFF until success and loot-source behavior can be tested in the actual game.
 - A non-persistent `/gmap testpin` command permits visual testing before legacy data can be migrated; it does not record discoveries.
 - The development manifest uses `0.5.0-alpha`, without tagging or publishing a version. Live client/API verification and third-party asset rights remain open.
 

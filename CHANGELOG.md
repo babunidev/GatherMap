@@ -10,6 +10,7 @@
 - Added an opt-in switch (`/gmap capture on|off|status`). Automatic recording remains OFF by default until real client tests establish reliability.
 - Added guarded new-`UiMapID` observation writes with spatial/time duplicate protection; historical numeric zone records remain unchanged.
 - Added Lua mock-event fixtures for successful, interrupted, stale, duplicated and unrelated actions to the CI workflow.
+- **Verified automatically:** GitHub Actions [Step 3 run](https://github.com/babunidev/GatherMap/actions/runs/41901589381) passed Lua syntax, mocked gathering success/failure/delayed-loot cases, and manifest/static tests. No Forever in-game behavior has been verified.
 - This is an **unreleased, source-level implementation**. Exact Forever gameplay behavior has not yet been verified.
 
 ## Unreleased — 0.5.0-alpha Forever compatibility development (November 4, 2026)

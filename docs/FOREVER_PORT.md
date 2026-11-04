@@ -19,7 +19,7 @@ The `feat/forever-port` branch now includes:
 | `GatherMapForever.lua` | Modern event callbacks, `C_SkillInfo` rank reads, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
 | `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
 
-Modern node reads are namespaced as `GatherMapDB.nodes["map:" .. UiMapID]`, **without changing or deleting** old `continent:zone` keys. No automatic node writes are enabled. A temporary `/gmap testpin` marker is created in memory and disappears after `/gmap clear` or reload; it does not alter SavedVariables.
+Modern node reads are namespaced as `GatherMapDB.nodes["map:" .. UiMapID]`, **without changing or deleting** old `continent:zone` keys. At this Phase 2 checkpoint no writes were enabled; **Phase 3 subsequently added opt-in new-location writes only**. A temporary `/gmap testpin` marker is created in memory and disappears after `/gmap clear` or reload; it does not alter SavedVariables.
 
 **API evidence:** `C_SkillInfo.GetSkillLineInfoByID` returns a table with rank/modifier/tempPoints, `C_Map.GetPlayerMapPosition(mapID, "player")` yields normalized zone coordinates, `C_Map.GetWorldPosFromMapPos` yields world positions, and `C_Minimap.GetViewRadius` yields a distance in yards. The world-map provider follows the native `MapCanvasDataProviderMixin` / `AcquirePin` model found in Forever UI sources and Forever-compatible map addons. This is implementation based on documented APIs, **not proof of correct runtime behavior**.
 
@@ -39,9 +39,15 @@ Recording requires `GatherMapDB.recordingEnabled == true`, configured by `/gmap 
 
 **Evidence distinction:** exact spell IDs and available events were cross-checked against existing Forever collectors (`tobarisu1/wow_forever_addons` GatherMemory and `Imemoth/wow-foreverdb`). This confirms a plausible Forever-specific approach, **not** successful operation in a running game. `GetLootSourceInfo`, `UnitGUID("npc")`, `C_TooltipInfo.GetWorldCursor`, secret values, event ordering and loot-source identity require direct validation on the target client. Missing source information currently fails closed: no record.
 
-### Verification backlog
+### Verification status and remaining work
 
-1. Execute `lua5.4 tests/test_forever_capture.lua` and the Forever static checks; capture CI output separately.
+- **Passed in CI:** [Step 3 run, November 4, 2026](https://github.com/babunidev/GatherMap/actions/runs/41901589381). GitHub Actions completed Lua 5.4 syntax checks for `GatherMapData.lua`, `GatherMapForever.lua`, and `GatherMapCapture.lua`; it ran `lua5.4 tests/test_forever_capture.lua` plus Python static/manifest checks. The Lua fixture uses **mocked** client APIs, not the actual game.
+- **Not yet tested:** real Forever event signatures, UI interactions, loot attribution, map position fidelity, SaveVariables persistence, compatibility with other addons, and performance.
+- **Status:** recording is **off by default** and a user must explicitly enable it with `/gmap capture on`.
+
+### In-game verification backlog
+
+1. Collect exact event argument traces in the actual Forever client using non-sensitive diagnostics; re-run with the current client build.
 2. In-game: unsuccessful cast, interrupted cast, normal herb/mineral gather, Skinning, ordinary chest, Pick Lock → Opening, autoloot, repeated same node, adjacent nodes, delayed loot and unrelated loot.
 3. Confirm stable GameObject and Creature source GUIDs, event argument types and name/requirement detection across each path.
 4. Recheck the client build and secret-value restrictions; revise any unsupported behavior rather than replacing confirmation with guessing.
