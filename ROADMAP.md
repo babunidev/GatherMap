@@ -25,6 +25,8 @@
 - [x] Trace 29 inherited herb icons to byte-identical files in jsb/Gatherer; confirm the published Gatherer project lists GPLv2; document [remaining legal questions](docs/THIRD_PARTY_ASSETS.md).
 - [x] Strengthen historical zone migration: two separated current-build coordinate anchors are now required before applying; previous-build/missing evidence refuses the import.
 - [x] Publish a reproducible [in-game test plan](docs/TEST_PLAN.md), including commands, expected results, backup instructions and redacted diagnostics.
+
+**Automated verification:** [Successful CI run on November 4, 2026](https://github.com/babunidev/GatherMap/actions/runs/41920490126) passed Lua 5.1/5.4 syntax and all migration, map, difficulty, capture, stress, PowerShell backup, static and 38-file development ZIP tests. This is **not** evidence of in-game validation or third-party licensing clearance.
 - [ ] **Resolve third-party redistribution terms** for all inherited icons and historical mapping sources. Do not add an unapproved first-party `LICENSE` or replace assets without Babuni's decision.
 - [ ] **Verify CurseForge publication automation/settings**, optional `.pkgmeta`, full release ZIP policy and exact official Forever target before releasing. Repository files alone do not prove publisher configuration.
 - [ ] Fix any API, display, capture, saved-data or performance defects discovered during the game tests.

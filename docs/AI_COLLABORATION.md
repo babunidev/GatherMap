@@ -57,4 +57,4 @@ AI-assisted review used the Forever UI-source snapshot `1.60.1.70790` to cross-c
 
 An earlier manual migration path was found to depend on matched names without independent coordinate evidence. The implementation now requires two separated, current-build anchor checks before a user can execute an import. The method remains an explicit user-driven safety check, not verified geometry for every node.
 
-Automated compile, fixture and package tests are distinct from an actual Forever session. Copyright permissions, release/version approval and CurseForge integration remain the human creative's decision and/or additional verification obligations.
+[GitHub Actions run 41920490126](https://github.com/babunidev/GatherMap/actions/runs/41920490126) passed the complete development suite, including a disposable 38-file ZIP. Automated compile, fixture and package tests remain distinct from an actual Forever session. Copyright permissions, release/version approval and CurseForge integration remain the human creative's decision and/or additional verification obligations.

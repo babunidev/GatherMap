@@ -12,6 +12,7 @@
 - Kept experimental recording opt-in; added a safer historical migration gate requiring two distant coordinate anchors on the **same client build** before any `apply` command can copy data.
 - Verified all **29/29** inherited herb icon blobs are byte-identical to the files in `jsb/Gatherer`. Gatherer's public listing says GPLv2, but source/artwork rights and GatherMap's own license remain unresolved; no license assignment or artwork replacement was made.
 - Added `docs/TEST_PLAN.md` with expected results, commands, backup and diagnostic requirements, and separate game-only checks.
+- **Verified automatically:** [CI run 41920490126](https://github.com/babunidev/GatherMap/actions/runs/41920490126) passed Lua 5.1/5.4 syntax, mocked migration (including stale-build geometry checks), recording, map presentation, difficulty, large-database tests, PowerShell backups, static checks and the offline 38-file development ZIP build/integrity test.
 - **Unreleased:** final gameplay behavior, CurseForge source integration and third-party redistribution remain unverified.
 
 ## Unreleased — Step 7 performance and reliability (November 4, 2026)
