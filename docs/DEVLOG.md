@@ -82,3 +82,9 @@ The most revealing part of this project may be its pattern of iteration: **learn
 GatherMap's next development home is World of Warcraft Forever. With the older 1.12 code and its published releases preserved, the plan is to carry the personal gathering memory into the new client rather than turn it into a premade database of every spawn. The changing skill colors and four-corner markers are part of what makes that familiar map worth keeping.
 
 Before touching the Lua, an AI-assisted repository review checked the manifest, code, earlier decisions, migration scripts and known third-party sources. A separate Forever branch was created for the work. The review also found permissions that cannot be assumed from attribution alone, so the inherited icons and measurements remain a documented question. This entry records preparation only; no part of the addon has been verified in Forever yet.
+
+## November 4, 2026: a map that can begin again
+
+Moving GatherMap to Forever requires more than changing the interface number. The older addon remembers what was gathered and how difficult it felt for each character, and those memories should not become casualties of a new map system. This development checkpoint keeps the old implementation intact while adding a separate Forever entry point.
+
+AI-assisted work introduced modern map and profession access, a native map-pin overlay and a temporary test marker that never touches saved discoveries. Automatic gathering recognition remains deliberately inactive until it can distinguish confirmed successes from misleading spell and loot events. The source is now prepared for client testing, but no successful Forever gameplay test has been claimed.

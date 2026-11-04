@@ -6,6 +6,19 @@
 
 This document describes the **preserved legacy 1.12 implementation** in `GatherMap.lua` and `GatherMap.toc`, version 0.4.3, not a tested Forever runtime. New development targets **Forever only** and must replace the old map, skill and cast/event integrations after independent client/API verification. The current code is the functional specification for intended behavior, not proof of compatibility. See [FOREVER_PORT.md](FOREVER_PORT.md).
 
+## Forever compatibility shell (unreleased, November 4, 2026)
+
+The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lookup tables and icon references), `GatherMapWorldPins.xml` (virtual native map pin template), then `GatherMapForever.lua` (non-recording development runtime). The old `GatherMap.lua` and `GatherMap.toc` remain unchanged for provenance.
+
+- **Map:** `C_Map.GetBestMapForUnit` and `C_Map.GetMapInfo` identify zone `UiMapID`; `C_Map.GetPlayerMapPosition` and `GetWorldPosFromMapPos` provide normalized and world positions. Only `GatherMapDB.nodes["map:" .. UiMapID]` renders; legacy keys are retained without interpretation. Minimap locations use `C_Minimap.GetViewRadius` and player-facing rotation.
+- **Skills:** `C_SkillInfo.GetSkillLineInfoByID` reads skill line attributes, falling back to `GetSkillLineInfo` name matching. Effective presentation includes known skill modifiers; exact Forever thresholds are not yet game-verified. No Survival skill is assumed.
+- **Map UI:** Native `MapCanvasDataProviderMixin` and `MapCanvasPinMixin` create world-map pins; pooled minimap frames draw four 3px colored corners. Same-resource-only transitive merging is retained. The world-map checkbox and `/gmap on/off` remain independent. The hover pass avoids taking native map mouse clicks.
+- **Events:** Frame callbacks explicitly accept `(self, event, ...)`. `ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, map/zone events and skill events trigger refresh. A throttled minimap update handles player movement; a periodic skill refresh catches increases that do not fire `SKILL_LINES_CHANGED`.
+- **Recording:** No gather/spell/loot hooks or Interact wrapping are registered in the Forever shell; phases 3 and 6 will supply confirmed recording and migration. `/gmap testpin` is an unsaved presentation fixture; no legacy records are deleted or rewritten.
+- **Restrictions:** Avoids opening player/map panels programmatically, defers map-provider creation while in combat and skips combat redraw. Exact event behavior, pin pooling and map alignment are still unverified inside Forever.
+
+Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
+
 ## Lifecycle, events and state
 
 ```text

@@ -18,6 +18,23 @@ Target only World of Warcraft Forever. The branch `feat/forever-port` is a prepa
 - [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
 
+### Phase 2 — implementation checkpoint (November 4, 2026)
+
+- [x] Add `GatherMap_Camelot.toc` with Interface `16001` and no old Interact dependency.
+- [x] Add a modern runtime with explicit event callback parameters.
+- [x] Read profession lines using `C_SkillInfo` (including modifiers where available).
+- [x] Address modern `C_Map` / `UiMapID` identities, positions and world conversion.
+- [x] Implement native world-map pin provider and C_Minimap view-radius positioning in source.
+- [x] Restore four-corner UI and independent visibility controls in source.
+- [x] Add a temporary unsaved test pin and non-mutating legacy database handling.
+- [x] Add a static manifest/API/asset regression script.
+- [ ] Execute Lua compilation / static checks on a checkout with Lua installed.
+- [ ] Verify minimap/world-map alignment, hover and combat behavior in the actual Forever client.
+- [ ] Verify live build interface, map-canvas loading, profession ranks, modifiers and SavedVariables persistence.
+- [ ] Phase 3: verified gathering success/loot detection and automatic node recording.
+
+Completed checkbox items describe **source implementation**, not in-game verification. No release is authorized.
+
 The older 1.12 verification backlog below is retained as an audit and regression reference, **not** a plan to continue supporting that client. Technical findings and evidence: [docs/FOREVER_PORT.md](docs/FOREVER_PORT.md).
 
 ## Implemented in source as of October 26, 2026

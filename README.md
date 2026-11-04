@@ -1,6 +1,6 @@
 # Gather Map
 
-**A self-learning resource map overlay for World of Warcraft 1.12**
+**Forever-only port in development. The original 1.12 implementation is retained for historical reference.**
 
 **Creator:** Babuni.dev  
 **Addon version:** 0.4.3 · **Interface:** 11200 · **SavedVariables:** `GatherMapDB`  
@@ -13,11 +13,17 @@ Instead of opaque dots, the overlay uses **four small difficulty-colored corner 
 
 ![Saved herbs on the Tanaris world map](Screenshots/world-map-tanaris.png)
 
-## Forever development status
+## Forever development status — 0.5.0-alpha (unreleased)
 
-**Target: World of Warcraft Forever only.** A port is being prepared on [`feat/forever-port`](https://github.com/babunidev/GatherMap/tree/feat/forever-port). **No Forever-compatible GatherMap runtime has been implemented or tested yet.** The current `GatherMap.lua` and `GatherMap.toc` (version 0.4.3, Interface 11200) are the preserved legacy implementation and must not be installed as a working Forever addon.
+Development happens on [`feat/forever-port`](https://github.com/babunidev/GatherMap/tree/feat/forever-port) for **World of Warcraft Forever only** (target 1.60.1 / Interface `16001`).
 
-The earlier 1.12 installation, behavior and custom-zone notes below describe the historical implementation, not current Forever support. The port will retain the account-wide self-learned discoveries, skill-aware four-corner markers, original features where the new game supports them, and safe data migration. See [Forever port preparation](docs/FOREVER_PORT.md) for scope, compatibility questions and upstream rights checks. No public release has been authorized.
+**Implemented in source:** `GatherMap_Camelot.toc` loads `GatherMapData.lua`, `GatherMapWorldPins.xml`, and `GatherMapForever.lua` instead of the legacy runtime. The new shell reads effective profession ranks through `C_SkillInfo`, uses `C_Map` map IDs/positions, places four-corner pins with native map providers and `C_Minimap` radius, keeps independent map visibility controls, and retains the original same-resource merging logic. `Interact` is not a dependency for Forever.
+
+**Not implemented:** automatic gathering/loot recording, validation of new Forever resources, and import of old `continent:zone` database keys. All legacy saved records are preserved without guessing new map identities. The minimap/world-map implementation remains **untested in the game**.
+
+For an unsaved preview marker at your current position, use `/gmap testpin` and open the world map or inspect the minimap; use `/gmap clear` to remove it. `/gmap status` reports legacy versus modern data. These preview markers are never stored.
+
+The original `GatherMap.toc` is still Interface `11200` / version `0.4.3` and is kept only as legacy history. The instructions below describe that old behavior; do not treat its gathering claims as verified Forever functionality. See [Forever compatibility notes](docs/FOREVER_PORT.md).
 
 ## What is recorded
 

@@ -17,6 +17,12 @@ Check the active Forever build/interface, Lua capabilities, events, map/professi
 
 Keep account-wide discovery data, the original personal-learning concept, marker colors/merging, historical attributions and migrations intact. Never create publishing tags, GitHub Releases or CurseForge uploads without explicit approval for that version.
 
+## Current branch entry point — Forever 0.5.0-alpha shell
+
+This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `GatherMapWorldPins.xml`, and `GatherMapForever.lua`. The old `GatherMap.toc` and `GatherMap.lua` are intentionally preserved as the **legacy 0.4.3 source**, not loaded by the Forever manifest.
+
+The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. Future recording/migration phases require separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
+
 ## Preserve these source-level invariants
 
 - **Record confirmed gathering/loot interactions**, not speculative available live spawns. Skinning saved points are hunting-location hints, not fixed nodes.

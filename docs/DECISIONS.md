@@ -15,6 +15,16 @@ Babuni directed the port of GatherMap to **World of Warcraft Forever exclusively
 
 No decision was made to import static spawn databases, remove saved resource kinds, select a mapping library or publish the port. See [FOREVER_PORT.md](FOREVER_PORT.md).
 
+## November 4, 2026 — compatibility implementation choices
+
+The port retains the original resource artwork, difficulty presentation and merge model in a new Forever runtime while leaving the legacy Lua and published tags untouched. This is a technical implementation checkpoint directed by the existing Forever-only project decision, **not** a decision to change the gathering concept.
+
+- Native `MapCanvas` providers were selected instead of adding a new third-party map dependency for the first compatibility layer.
+- New database reads use explicit `map:<UiMapID>` keys, rather than falsely treating old continent/zone indices as compatible; old values are preserved for a later backed-up migration.
+- The old `Interact` wrapper and 1.12 gathering event handlers are not loaded on Forever. Recording is disabled until success detection is verified.
+- A non-persistent `/gmap testpin` command permits visual testing before legacy data can be migrated; it does not record discoveries.
+- The development manifest uses `0.5.0-alpha`, without tagging or publishing a version. Live client/API verification and third-party asset rights remain open.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

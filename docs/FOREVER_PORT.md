@@ -1,11 +1,35 @@
 # GatherMap — Forever port preparation
 
-**Status:** preparation and static analysis only; runtime not ported or tested.  
+**Status:** Phase 2 compatibility shell implemented in source; untested in game. Resource recording and legacy migration remain disabled.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
 **Legacy runtime and published version:** `GatherMap.lua` (1,237 lines), `GatherMap.toc` (0.4.3 / Interface `11200`), [GitHub Release v0.4.3](https://github.com/babunidev/GatherMap/releases/tag/v0.4.3).  
 **Source of truth:** [AGENTS.md](../AGENTS.md), [CONCEPT.md](../CONCEPT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DOCUMENTATION.md](DOCUMENTATION.md).
+
+## Phase 2 — implementation record, November 4, 2026
+
+The `feat/forever-port` branch now includes:
+
+| File | Role |
+| --- | --- |
+| `GatherMap_Camelot.toc` | Forever-only manifest, Interface `16001`, development version `0.5.0-alpha`, `GatherMapDB` |
+| `GatherMapData.lua` | Resource requirements, icons and colors retained from legacy 0.4.3 without claiming their thresholds were verified on Forever |
+| `GatherMapWorldPins.xml` | Virtual map-canvas pin template |
+| `GatherMapForever.lua` | Modern event callbacks, `C_SkillInfo` rank reads, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
+| `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
+
+Modern node reads are namespaced as `GatherMapDB.nodes["map:" .. UiMapID]`, **without changing or deleting** old `continent:zone` keys. No automatic node writes are enabled. A temporary `/gmap testpin` marker is created in memory and disappears after `/gmap clear` or reload; it does not alter SavedVariables.
+
+**API evidence:** `C_SkillInfo.GetSkillLineInfoByID` returns a table with rank/modifier/tempPoints, `C_Map.GetPlayerMapPosition(mapID, "player")` yields normalized zone coordinates, `C_Map.GetWorldPosFromMapPos` yields world positions, and `C_Minimap.GetViewRadius` yields a distance in yards. The world-map provider follows the native `MapCanvasDataProviderMixin` / `AcquirePin` model found in Forever UI sources and Forever-compatible map addons. This is implementation based on documented APIs, **not proof of correct runtime behavior**.
+
+The latest publicly tracked pre-launch data build on November 4 was `1.60.1.70755`; Interface `16001`. Confirm with `/dump GetBuildInfo()` in the user's actual live client. The launch-time build could differ.
+
+**Remaining before Phase 2 can be fully verified:**
+- Run `python3 -m unittest discover -s tests -p 'test_forever_*.py'` and `luac -p GatherMapData.lua GatherMapForever.lua` where available.
+- Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
+- Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
+- Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
 
 ## Scope and preservation requirements
 

@@ -3,6 +3,16 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — 0.5.0-alpha Forever compatibility development (November 4, 2026)
+
+- Added a Forever-only `GatherMap_Camelot.toc`, separate Lua runtime, resource tables and map-pin XML template.
+- Replaced old map/skill/event interfaces with `C_Map`, `C_Minimap`, `C_SkillInfo` and explicit event callbacks.
+- Introduced native map-provider pins, four-corner markers, passive hover and separate map visibility switches.
+- Introduced modern `map:<UiMapID>` record reads, retaining legacy saved keys untouched until migration is developed.
+- Added `/gmap testpin` and `clear` as non-persistent UI probes; gathering capture remains intentionally disabled.
+- Added preliminary static regression checks. **No Forever in-game, Lua syntax or migration tests confirmed yet.**
+- No changes to the old 0.4.3 Lua/TOC or published tags/releases. Development-only, not a public build.
+
 ## Unreleased — November 4, 2026: Forever port preparation (development branch)
 
 - Established a separate Forever development branch without altering the old `main` runtime, release tags or public releases.
