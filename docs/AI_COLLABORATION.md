@@ -50,3 +50,11 @@ Automated testing passed in the [successful Phase 6 GitHub Actions run](https://
 Babuni's established visual design and self-learning account-wide history remain the constraints. AI implementation added `GatherMapSpatial.lua`, revised `GatherMapMarkers.lua` and the Forever runtime's cache invalidation, reinforced map and saved-data guards, and extended the mocked display and capture fixtures. No original concept, resource set, marker style or third-party artwork was changed.
 
 The synthetic CI checks exercise 24,000 indexed records and 12,000 densely overlapping markers, compare exact-radius queries, reject invalid data, and simulate another registered map provider. These results do not establish in-game FPS, a real two-addon installation, actual memory use or successful gameplay with Forever.
+
+## November 4, 2026 — API audit, package validation and documentation consolidation
+
+AI-assisted review used the Forever UI-source snapshot `1.60.1.70790` to cross-check map, skill, cast, loot and tooltip signatures; compared Git blob hashes for all 29 bundled herb icons against `jsb/Gatherer`; and prepared a local package inspector and exact in-game test plan. The README and roadmap were consolidated without rewriting the historical source or deleting prior planning evidence.
+
+An earlier manual migration path was found to depend on matched names without independent coordinate evidence. The implementation now requires two separated, current-build anchor checks before a user can execute an import. The method remains an explicit user-driven safety check, not verified geometry for every node.
+
+Automated compile, fixture and package tests are distinct from an actual Forever session. Copyright permissions, release/version approval and CurseForge integration remain the human creative's decision and/or additional verification obligations.

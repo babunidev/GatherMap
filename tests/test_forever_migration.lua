@@ -1,6 +1,8 @@
 -- Run from repo root: lua5.1 tests/test_forever_migration.lua
 -- Deterministic mock only; real Forever SavedVariables persistence remains untested.
 local ns={}
+local buildVersion="70790"
+GetBuildInfo=function() return "1.60.1",buildVersion,"Nov 4 2026",16001 end
 local currentID=37
 local currentName="Elwynn Forest"
 C_Map={GetMapInfo=function(id)
@@ -8,7 +10,8 @@ C_Map={GetMapInfo=function(id)
         mapID=currentID,name=currentName,mapType=3,parentMapID=13
     } end
 end}
-ns.GatherMapPosition=function() return currentID,0.5,0.5 end
+local currentX,currentY=0.5,0.5
+ns.GatherMapPosition=function() return currentID,currentX,currentY end
 assert(loadfile("GatherMapMigration.lua"))("GatherMap",ns)
 local M=assert(ns.GatherMapMigration)
 local dirty=0
@@ -22,6 +25,18 @@ local function Node(name,kind,x,y,count,zone,required)
 end
 local function Check(ok,message)
     assert(ok,message)
+end
+local function Geometry(db,key,i,j)
+    local a,b=db.nodes[key][i],db.nodes[key][j]
+    currentX,currentY=a.x,a.y
+    local ok,message=M.VerifyAnchor(key,i)
+    Check(ok,"first coordinate anchor: "..tostring(message))
+    currentX,currentY=b.x,b.y
+    ok,message=M.VerifyAnchor(key,j)
+    Check(ok,"second coordinate anchor: "..tostring(message))
+    local verified,reason=M.GeometryStatus(key)
+    Check(verified,"distinct coordinate anchors required: "..tostring(reason))
+    currentX,currentY=0.5,0.5
 end
 
 -- Two legacy herb records overlap an existing modern observation. Count and
@@ -57,6 +72,15 @@ Check(dry.merged==2 and dry.added==1 and dry.occurrences==12,
 Check(#old.nodes["map:37"]==countBefore and old.version==savedVersion,
     "preview did not write nodes or version")
 Check(not old.migrationLedger,"preview must not mark migrated")
+local blocked,reason=M.Apply("1:2","confirm")
+Check(not blocked and reason:find("coordinate"),"name match alone must never authorize migration")
+local anchorDenied,anchorReason=M.VerifyAnchor("1:2",4)
+Check(not anchorDenied and anchorReason:find("invalid"),"invalid historical positions rejected")
+Geometry(old,"1:2",1,3)
+buildVersion="70791"
+local stale,reason=M.Apply("1:2","confirm")
+Check(not stale and reason:find("coordinate"),"build update must invalidate historical map evidence")
+buildVersion="70790"
 local ok,err=M.Apply("1:2")
 Check(not ok and err:find("confirm"),"explicit confirmation required")
 ok,dry=M.Apply("1:2","confirm")
@@ -128,9 +152,10 @@ Check(dirty==2,"each destination mutation notifies UI")
 
 -- v2 skin requirements are invalidated ONLY in the modern copy, not source.
 local skin=Node("Light Leather","skin",0.2,0.3,6,nil,200)
-local v2={nodes={["1:2"]={skin}},version=2}
+local v2={nodes={["1:2"]={skin,Node("Silverleaf","herb",0.75,0.75,1)}},version=2}
 Init(v2)
 Check(M.Link("1:2"),"v2 link")
+Geometry(v2,"1:2",1,2)
 Check(M.Apply("1:2","confirm"),"v2 copy")
 Check(v2.nodes["map:37"][1].kind=="skin"
     and v2.nodes["map:37"][1].required==nil
@@ -140,9 +165,10 @@ Check(skin.required==200 and v2.legacySchemaVersion==2,
 
 -- v3 requirements are retained exactly.
 local lock=Node("Battered Chest","lock",0.2,0.35,2,nil,75)
-local v3={nodes={["1:2"]={lock}},version=3}
+local v3={nodes={["1:2"]={lock,Node("Copper Vein","mineral",0.75,0.75,1)}},version=3}
 Init(v3)
 Check(M.Link("1:2"),"v3 link")
+Geometry(v3,"1:2",1,2)
 Check(M.Apply("1:2","confirm"),"v3 copy")
 Check(v3.nodes["map:37"][1].required==75 and v3.version==3,
     "schema-v3 data retained")
@@ -170,4 +196,4 @@ local src=nil
 Check(not M.Preview("1:2"),"unlinked legacy key does not migrate")
 C_Map.GetMapInfo=function(id) return {mapID=id,name="Elwynn Forest",mapType=2} end
 Check(not M.Link("1:2"),"continent map is not a zone")
-print("PASS: legacy schemas v1/v2/v3, explicit map links, previews, weighted counts, snapshots, guarded rollback, simulated reload/character change and unmatched records")
+print("PASS: legacy schemas v1/v2/v3, two-position coordinate gate, previews, weighted counts, snapshots, guarded rollback, simulated reload and unmatched records")

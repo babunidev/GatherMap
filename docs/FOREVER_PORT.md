@@ -1,11 +1,19 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phases 2–6 implemented in source; Phase 6 is an explicit opt-in import with backup safeguards and no automatically inferred zone mapping. None of these phases has been tested in the live Forever client.  
+**Status:** Phases 2–7 implemented/tested in source. Migration requires two coordinate checks in addition to the explicit link/preview/backup. None has been validated inside the live Forever client.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  
 **Legacy runtime and published version:** `GatherMap.lua` (1,237 lines), `GatherMap.toc` (0.4.3 / Interface `11200`), [GitHub Release v0.4.3](https://github.com/babunidev/GatherMap/releases/tag/v0.4.3).  
 **Source of truth:** [AGENTS.md](../AGENTS.md), [CONCEPT.md](../CONCEPT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DOCUMENTATION.md](DOCUMENTATION.md).
+
+## Development review — Forever-only release readiness (November 4, 2026)
+
+Current source-level status and active checklist live in [`ROADMAP.md`](../ROADMAP.md). Read the [Forever API audit](FOREVER_API_AUDIT.md), [third-party rights review](THIRD_PARTY_ASSETS.md), [reproducible in-game verification plan](TEST_PLAN.md) and [legacy archive](LEGACY_0_4_3.md). Previous in-file phase descriptions below are historical implementation checkpoints, **not evidence of live game verification**.
+
+At source snapshot `1.60.1.70790` (`Gethe/wow-ui-source` `forever`, November 4), the core modern API names and event signatures were found. Manifest load order was corrected to define the world-pin mixin before its XML template. A local offline package checker validates the installable runtime/texture inventory; it deliberately excludes the historical 1.12 runtime/TOC. Exact live-client API results and ZIP publication settings are still unknown.
+
+**Safety correction for Phase 6:** A zone name match, preview and `confirm` are no longer sufficient to authorize migration. The copier now requires two explicit `/gmap migrate anchor <old-key> <node-index>` checks against the current character's position, at least 10% normalized distance apart, each within 1.5 percentage points per axis of an original historical node, and both checked on the **same client build**. `apply` fails closed when that evidence is missing/stale. The original source rows and before/after snapshots remain intact; even two anchors cannot guarantee every coordinate in a zone is identical, so visual inspection and physical backup remain mandatory.
 
 ## Phase 2 — implementation record, November 4, 2026
 

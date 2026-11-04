@@ -10,6 +10,6 @@ GatherMapMarkers.lua
 GatherMapSpatial.lua
 GatherMapDifficulty.lua
 GatherMapMigration.lua
-GatherMapWorldPins.xml
 GatherMapForever.lua
+GatherMapWorldPins.xml
 GatherMapCapture.lua

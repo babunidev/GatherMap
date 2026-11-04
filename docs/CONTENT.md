@@ -67,6 +67,13 @@ The repository contains **no LICENSE** as of the October 26 audit. Resolve first
 
 This is a provenance investigation, **not** permission to remove credited assets, claim ownership of them or publish a new release.
 
+## Exact icon provenance check — November 4, 2026
+
+A recursive Git blob-SHA comparison between `babunidev/GatherMap` (`feat/forever-port`) and `jsb/Gatherer` (`master`) checked all `Icons/Herb*.tga` paths: **29 present in each repository, 29 exact byte matches, zero differences**. The [Gatherer CurseForge license listing](https://www.curseforge.com/wow/addons/gatherer/license) and [SourceForge project](https://sourceforge.net/projects/gatherer/) specify GPLv2 for their Gatherer distributions. This establishes file identity with the historical repository, not an independently proven copyright/licensing chain for each image.
+
+The [MetaHunt mirror](https://octowow.st/git/Meta/MetaHunt) was located, but the precise upstream geometry file/rights remain unverified. Full findings and unresolved publication requirements: [`docs/THIRD_PARTY_ASSETS.md`](THIRD_PARTY_ASSETS.md). No new license was assigned, and the same 29 icon files are unchanged.
+
+
 ## November 4, 2026 — Forever resource difficulty references
 
 `GatherMapDifficulty.lua` adds separate **Forever-specific full skill-color boundaries** for 28 herbs and nine ore nodes, taken from the community-maintained Warcraft Wiki [Forever herbalism techniques](https://warcraft.wiki.gg/wiki/Forever_herbalism_techniques) and [Forever mining techniques](https://warcraft.wiki.gg/wiki/Forever_mining_techniques), consulted November 4, 2026. This information is distinct from the inherited, unverified minimum-requirement lookup in `GatherMapData.lua`. Actual colors and all thresholds still require in-game comparison.

@@ -19,6 +19,14 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## Forever installable layout and migration proof (development review)
+
+The Camelot manifest loads `GatherMapData.lua`, `GatherMapMarkers.lua`, `GatherMapSpatial.lua`, `GatherMapDifficulty.lua`, `GatherMapMigration.lua`, **`GatherMapForever.lua` then `GatherMapWorldPins.xml`**, and `GatherMapCapture.lua`. Defining `GatherMapForeverWorldPinMixin` before the XML is required for the template's `mixin` reference. `tools/check_forever_package.py` verifies this order and builds an optional local ZIP whose `GatherMap/` directory includes the Camelot TOC, its referenced Lua/XML files and the 29 inherited herb icons—never the legacy 1.12 runtime or TOC.
+
+The modern `C_Map.GetWorldPosFromMapPos` requires a Vector2DMixin; when `CreateVector2D` is absent, the renderer skips the projection rather than passing a speculative plain table. The Forever UI-source snapshot documents the required APIs; the user's exact client build and real map behavior still require verification.
+
+For historical SavedVariables, `migrationLinks` only establishes a same-name zone candidate; `migrationGeometryChecks` stores **two or more independent observed coordinate anchors** with the original source coordinates and active client build. `Migration.Apply` refuses any link lacking two points at least 10% of the normalized map apart and each within 1.5% on both axes of observed in-game positions. Stored evidence becomes invalid when the client build changes or old source positions no longer match. This check is a conservative threshold, not a proven whole-zone transform. Legacy data remains unchanged; the external physical backup is still mandatory.
+
 ## Forever presentation caching and robustness (Phase 7, source implementation)
 
 The minimap retains its 0.35-second bounded view check, but no longer traverses every saved node to build visible groups on every movement update in larger zones. `GatherMapSpatial.lua` projects eligible saved locations into an instance-keyed world-coordinate grid once per map/data revision (index threshold: 128 records). Subsequent player-position updates visit nearby cells and do exact radius checks. Invalid record coordinates are skipped in-memory, never removed from `GatherMapDB`; missing map-projection APIs leave the overlay hidden until usable positions return.

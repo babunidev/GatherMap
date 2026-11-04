@@ -113,6 +113,7 @@ GetPlayerFacing=function() return 0 end
 GetZoneText=function() return "Elwynn Forest" end
 GetSubZoneText=function() return "Northshire Valley" end
 UnitLevel=function() return 20 end
+CreateVector2D=function(x,y) return {x=x,y=y} end
 C_Map={
     GetBestMapForUnit=function() return 37 end,
     GetMapInfo=function(id) return {mapType=3} end,

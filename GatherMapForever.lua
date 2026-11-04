@@ -196,7 +196,10 @@ local function WorldPosition(id,x,y,node)
             return cached.instance,cached.wx,cached.wy
         end
     end
-    local mapPosition = CreateVector2D and CreateVector2D(x, y) or {x=x, y=y}
+    -- The documented Forever C_Map signature requires a Vector2DMixin.
+    -- A plain Lua table may be rejected; fail closed when the constructor is absent.
+    if type(CreateVector2D)~="function" then return end
+    local mapPosition = CreateVector2D(x, y)
     local instance,pos=C_Map.GetWorldPosFromMapPos(id,mapPosition)
     if issecretvalue and issecretvalue(instance) then return end
     local wx,wy=VectorXY(pos)

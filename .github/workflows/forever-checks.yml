@@ -60,5 +60,10 @@ jobs:
       - name: Test Forever saved-data migration and physical backups (PowerShell)
         shell: pwsh
         run: ./tests/test_upgrade.ps1
+      - name: Audit and assemble a disposable Forever-only development ZIP
+        run: |
+          python3 tools/check_forever_package.py
+          python3 tools/check_forever_package.py --output /tmp/GatherMap-forever-dev.zip
+          unzip -t /tmp/GatherMap-forever-dev.zip
       - name: Verify manifests, pin template and preserved assets
         run: python3 -m unittest discover -s tests -p 'test_forever_*.py'

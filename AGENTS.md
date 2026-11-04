@@ -23,6 +23,14 @@ This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `Gath
 
 The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder remains opt-in and game-unverified. The schema-v1/v2/v3 and old map-key copier is implemented but requires explicit backups, linking and confirmation; actual Forever geometry and persistence still need in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
 
+## Active Forever workflow and release-readiness boundaries
+
+Start with this `AGENTS.md` and `docs/DOCUMENTATION.md`, then inspect `README.md`, `ROADMAP.md`, `CONCEPT.md`, source/TOCs, current branch/working tree, releases and relevant docs. Forever is the **only** supported client. The active README and roadmap are Forever-first; legacy 0.4.3 history is kept under `docs/LEGACY_0_4_3.md` and `docs/ROADMAP_ARCHIVE_2026-11-04.md`.
+
+`docs/FOREVER_API_AUDIT.md` records source-confirmed client APIs (baseline snapshot build 70790); `docs/TEST_PLAN.md` collects **all game-only tests**; `docs/THIRD_PARTY_ASSETS.md` records icon provenance and open licensing questions. `tools/check_forever_package.py` validates the Camelot manifest, runtime file order and icon references, optionally building a local development ZIP with no legacy TOC/runtime. **Never** treat its success as license clearance or public-release authorization.
+
+The old-zone importer must refuse `apply` unless two distant historical node coordinates have been explicitly matched against positions on the same Forever client build (`/gmap migrate anchor`). A link by zone name is not geometry proof. Preserve every legacy source row, backups and rollback protection. Recording remains **OFF** by default until live evidence and explicit direction justify otherwise. Do not assign a LICENSE, publish a tag or upload to CurseForge without Babuni's specific approval.
+
 ## Phase 7 performance and coexistence boundaries
 
 `GatherMapSpatial.lua` provides an optional instance-keyed world-coordinate index for larger Forever maps, and `GatherMapMarkers.lua` groups same-kind/name entries transitively using cell representatives. Maintain the original four-corner colors and the 300 **displayed-group** cap; no performance change may remove, truncate or silently re-key SavedVariables. Cache only derived display state, invalidate it on relevant capture/migration or skill changes, and keep native map providers and GameTooltip owned by their respective addons. Do not add chat spam or repeated pollers. Run the 24k-node synthetic benchmark and mocked alternate-provider fixture, but require actual Forever tests with other map/gathering addons before claiming coexistence.
@@ -53,7 +61,7 @@ The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate
 - The `Interact` hook must **not recurse** when other addons change the global function. Run and preserve `tests/test_interact_hook.py` where possible.
 - Maintain backward compatibility for schema-v1 herb-only data, schema-v2 skin requirements and the **OctoGatherDB → GatherMapDB** rename migration. No user data should be overwritten or discarded casually.
 - Names and coordinates for custom zones require evidence; avoid guessed map sizes.
-- The rendering loop is about **0.10 seconds** with a 300-group display cap per map; profile any change for performance.
+- The Forever overlay throttles minimap updates around **0.35 seconds** and hover around **0.10 seconds**, with a 300-displayed-group cap. Check actual client performance before changing this.
 - Keep third-party attribution for Gatherer icons/scaling and MetaHunt map data. No LICENSE file was observed: do not assign an unapproved license to authored or borrowed assets.
 
 ## Development and validation process

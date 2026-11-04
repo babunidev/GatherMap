@@ -3,6 +3,17 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 8 release-readiness development review (November 4, 2026)
+
+- Audited Forever client UI-source declarations at build `1.60.1.70790` for skills, map/vector, minimap, loot and spell events; documented confirmed source signatures and remaining in-game unknowns in `docs/FOREVER_API_AUDIT.md`.
+- Moved Forever's `GatherMapForever.lua` before its `GatherMapWorldPins.xml` template so the mixin exists when XML loads. World-position conversion now requires the documented `CreateVector2D` input rather than guessing a Lua-table fallback.
+- Added offline installable-file/TOC/icon validation and an optional local **development-only** ZIP builder; no package uploaded or released.
+- Replaced the mixed legacy/current README and duplicated roadmap with Forever-first documentation, a preserved roadmap archive and a separate historical `0.4.3` reference.
+- Kept experimental recording opt-in; added a safer historical migration gate requiring two distant coordinate anchors on the **same client build** before any `apply` command can copy data.
+- Verified all **29/29** inherited herb icon blobs are byte-identical to the files in `jsb/Gatherer`. Gatherer's public listing says GPLv2, but source/artwork rights and GatherMap's own license remain unresolved; no license assignment or artwork replacement was made.
+- Added `docs/TEST_PLAN.md` with expected results, commands, backup and diagnostic requirements, and separate game-only checks.
+- **Unreleased:** final gameplay behavior, CurseForge source integration and third-party redistribution remain unverified.
+
 ## Unreleased — Step 7 performance and reliability (November 4, 2026)
 
 - Added `GatherMapSpatial.lua`, a reusable 128-world-unit grid to query nearby recorded points without rescanning a large map after every movement; small maps skip index allocation.

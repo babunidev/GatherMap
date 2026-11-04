@@ -231,9 +231,102 @@ function Migration.Link(key)
     return true,"linked "..key.." to UiMapID "..mapID..
         " ("..zone.."); coordinates still require visual verification"
 end
+-- A matched zone name is not enough: historical normalized coordinates
+-- must be compared to positions observed by the current Forever client.
+-- Two independent old nodes, separated by at least 10% of the map, must
+-- agree with the current player's position within 1.5% on both axes.
+local ANCHOR_TOLERANCE=0.015
+local ANCHOR_SEPARATION=0.10
+local function ClientBuild()
+    if not GetBuildInfo then return nil end
+    local version,build,_,interface=GetBuildInfo()
+    if type(version)~="string" or type(build)~="string"
+        or type(interface)~="number" then return nil end
+    return version..":"..build..":"..interface
+end
+local function Verified(key)
+    local link,source=LinkFor(key)
+    if not link then return false,"zone link missing or changed" end
+    local checks=type(db.migrationGeometryChecks)=="table" and db.migrationGeometryChecks[key]
+    local build=ClientBuild()
+    if type(checks)~="table" or not build or checks.build~=build
+        or checks.mapID~=link.mapID or checks.name~=link.name
+        or type(checks.points)~="table" then
+        return false,"coordinate evidence missing; record two separated anchors"
+    end
+    local candidates={}
+    for index,point in pairs(checks.points) do
+        local node=type(index)=="number" and source[index]
+        if type(point)~="table" or type(node)~="table"
+            or not Coord(node.x) or not Coord(node.y)
+            or node.x~=point.oldX or node.y~=point.oldY
+            or not Coord(point.x) or not Coord(point.y)
+            or math.abs(point.x-node.x)>ANCHOR_TOLERANCE
+            or math.abs(point.y-node.y)>ANCHOR_TOLERANCE then
+            return false,"coordinate evidence stale or invalid"
+        end
+        candidates[#candidates+1]={x=node.x,y=node.y}
+    end
+    for i=1,#candidates do
+        for j=i+1,#candidates do
+            local a,b=candidates[i],candidates[j]
+            if (a.x-b.x)^2+(a.y-b.y)^2>=ANCHOR_SEPARATION^2 then
+                return true
+            end
+        end
+    end
+    return false,"need two confirmed historic points at least 10% apart"
+end
+function Migration.VerifyAnchor(key,index)
+    local link,source=LinkFor(key)
+    if not link then return false,source end
+    if type(db.migrationLedger)=="table" and db.migrationLedger[key] then
+        return false,"already migrated"
+    end
+    local build=ClientBuild()
+    if not build then return false,"client build unavailable" end
+    index=tonumber(index)
+    if not (Finite(index) and index>=1 and index==math.floor(index)
+        and index<=#source) then return false,"invalid legacy node index" end
+    local node=source[index]
+    if type(node)~="table" or not Coord(node.x) or not Coord(node.y) then
+        return false,"invalid historical coordinates"
+    end
+    local mapID,x,y=ns.GatherMapPosition and ns.GatherMapPosition()
+    if mapID~=link.mapID or not Coord(x) or not Coord(y) then
+        return false,"stand at the historic node in the linked Forever zone"
+    end
+    if math.abs(x-node.x)>ANCHOR_TOLERANCE
+        or math.abs(y-node.y)>ANCHOR_TOLERANCE then
+        return false,"Forever position differs from historic coordinates"
+    end
+    if db.migrationGeometryChecks~=nil
+        and type(db.migrationGeometryChecks)~="table" then
+        return false,"invalid coordinate evidence store"
+    end
+    if not db.migrationGeometryChecks then db.migrationGeometryChecks={} end
+    local checks=db.migrationGeometryChecks[key]
+    if not checks or checks.build~=build
+        or checks.mapID~=link.mapID or checks.name~=link.name then
+        checks={mapID=link.mapID,name=link.name,build=build,points={}}
+        db.migrationGeometryChecks[key]=checks
+    end
+    checks.points[index]={oldX=node.x,oldY=node.y,x=x,y=y}
+    local verified,reason=Verified(key)
+    if verified then
+        return true,"two independent coordinate anchors agree; review preview and backup"
+    end
+    return true,"anchor recorded; "..reason
+end
+function Migration.GeometryStatus(key)
+    return Verified(key)
+end
 function Migration.Preview(key)
     local result,err=Build(key)
     if not result then return nil,err end
+    local verified,reason=Verified(key)
+    result.summary.geometryVerified=verified
+    result.summary.geometryReason=verified and "two separated anchors" or reason
     return result.summary
 end
 function Migration.Apply(key,confirmation)
@@ -242,6 +335,10 @@ function Migration.Apply(key,confirmation)
     end
     local result,err=Build(key)
     if not result then return false,err end
+    local geometryOK,geometryReason=Verified(key)
+    if not geometryOK then
+        return false,"coordinate compatibility unverified: "..geometryReason
+    end
     local previousBackups=db.migrationBackups
     if previousBackups~=nil and type(previousBackups)~="table" then
         return false,"invalid migration backup store; refusing to modify it"

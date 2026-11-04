@@ -5,6 +5,7 @@ Run from repo root: python3 -m unittest discover -s tests -p 'test_forever_*.py'
 """
 from pathlib import Path
 import re
+import sys
 import shutil
 import subprocess
 import unittest
@@ -30,10 +31,11 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, MARKERS.name, SPATIAL.name, DIFFICULTY.name, MIGRATION.name, XML.name, RUNTIME.name, CAPTURE.name])
+        self.assertEqual(files, [DATA.name, MARKERS.name, SPATIAL.name, DIFFICULTY.name, MIGRATION.name, RUNTIME.name, XML.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
+        self.assertLess(files.index(RUNTIME.name), files.index(XML.name), "world pin mixin must exist before XML is loaded")
 
     def test_legacy_manifest_not_converted(self):
         old = (ROOT / "GatherMap.toc").read_text()
@@ -130,12 +132,26 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("hooksecurefunc(", source)
         self.assertNotIn("SetMapZoom(", source)
 
+    def test_forever_package_audit(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "check_forever_package.py")],
+            capture_output=True, text=True, check=False
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: Forever", result.stdout)
+        for name in ("docs/TEST_PLAN.md", "docs/FOREVER_API_AUDIT.md",
+                     "docs/THIRD_PARTY_ASSETS.md", "docs/LEGACY_0_4_3.md"):
+            self.assertTrue((ROOT / name).is_file(), name)
+
     def test_legacy_migration_integrity(self):
         runtime = RUNTIME.read_text()
         source = MIGRATION.read_text()
         self.assertIn("migration.Init(db, MarkDirty)", runtime)
         self.assertIn("MigrationCommand(command)", runtime)
         self.assertIn("migration.Apply(key,confirm)", runtime)
+        self.assertIn("migration.VerifyAnchor(key,confirm)", runtime)
+        self.assertIn("local function Verified(key)", source)
+        self.assertIn("local build=ClientBuild()", source)
         self.assertIn("db.migrationBackups", source)
         self.assertIn("db.migrationLedger", source)
         self.assertIn('db.nodes[result.targetKey]=result.after', source)

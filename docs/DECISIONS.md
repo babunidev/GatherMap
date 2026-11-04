@@ -55,6 +55,12 @@ The Phase 7 implementation keeps the original 300 **displayed-group** cap instea
 
 The code retains non-interactive pin ownership within GatherMap and does not override other addons' MapCanvas providers or the global GameTooltip. A mocked second provider survives redraws, but any assertion of actual compatibility with Mapster, TomTom, GatherMemory or custom minimap addons requires direct Forever gameplay testing. Memory use grows linearly for the optional spatial index; a 128-record threshold avoids that extra allocation on small maps. No creative redesign or public release was authorized by this engineering checkpoint.
 
+## November 4, 2026 — safer migration and Forever-first documentation
+
+The historical data importer previously allowed a zone-name link, preview and `apply ... confirm` even though same-name Forever maps could use different geometry. A new technical safety condition requires at least two separated legacy map anchors observed at matching positions on the same active client build, in addition to the existing physical backup and explicit confirmation. Missing or stale evidence refuses the copy. This prioritizes data integrity over convenience without changing the personal-discovery concept. The original records are retained regardless of result.
+
+The public README and active roadmap now concern Forever exclusively. Historical 0.4.3 installation notes and earlier phased development are archived rather than erased. Recording remains opt-in; changing that default or the project license is **not** an approved decision. The original herb icons remain intact while their licensing requirements are investigated.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

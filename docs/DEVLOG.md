@@ -118,3 +118,9 @@ The Forever port now offers an AI-assisted, deliberately guarded way to copy som
 The more places my map remembers, the less sense it makes to search every old discovery whenever a character takes another step. The map should stay a small companion, showing what is nearby without making the game feel heavier as its memory grows.
 
 AI-assisted development separated location data from the moment-to-moment picture, adding a spatial index and making dense groups easier to calculate. The existing four corners and the 300-visible-group limit remain familiar. Synthetic tests now cover thousands of overlapping markers and a second mocked map provider. Actual performance and coexistence with other Forever addons still need to be observed in the game itself.
+
+## November 4, 2026: keeping the road to Forever readable
+
+The old GatherMap instructions still spoke mostly to a different client, even though the port's map, recording and data systems had already moved on. For anyone opening the repository now, the first page needed to describe what exists today and what has only been simulated.
+
+AI-assisted work checked a newer Forever UI-source snapshot, separated old installation notes from the active instructions, consolidated the roadmap and wrote a test plan that keeps all gameplay checks together. The same pass traced every bundled herb icon back to matching Gatherer files, without assuming that a familiar source settles the licensing question. Historical map imports now ask for two real coordinate comparisons before copying anything. The work remains a development checkpoint; no claim of live success or public release follows from it.

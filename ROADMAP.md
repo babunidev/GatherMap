@@ -1,178 +1,69 @@
-# GatherMap — verification and development roadmap
+# GatherMap — Forever development roadmap
 
-**Creator and approval authority:** Babuni.dev  
-**Status of this file:** Technical verification backlog and possible alternatives, **not** creator-approved implementations.
+**Target:** World of Warcraft Forever exclusively. **Development:** `feat/forever-port`, `0.5.0-alpha` / Interface `16001`. **Last review:** November 4, 2026. Historical releases and legacy source are preserved, not actively supported.
 
-## Forever port — active development (November 4, 2026)
+`[x]` means implemented or verified in the **source/automated environment**, **not** in-game; each live-client verification remains separately unchecked. The detailed former roadmap is retained in [the roadmap history archive](docs/ROADMAP_ARCHIVE_2026-11-04.md).
 
-Target only World of Warcraft Forever. The `feat/forever-port` development branch contains a modern UI/API compatibility shell and an opt-in source-correlated gathering recorder. No live Forever gameplay has yet been verified. The original preparatory checklist below tracks the work against that distinction.
+## 1. Implemented development phases
 
-- [x] Review repository instructions, legacy source, history, manifest and existing verification scripts.
-- [x] Record the Forever-only scope, legacy preservation requirements and source/asset provenance issues.
-- [x] Create an isolated development branch; `main`, tags and releases remain untouched.
-- [ ] Confirm the live Forever build, `_Camelot.toc` or `_Forever.toc` packaging behavior, APIs and runtime restrictions.
-- [x] Implement candidate resource identification and success/loot correlation in source; verify real Forever behavior in-game separately.
-- [x] Implement profession reads, effective-skill difficulty and stable modern map identities in source; client verification pending.
-- [x] Implement minimap/world-map four-corner rendering and correct same-resource-only grouping in source; live verification pending.
-- [x] Implement explicit, backed-up legacy node migration in source with unmatched-area preservation; in-game verification and coordinate mapping still pending.
-- [x] Add automated syntax, state, geometry, migration and synthetic performance regressions; real Forever gameplay and frame profiling remain pending.
-- [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+- [x] Repository/history preparation, Forever-only development branch and source preservation.
+- [x] New Camelot manifest, modern skill/map/event compatibility shell, and native MapCanvas provider source.
+- [x] Opt-in herb/mineral/skinning/treasure/lock recorder with cast-success and loot-source correlation.
+- [x] Current-character dynamic difficulty with 37 documented resource threshold tables, unknown purple, level-based treasure.
+- [x] Four-corner minimap/world-map markers, world icons, hover and independent saved visibility settings.
+- [x] Explicit, non-destructive legacy zone migration with snapshots and guarded rollback.
+- [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
+- [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
-### Phase 7 — performance and reliability (November 4, 2026)
+## 2. Development tasks outside the client
 
-- [x] Cache unchanged minimap views; update world-map layout on relevant events, canvas zoom/size changes or data/style revisions instead of continuous full redraws.
-- [x] Accelerate transitive same-resource merging in dense cells using one representative per connected grid cell.
-- [x] Build a reusable world-coordinate index for large map databases (128+ nodes); query the local vicinity rather than scanning all saved points on every movement update.
-- [x] Reuse minimap frames/native map pins and existing event frames; avoid repeated temporary projection closures, geometry buffers and chat notices.
-- [x] Review and retain the existing cap of **300 displayed marker groups**. Do not prune, truncate or re-key account-wide discoveries; trim excess cached world groups only.
-- [x] Fail safely on malformed node coordinates/counts, incomplete `C_Map` information and missing position APIs without rewriting corrupt records.
-- [x] Add synthetic 24,000-node spatial/dense clustering checks and mocked map-provider coexistence; retain prior migration/recording/difficulty regressions.
-- [ ] Measure FPS, memory, garbage collection and frame behavior with real large SavedVariables in World of Warcraft Forever.
-- [ ] Verify actual coexistence in Forever with named gathering/map addons, including GatherMemory/TobarisuMap, Mapster and TomTom, custom minimap shapes and overlapping pins.
+- [x] Recheck declared map, minimap, skill, cast, loot and tooltip APIs against Forever UI-source **1.60.1.70790**; see [API audit](docs/FOREVER_API_AUDIT.md). **Runtime behavior remains unverified.**
+- [x] Audit the Camelot manifest, runtime load order, referenced icon files and installable folder; add offline [package verifier](tools/check_forever_package.py) and CI coverage.
+- [x] Make README Forever-first; move historical client instructions to [legacy archive](docs/LEGACY_0_4_3.md).
+- [x] Consolidate roadmap; keep all in-game testing in §3 and preserve previous entries in [historical roadmap](docs/ROADMAP_ARCHIVE_2026-11-04.md).
+- [x] Review experimental recording: it **stays disabled by default**. A changed default requires a separate explicit design decision after genuine game evidence.
+- [x] Trace 29 inherited herb icons to byte-identical files in jsb/Gatherer; confirm the published Gatherer project lists GPLv2; document [remaining legal questions](docs/THIRD_PARTY_ASSETS.md).
+- [x] Strengthen historical zone migration: two separated current-build coordinate anchors are now required before applying; previous-build/missing evidence refuses the import.
+- [x] Publish a reproducible [in-game test plan](docs/TEST_PLAN.md), including commands, expected results, backup instructions and redacted diagnostics.
+- [ ] **Resolve third-party redistribution terms** for all inherited icons and historical mapping sources. Do not add an unapproved first-party `LICENSE` or replace assets without Babuni's decision.
+- [ ] **Verify CurseForge publication automation/settings**, optional `.pkgmeta`, full release ZIP policy and exact official Forever target before releasing. Repository files alone do not prove publisher configuration.
+- [ ] Fix any API, display, capture, saved-data or performance defects discovered during the game tests.
 
-The first seven items are **implemented/tested off-client**. Coexistence mocks show independent provider registrations and pin ownership; real multi-addon compatibility is still unverified.
+## 3. In-game verification — Forever only
 
-### Phase 6 — database migration and integrity (November 4, 2026)
+### Client start and API behavior
+- [ ] Record `/dump GetBuildInfo()` and confirm the actual Interface and flavor TOC selected; start with only GatherMap enabled.
+- [ ] Verify no XML, event-registration, missing-API, Lua, secret-value, taint or blocked-action errors at login, combat, `/reload` and logout.
+- [ ] Verify real MapCanvas pin callbacks, `CreateVector2D`, minimap radius, zoom/rotation and profession skill APIs/modifiers.
 
-- [x] Retain account-wide `GatherMapDB` and schema-v1 herb defaults, schema-v2 Skinning requirement correction and schema-v3 metadata.
-- [x] Keep modern node keys under explicit `map:<UiMapID>` and never interpret historical `continent:zone` indexes as UiMapIDs.
-- [x] Implement conservative manual historical-zone linking, exact `C_Map.GetMapInfo` name checks and a preview before copying.
-- [x] Preserve unlinked, ambiguous, custom and malformed historical records in their original keys.
-- [x] Retain the separate OctoGatherDB → GatherMapDB rename workflow; fix multi-TOC discovery for Forever.
-- [x] Implement a physical PowerShell backup helper and in-SavedVariables source/destination snapshots before copying; reject overwrite of existing files.
-- [x] Add occurrence-count weighting, spatial duplicate merging, idempotency ledger and guarded rollback without mutating historical records.
-- [x] Add Lua 5.1/5.4 migration fixture tests (v1/v2/v3, mixed/unknown zones, repeat imports, rollback) and PowerShell temp-file fixtures.
-- [ ] Confirm exact zone-to-UiMapID links, shared geography and positional equivalence on **actual Forever maps**; add reviewed mapping evidence.
-- [ ] Confirm saved records persist across real Forever logout/reload and character switching with physical file backups.
+### Gathering and node recording
+- [ ] Gather herbs, mine veins, skin creatures, open ordinary chests and pick locks; verify source/name/position/count.
+- [ ] Test failed/interrupted casts, delayed loot, autoloot, multiple loot sources, missing tooltips, repeated gather and neighboring nodes.
+- [ ] Test unknown/custom resource names, localization, delayed events and absent GUIDs. Verify no speculative/false discoveries.
+- [ ] Investigate any actual Forever Survival/Woodcutting mechanic without modifying unsupported historical records.
 
-**Automated checks:** The [successful Phase 6 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41909880251) compiled and exercised Lua 5.1 and Lua 5.4 migration, display, difficulty and capture fixtures; PowerShell's renamed-data and physical-backup tests passed using disposable files, as did Python static checks.
+### Difficulty, map display and preferences
+- [ ] Check six colors against actual skill thresholds, bonus gear, temporary buffs, profession learning and ordinary chest level.
+- [ ] Compare two characters using the same account-wide nodes; verify filtering and differing colors.
+- [ ] Verify four corners, world-map resource icons, transitive same-name/kind merging, passive hover, independent controls and persistence.
+- [ ] Test indoor/outdoor, cities, extra zones, map panning/zoom/insets, UI scaling and circular/square minimap shapes.
 
-All completed checkboxes mean **implemented/tested in mocks**; no real Forever user data was migrated or game-tested.
+### Saved-data integrity
+- [ ] Back up a **copy** of real `WTF` data with the game closed; verify v1/v2/v3 legacy preservation and OctoGather name migration where relevant.
+- [ ] Compare two separated historical coordinates with actual Forever positions. Validate old-zone links and `/gmap migrate anchor` behavior; keep ambiguous maps unlinked.
+- [ ] Preview migration on disposable saved data, apply only with sufficient evidence, check weighted counts and guarded rollback.
+- [ ] Test `/reload`, logout, relog and a second character. Confirm no modern or historical data loss.
 
-### Phase 5 — minimap and world-map presentation (November 4, 2026)
+### Performance and coexistence
+- [ ] Measure actual client FPS, memory/GC, frame counts and errors with dense/large saved databases; check 300 visible-group cap.
+- [ ] Test combat and movement with another **Forever-compatible** gathering/map addon installed (one at a time), plus custom minimap controllers.
+- [ ] Confirm no repeated warnings, chat spam, map clicks/hover conflicts, pin loss or addon traffic.
 
-- [x] Recreate four 3px colored corner dots, 85%-opacity gray and world-map resource icons.
-- [x] Implement screen-space transitive overlap merging with a spatial grid, without merging different names or kinds.
-- [x] Preserve the 300 displayed-group cap without capping or altering SavedVariables.
-- [x] Keep a separate, mouse-disabled hover label, independently of GameTooltip or native map drag/click actions.
-- [x] Restore the independent minimap switch and world-map checkbox; add `/gmap world on|off` for diagnostics.
-- [x] Persist minimap/world overlay preferences in the existing `GatherMapDB` fields.
-- [x] Respond to map-canvas zoom and resize while letting native pin positions follow pan.
-- [x] Cache unchanged minimap layouts; defer repeated world regrouping during zoom animations; separate 0.10s hover from 0.35s drawing.
-- [x] Add Lua 5.1/5.4 deterministic geometry tests and a simulated canvas/provider/UI-scale fixture.
-- [ ] Verify real Forever minimap scale, round/square mask variations, rotated minimap, UI scale, world zoom, panning, map changes and map-inset behavior.
-- [ ] Verify UI controls, tooltip coexistence and visual fidelity with screenshots in the running Forever client.
-- [ ] Verify unusual/client-specific maps and compatibility with other minimap/map addons.
+## 4. Public release gate — explicit approval required
 
-**Automated verification:** [Step 5 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41907106572) completed successfully under Lua 5.1 and Lua 5.4. It exercised grouping, geometry, mock map-canvas provider, tooltip/UI scaling, controls, earlier difficulty/capture fixtures and static checks.
+- [ ] Close critical gameplay bugs; rerun tests and inspect the final diff.
+- [ ] Resolve asset rights and LICENSE decision; prepare accurate README, CHANGELOG, credits and player-facing notes.
+- [ ] Verify CurseForge source/automation and approved packaging settings, addon directory content and Forever game version.
+- [ ] Receive Babuni's explicit approval **for a named public version**; only then tag/publish and confirm GitHub/CurseForge results.
 
-Source and mock-test completion **does not** establish in-game success.
-
-### Phase 4 — skill-aware marker colors (November 4, 2026)
-
-- [x] Read learned Herbalism, Mining, Skinning and Lockpicking through `C_SkillInfo`, with `C_TradeSkillUI` fallback for gathering professions.
-- [x] Account for rank, persistent modifiers and temporary skill bonuses without adding skills to `GatherMapDB`.
-- [x] Cross-check Forever-specific resource tables: 28 herbs and 9 ore nodes have documented complete thresholds.
-- [x] Implement all six marker colors with resource-specific boundaries (including Dreamfoil's 270/290/315/370).
-- [x] Refresh on skill, buff, equipment, level and profession-equipment events; remove unnecessary 3-second skill polling.
-- [x] Preserve per-character profession filtering and independent level-based ordinary treasure coloring.
-- [x] Use purple for unknown thresholds instead of extrapolating; preserve unknown resources and legacy wood records.
-- [x] Add mock tests across the same account-wide discoveries with two skill profiles and 37 reference entries.
-- [ ] Verify the actual Forever profession API values, skill modifiers, threshold boundaries and equipment changes **in-game**.
-- [ ] Verify two real characters on one account see different colors and profession filters for shared locations.
-
-Completed implementation checkboxes are supported by source and mock tests; **not** client verification.
-
-### Phase 3 — gathering recorder (November 4, 2026)
-
-- [x] Implement opt-in player cast-success and matching-loot-source correlation in `GatherMapCapture.lua`.
-- [x] Implement herb, mineral, skinning-material, treasure and lockpicking observation paths in source.
-- [x] Reject failed/interrupted, cast-only, stale and unrelated-source events; deduplicate repeated observations.
-- [x] Add recent Pick Lock → Opening correlation; keep skinning records as hunting hints.
-- [x] Record only new `map:<UiMapID>` keys; leave legacy `continent:zone` records unchanged.
-- [x] Leave Survival/Woodcutting inactive until a genuine Forever mechanic is confirmed.
-- [x] Add deterministic Lua fixture tests to the development CI workflow.
-- [ ] Test actual Forever event signatures, GUIDs, autoloot, success versus failed casts and source attribution in-game.
-- [ ] Test custom resources, localized loot/tooltip formats and chest/lockpicking variations in-game.
-- [ ] Review whether safe recording can become enabled by default after gameplay evidence.
-
-**CI results:** [successful Step 3 run](https://github.com/babunidev/GatherMap/actions/runs/41901589381) confirmed Lua 5.4 compilation, the mocked capture fixture and manifest/static tests. No in-game behavior is established by this run.
-
-Source-complete items are **not game-tested**. The capture feature defaults OFF and requires `/gmap capture on`; no released version is authorized.
-
-### Phase 2 — implementation checkpoint (November 4, 2026)
-
-- [x] Add `GatherMap_Camelot.toc` with Interface `16001` and no old Interact dependency.
-- [x] Add a modern runtime with explicit event callback parameters.
-- [x] Read profession lines using `C_SkillInfo` (including modifiers where available).
-- [x] Address modern `C_Map` / `UiMapID` identities, positions and world conversion.
-- [x] Implement native world-map pin provider and C_Minimap view-radius positioning in source.
-- [x] Restore four-corner UI and independent visibility controls in source.
-- [x] Add a temporary unsaved test pin and non-mutating legacy database handling.
-- [x] Add a static manifest/API/asset regression script.
-- [x] Compile the Forever Lua files with `luac5.4 -p` and run the Python static checks in GitHub Actions ([Forever static CI run](https://github.com/babunidev/GatherMap/actions/runs/41898899469); success).
-- [ ] Verify minimap/world-map alignment, hover and combat behavior in the actual Forever client.
-- [ ] Verify live build interface, map-canvas loading, profession ranks, modifiers and SavedVariables persistence.
-- [x] Phase 3: implement opt-in source-correlated recorder in code; in-game verification remains pending.
-
-Completed checkbox items describe **source implementation**, not in-game verification. No release is authorized.
-
-The older 1.12 verification backlog below is retained as an audit and regression reference, **not** a plan to continue supporting that client. Technical findings and evidence: [docs/FOREVER_PORT.md](docs/FOREVER_PORT.md).
-
-## Implemented in source as of October 26, 2026
-
-- Vanilla 1.12 manifest, **0.4.3**, account-wide `GatherMapDB`, optional `Interact`.
-- Learning paths for **herb**, **mineral**, **wood**, **skin**, **lock** and **treasure**.
-- Zone/subzone/coordinate records with near-position deduplication and occurrence counts.
-- Current-skill difficulty and per-profession filtering; chest-level tiers.
-- Four-dot minimap and world-map marker groups, resource artwork on world map, hover label.
-- Separate persistent minimap `enabled` and world-map `worldMapEnabled` controls.
-- Custom zone sizes and normalizations; automatic discovery in recognized 1.12 zone maps.
-- 300-render-group cap per map, approximate 0.10s redraw interval.
-- Migration of internal database schema version 1 and 2 into version 3 on initialization.
-- PowerShell saved-data rename utility with backup/refusal logic and two regression test scripts.
-
-This is a **source inventory**. No live-game behavior, interaction tool, migration run or regression-suite result was independently verified during this documentation audit.
-
-## P0 — verify data integrity and compatibility
-
-1. Run `tests/test_interact_hook.py` in an isolated environment with Python and **lupa providing Lua 5.1**. Verify old shared-upvalue recursion is detected in the fixture and current wrapper passes. Record exact versions and console output.
-2. Run `tests/test_upgrade.ps1` in a trusted PowerShell environment against synthetic temporary fixtures. Ensure it preserves Unicode, saves originals, creates backups and refuses existing new files and unsafe folder names.
-3. Test the helper against a **copy** of old real-world SavedVariables, never the only surviving file; confirm both account-wide and per-character file cases. Ensure the legacy variable name matches the old TOC.
-4. Launch WoW with the intended **1.12-compatible client**, confirm TOC/file/icon loading and that the code's English event text and profession lookup actually work.
-5. Create a successful herb/mining/tree interaction and a **failed/interrupted** interaction; verify only successes are recorded and duplicates merge as intended.
-6. Run normal interaction and the optional [Interact](https://github.com/lookino/Interact) hotkey in separate tests; add another addon that wraps Interact to check hook-chain behavior and absence of recursion.
-7. Test logout, `/reload`, multiple characters, schema-version-1/2 upgrades, and account-wide sharing without losing old records.
-8. Test unknown-tooltip custom resources, missing names/icons, delayed loot, two resources of same name nearby, and gathering while standing at map coordinate (0,0) or in unsupported map areas.
-
-## P1 — user experience and precise map behavior
-
-9. Verify four-dot corner alignment across minimap zoom, indoor/outdoor, custom zone sizes and selected world-map zones.
-10. Test marker grouping: same resource/overlapping rectangles should merge transitively; different kinds or names remain separate; worst difficulty wins inside a merged group.
-11. Test both visibility switches independently. Hidden minimap pins must not prevent learning; world-map checkbox should persist across reload.
-12. Test profession filtering across characters who have/do not have Herbalism, Mining, Survival, Skinning or Lockpicking. Treasure should remain visible irrespective of those skills.
-13. Test difficulty threshold boundaries: red/orange at requirement, yellow at +25, green at +50, gray at +100; unknown purple. Verify chest-tier level color boundaries separately.
-14. Test the moving-creature skinning case: stored location should be described as a hunting spot, not permanent node.
-15. Verify the built-in 29 herb artwork files load and correct inventory/client fallbacks resolve for mining, skinning, trees and chests.
-16. Validate every configured custom outdoor map, especially zone aliases and map index shifts; capture screenshots with test descriptions.
-17. Check usability with dense nodes, 300-group display cap, pointer hover tooltips and 85% gray opacity.
-
-## P2 — maintainability, scope and release
-
-18. Profile redraw frequency, grouping costs and the saved-node count on slow client hardware; the current update loop recomputes visible groups frequently.
-19. Verify English-only `GetSkillLineInfo` names, `CHAT_MSG_SPELL_SELF_BUFF` grammar and chest-name substring rules on localized clients.
-20. Preserve upstream Gatherer/MetaHunt credits and resolve **third-party artwork and code licensing**, plus this repository's currently absent LICENSE, before wider redistribution.
-21. Clarify old project naming in portfolio materials: **Octo Gather** historically, **Gather Map** now.
-22. Add carefully scoped automated tests for grouping, difficulty thresholds, and learning-state transitions where feasible; mock tests do not substitute for live WoW.
-23. Record each user-observed game result and any actual code changes in DEVLOG, CHANGELOG and DECISIONS with a commit.
-
-## Open creative decisions (not approved)
-
-- Should the addon continue **learning only by experience**, or ever support optional user-imported routes?
-- Should a player hide skinning/hunting memories separately from true fixed nodes?
-- Should marker clusters become clickable groups or remain a purely visual overlay?
-- Should the resource list become editable through a UI rather than source/migration scripts?
-- What is the acceptable client performance budget for large account databases?
-- Which custom-client zones/languages should be officially advertised after actual testing?
-
-Keep existing interaction concepts intact until Babuni.dev chooses otherwise.
+No public Forever version is authorized. The previous public GatherMap `v0.4.3` is historical only.
