@@ -69,7 +69,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, source)
         self.assertIn("function(self,event,loaded)", source)
-        self.assertIn("Legacy saved-location migration is pending", source)
+        self.assertIn("Historical zones ", source)
         self.assertIn("resourceSkills", DATA.read_text())
 
     def test_skill_event_driven_refresh(self):
