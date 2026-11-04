@@ -202,6 +202,9 @@ assert(#GatherMapDB.nodes["map:37"]==2)
 SlashCmdList.GATHERMAP("clear")
 WorldMapFrame.provider:RefreshAllData()
 assert(#WorldMapFrame.pins==1 and #GatherMapDB.nodes["map:37"]==2)
+-- Flush the pending world redraw before identifying the pin to hover.
+-- Otherwise a scheduled refresh correctly releases and reuses its frame.
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
 
 -- Test scaled cursor coordinates against a real in-memory map pin and ensure
 -- the private hover tooltip uses no game tooltip or mouse interception.
