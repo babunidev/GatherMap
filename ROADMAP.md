@@ -28,7 +28,7 @@ Target only World of Warcraft Forever. The branch `feat/forever-port` is a prepa
 - [x] Restore four-corner UI and independent visibility controls in source.
 - [x] Add a temporary unsaved test pin and non-mutating legacy database handling.
 - [x] Add a static manifest/API/asset regression script.
-- [ ] Execute Lua compilation / static checks on a checkout with Lua installed.
+- [x] Compile the Forever Lua files with `luac5.4 -p` and run the Python static checks in GitHub Actions ([Forever static CI run](https://github.com/babunidev/GatherMap/actions/runs/41898899469); success).
 - [ ] Verify minimap/world-map alignment, hover and combat behavior in the actual Forever client.
 - [ ] Verify live build interface, map-canvas loading, profession ranks, modifiers and SavedVariables persistence.
 - [ ] Phase 3: verified gathering success/loot detection and automatic node recording.

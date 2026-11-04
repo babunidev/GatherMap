@@ -10,7 +10,7 @@
 - Introduced native map-provider pins, four-corner markers, passive hover and separate map visibility switches.
 - Introduced modern `map:<UiMapID>` record reads, retaining legacy saved keys untouched until migration is developed.
 - Added `/gmap testpin` and `clear` as non-persistent UI probes; gathering capture remains intentionally disabled.
-- Added preliminary static regression checks. **No Forever in-game, Lua syntax or migration tests confirmed yet.**
+- Added preliminary static regression checks. `luac5.4 -p` and the Forever manifest/API/asset Python checks **passed in GitHub Actions** on November 4, 2026 ([Forever static CI run](https://github.com/babunidev/GatherMap/actions/runs/41898899469)). No Forever in-game or saved-data migration tests have been performed.
 - No changes to the old 0.4.3 Lua/TOC or published tags/releases. Development-only, not a public build.
 
 ## Unreleased — November 4, 2026: Forever port preparation (development branch)

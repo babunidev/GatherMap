@@ -26,7 +26,7 @@ Modern node reads are namespaced as `GatherMapDB.nodes["map:" .. UiMapID]`, **wi
 The latest publicly tracked pre-launch data build on November 4 was `1.60.1.70755`; Interface `16001`. Confirm with `/dump GetBuildInfo()` in the user's actual live client. The launch-time build could differ.
 
 **Remaining before Phase 2 can be fully verified:**
-- Run `python3 -m unittest discover -s tests -p 'test_forever_*.py'` and `luac -p GatherMapData.lua GatherMapForever.lua` where available.
+- **Automatically verified:** GitHub Actions [Forever static CI run](https://github.com/babunidev/GatherMap/actions/runs/41898899469) completed successfully on November 4, 2026. It installed Lua 5.4, ran `luac5.4 -p GatherMapData.lua` and `luac5.4 -p GatherMapForever.lua`, then executed `python3 -m unittest discover -s tests -p 'test_forever_*.py'`. These checks validate syntax and repository invariants only, not the Forever client runtime.
 - Load the addon on Forever and check `/gmap status`, `/gmap testpin`, minimap zoom, rotated minimap, native world-map pan/zoom, checkbox, map changes and combat taint.
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
@@ -80,4 +80,4 @@ A license label on a related upstream distribution does not independently establ
 - GitHub default `main` at `1df33f6`, version `0.4.3` / Interface `11200`; released `v0.4.3` tag points to `0a01737`. Prior release artifacts and tags were not modified.
 - Root instructions, documentation standard, source, manifest, migration helper, test fixtures, historical docs and asset inventory read.
 - Remote GitHub state is inspectable; **local uncommitted worktree changes on Babuni's machine are not accessible remotely**.
-- This preparation is **documentation-only**. No Lua tests, API probes, live Forever gameplay, installation, production package, tag or release were performed.
+- The initial preparation was documentation-only; the later Phase 2 source implementation has now passed GitHub CI Lua 5.4 syntax and static checks. No in-game API probe, installation, migration run, package, publishing tag or release was performed.
