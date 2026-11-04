@@ -1,0 +1,31 @@
+name: GatherMap Forever compatibility checks
+
+on:
+  push:
+    branches:
+      - feat/forever-port
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Lua syntax and manifest checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Lua compiler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.4
+      - name: Validate Forever Lua syntax
+        run: |
+          luac5.4 -p GatherMapData.lua
+          luac5.4 -p GatherMapForever.lua
+      - name: Verify manifests, pin template and preserved assets
+        run: python3 -m unittest discover -s tests -p 'test_forever_*.py'
