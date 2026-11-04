@@ -50,7 +50,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
     def test_uses_modern_apis_and_preserves_legacy_data(self):
         source = RUNTIME.read_text() + "\n" + DIFFICULTY.read_text()
         for symbol in (
-            "C_SkillInfo.GetSkillLineInfoByID",
+            "skillApi.GetSkillLineInfoByID",
             "C_Map.GetBestMapForUnit",
             "C_Map.GetPlayerMapPosition",
             "C_Map.GetWorldPosFromMapPos",
