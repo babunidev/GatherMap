@@ -34,6 +34,28 @@ The latest publicly tracked pre-launch data build on November 4 was `1.60.1.7075
 - Verify skill ID 182 (Herbalism), 186 (Mining), 393 (Skinning), 633 (Lockpicking), effective modifiers and skill changes.
 - Confirm that the legacy `GatherMapDB` values persist on reload and that no old nodes are rewritten or interpreted as new map IDs.
 
+## Phase 7 — cached map presentation and safe coexistence (November 4, 2026)
+
+The original addon visual language, saved node semantics and 300-group display limit remain unchanged. This phase reduces work done for identical views and large saved databases without purging historical records.
+
+**Minimap and positioning.** `GatherMapSpatial.lua` builds a world-coordinate index keyed by instance and 128-world-unit cells for maps containing at least 128 records. Its normalized-to-world projections are cached per data revision and map, while movement queries return only records inside the active minimap radius. For small databases the direct path avoids allocating an index. The index is invalidated after new discoveries or migration changes; skill-color updates invalidate presentation but preserve the coordinate index. The viewpoint cache still skips unchanged position/zoom/facing/size data. Incomplete `C_Map` values fail closed; original malformed entries remain in SavedVariables. Spatial indexing adds a linear-memory lookup structure for large maps in exchange for reduced per-movement CPU work.
+
+**World map and frames.** Native pin pools remain owned by the existing `MapCanvasDataProviderMixin`; minimap frames are created only as needed and reused. Group layouts are cached by map ID, source table, canvas dimensions, zoom and display revision, with at most the first 300 groups retained after grouping. The native canvas may request a refresh independently; GatherMap updates its own pins by template, rather than modifying the global map provider. Provider initialization retries no more often than every two seconds when its dependencies are absent. Cursor hit tests consider only currently visible minimap pins, with no central GameTooltip ownership or global function wrapping.
+
+**Dense grouping.** In a 14px grid cell, any two marker centers satisfy the original inclusive overlap rule. The union-find grouper now links later points to one representative of that cell. In a neighboring cell, it stops after finding a single overlapping pair, since all nodes within that cell are already connected. This preserves exact transitive same-kind/name connectivity, merged colors and untouched saved records, while avoiding a quadratic scan in a heavily populated cell.
+
+**Reliability and chat.** Map identity/position guards reject absent or malformed `UiMapID`, secret/non-numeric map values and unusable world-position replies. The recorder rejects malformed occurrence counts instead of overwriting a corrupted node. An unchanged `/gmap capture on` or `off` value produces no repeated status message; normal render events never print chat text. The addon continues to use its own MapCanvas provider and non-clickable pins, without replacing external addon hooks or saved tables.
+
+**Synthetic verification:** `tests/test_forever_performance.lua` tests 24,000 generated records, 12,000 same-cell resource markers, exact-radius spatial queries, corrupt data and map-instance isolation under Lua 5.1/5.4. `tests/test_forever_display.lua` uses dummy frames and a second preexisting map provider to check that its provider registration and other pins survive GatherMap redraws; it also exercises unavailable/malformed map APIs and unknown saved rows. The latest complete source-level test run is documented in the roadmap. These fixtures are **not a benchmark of Forever's actual UI FPS or memory** and cannot confirm external addon compatibility.
+
+### Live-client performance and coexistence verification
+
+- On the active Forever client, capture `GetBuildInfo()`, UI scale, minimap geometry, graphics settings and test database size. Measure FPS, frame counts, allocation/garbage collection and repeated movement across several busy resource areas.
+- Exercise native maps with multiple saved zones, changed zoom and pan, entering/exiting combat, /reload, logout, and different characters; compare visual alignment and record totals before/after.
+- Co-install gathering addons such as <https://github.com/tobarisu1/wow_forever_addons> (GatherMemory and TobarisuMap) and other Forever-compatible map add-ons such as Mapster and TomTom. Verify overlays are independent, no other map pin vanishes, no tooltip/input conflict occurs and no taint or forbidden-action errors appear.
+- Confirm optional minimap controllers/custom shapes do not clip or reposition GatherMap's four-corner pins incorrectly. Separate known game-client map bugs from GatherMap-specific behavior.
+- Do not mark real-world coexistence or performance verified until these cases have been executed and reported with reproducible results.
+
 ## Phase 6 — guarded legacy SavedVariables migration (November 4, 2026)
 
 The original `GatherMapDB.nodes["continent:zone"]` keys are **legacy map indexes**, not stable modern `UiMapID` values. The new recorder writes `GatherMapDB.nodes["map:" .. UiMapID]`. No numeric reinterpretation of historical indexes is allowed. The Forever API `C_Map.GetMapInfo(uiMapID)` provides the zone's `mapID`, `name`, `mapType` and `parentMapID`; it does **not** establish that old normalized map coordinates are identical in every Forever zone. See [the Forever API extract](https://github.com/Atraeau/WoW-Addons/blob/main/docs/api/Map-Instances-World/C_Map.md) and [MapInfo reference](https://warcraft.wiki.gg/wiki/API:C_Map.GetMapInfo).

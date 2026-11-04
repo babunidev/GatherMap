@@ -20,7 +20,7 @@ local miniContext, worldContext = {}, {}
 local miniCache
 local mapLabel, mapLabelText
 local previewMarker -- temporary test fixture; never saved
-local MAX_PINS, DOT_SIZE = 300, 3
+local MAX_PINS, DOT_SIZE, MIN_INDEX_NODES = 300, 3, 128
 local f = CreateFrame("Frame")
 
 local function MarkStyleDirty()
@@ -303,7 +303,7 @@ local function DrawMinimap()
         radius, width, height
     miniContext.facing, miniContext.rotate = facing, rotate
     local candidates=nodes
-    if spatial then
+    if spatial and #nodes>=MIN_INDEX_NODES then
         if not spatialCache or spatialCache.mapID~=mapID
             or spatialCache.source~=nodes
             or spatialCache.revision~=dataRevision then
@@ -389,6 +389,9 @@ function providerMethods:RefreshAllData()
     else
         worldContext.width,worldContext.height,worldContext.scale=width,height,scale
         groups=markers.Group(nodes, ProjectWorld, ShowNode, Difficulty, Icon)
+        -- Keep only the existing 300 display groups in the retained cache.
+        -- All saved discoveries and transitive grouping are unchanged.
+        for i=#groups,MAX_PINS+1,-1 do groups[i]=nil end
         worldLayout={mapID=mapID,source=nodes,width=width,height=height,
             scale=scale,revision=renderRevision,groups=groups}
     end

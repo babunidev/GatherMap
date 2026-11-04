@@ -19,6 +19,16 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## Forever presentation caching and robustness (Phase 7, source implementation)
+
+The minimap retains its 0.35-second bounded view check, but no longer traverses every saved node to build visible groups on every movement update in larger zones. `GatherMapSpatial.lua` projects eligible saved locations into an instance-keyed world-coordinate grid once per map/data revision (index threshold: 128 records). Subsequent player-position updates visit nearby cells and do exact radius checks. Invalid record coordinates are skipped in-memory, never removed from `GatherMapDB`; missing map-projection APIs leave the overlay hidden until usable positions return.
+
+`MarkDirty` invalidates the data index, transient preview and world presentation cache on capture/migration. `MarkStyleDirty` invalidates only the presentation for profession/level/zone display changes, preserving the spatial index. The current view cache skips grouping when minimap map/position/radius/dimensions/rotation and revision are identical. World-map groups are cached by map ID, source, scale, canvas size and revision; 300 is the number of cached/rendered groups, not a storage cap. The world-map provider only removes its own pin template. The minimap frame pool tracks visible pins for hit testing and rendering, while map provider retries are bounded at two seconds if lazy Blizzard UI dependencies are missing.
+
+The pure `GatherMapMarkers.lua` grouper preserves transitive 14px overlap for identical names and kinds. All points in one cell are connected through one representative; neighboring cells need one overlapping edge. This reduces comparisons with densely repeated resource entries while preserving marker bounds, priority colors and rendering identity.
+
+`tests/test_forever_performance.lua` stresses 24,000 synthetic locations and 12,000 overlapping points; `tests/test_forever_display.lua` verifies simulated foreign-provider coexistence, missing APIs and corrupted entries. This validates controlled source behavior only. Actual allocations, frame timing, memory and compatibility with installed Forever addons must be measured in game.
+
 ## Forever legacy migration (Phase 6, source implementation)
 
 `GatherMapMigration.lua` is the account-wide historical import boundary, loaded before `GatherMapForever.lua`. It operates only on the existing `GatherMapDB.nodes` table, preserving original `continent:zone` locations. `Migration.Link` requires a homogeneous legacy zoneName and a matching current `C_Map.GetMapInfo` zone map (`mapType == 3`) before storing a proposed modern UiMapID link. `Migration.Preview` produces a dry-run summary. `Migration.Apply(key, "confirm")` copies into `map:<UiMapID>` only after explicit confirmation, without touching the legacy key.

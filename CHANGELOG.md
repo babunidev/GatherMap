@@ -3,6 +3,17 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — Step 7 performance and reliability (November 4, 2026)
+
+- Added `GatherMapSpatial.lua`, a reusable 128-world-unit grid to query nearby recorded points without rescanning a large map after every movement; small maps skip index allocation.
+- Optimized `GatherMapMarkers.lua` union-find grouping: all points in one 14px cell are connected to its representative, and a neighboring cell requires only one confirmed overlapping pair. Same-resource-only transitivity remains unchanged.
+- Added separate data and style invalidation, cached native world-map layouts, deferred map-provider initialization retries, and tracked visible minimap frames to reduce layout work and hover checks.
+- Retained the **300 displayed-group cap** without limiting or editing `GatherMapDB`, and capped retained world-layout group tables to those actually displayed.
+- Added fail-closed handling for absent/incomplete map metadata, unusable coordinates and corrupted occurrence counts. Repeated identical recording-switch commands no longer emit redundant chat notifications.
+- Added `tests/test_forever_performance.lua` (24,000 generated map records and 12,000 dense pins) and simulated coexistence with another MapCanvas provider; kept previous migration, difficulty, capture and display tests.
+- No new third-party dependencies, invasive tooltip hooks, global map overrides or new recurring addon-message traffic.
+- **Not game-tested:** actual client FPS/memory, unusual map geometry or coexistence with other Forever gathering/map addons. No public release.
+
 ## Unreleased — Step 6 saved-data migration safeguards (November 4, 2026)
 
 - Added `GatherMapMigration.lua` for explicit legacy `continent:zone` → `map:<UiMapID>` copying with exact zone-name validation, preview and typed confirmation. Unmatched, unsupported and ambiguous history remains intact.

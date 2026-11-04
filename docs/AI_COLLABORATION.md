@@ -44,3 +44,9 @@ The current audit is documentation-only and does not license third-party art or 
 The Forever-only port remains under Babuni's creative direction: earlier discoveries, resource identities and the personal-learning design must survive changes to the game's map APIs. This checkpoint adds AI-implemented `GatherMapMigration.lua`, a physical SavedVariables backup helper, a multi-manifest correction to the historical OctoGather rename script, and regression fixtures for schemas and map-key safety.
 
 Automated testing passed in the [successful Phase 6 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41909880251), using dummy records and disposable PowerShell folders. It verifies copy-on-import, explicit mapping, weighted counts, refusal to repeat an import, guarded rollback and preservation of original files. It **does not** imply the AI tested the user's actual game installation, accessed personal SavedVariables, proved historical/Forever coordinate equivalence or obtained authorization for a public version.
+
+## November 4, 2026 — Forever performance and reliability checkpoint
+
+Babuni's established visual design and self-learning account-wide history remain the constraints. AI implementation added `GatherMapSpatial.lua`, revised `GatherMapMarkers.lua` and the Forever runtime's cache invalidation, reinforced map and saved-data guards, and extended the mocked display and capture fixtures. No original concept, resource set, marker style or third-party artwork was changed.
+
+The synthetic CI checks exercise 24,000 indexed records and 12,000 densely overlapping markers, compare exact-radius queries, reject invalid data, and simulate another registered map provider. These results do not establish in-game FPS, a real two-addon installation, actual memory use or successful gameplay with Forever.

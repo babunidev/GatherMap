@@ -15,8 +15,22 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [x] Implement profession reads, effective-skill difficulty and stable modern map identities in source; client verification pending.
 - [x] Implement minimap/world-map four-corner rendering and correct same-resource-only grouping in source; live verification pending.
 - [x] Implement explicit, backed-up legacy node migration in source with unmatched-area preservation; in-game verification and coordinate mapping still pending.
-- [ ] Test syntax, state transitions, UI alignment, performance, persistence and real Forever gameplay.
+- [x] Add automated syntax, state, geometry, migration and synthetic performance regressions; real Forever gameplay and frame profiling remain pending.
 - [ ] Resolve artwork/source redistribution rights and public packaging configuration before any approved release.
+
+### Phase 7 — performance and reliability (November 4, 2026)
+
+- [x] Cache unchanged minimap views; update world-map layout on relevant events, canvas zoom/size changes or data/style revisions instead of continuous full redraws.
+- [x] Accelerate transitive same-resource merging in dense cells using one representative per connected grid cell.
+- [x] Build a reusable world-coordinate index for large map databases (128+ nodes); query the local vicinity rather than scanning all saved points on every movement update.
+- [x] Reuse minimap frames/native map pins and existing event frames; avoid repeated temporary projection closures, geometry buffers and chat notices.
+- [x] Review and retain the existing cap of **300 displayed marker groups**. Do not prune, truncate or re-key account-wide discoveries; trim excess cached world groups only.
+- [x] Fail safely on malformed node coordinates/counts, incomplete `C_Map` information and missing position APIs without rewriting corrupt records.
+- [x] Add synthetic 24,000-node spatial/dense clustering checks and mocked map-provider coexistence; retain prior migration/recording/difficulty regressions.
+- [ ] Measure FPS, memory, garbage collection and frame behavior with real large SavedVariables in World of Warcraft Forever.
+- [ ] Verify actual coexistence in Forever with named gathering/map addons, including GatherMemory/TobarisuMap, Mapster and TomTom, custom minimap shapes and overlapping pins.
+
+The first seven items are **implemented/tested off-client**. Coexistence mocks show independent provider registrations and pin ownership; real multi-addon compatibility is still unverified.
 
 ### Phase 6 — database migration and integrity (November 4, 2026)
 

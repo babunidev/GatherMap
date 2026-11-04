@@ -21,7 +21,11 @@ Keep account-wide discovery data, the original personal-learning concept, marker
 
 This development branch adds `GatherMap_Camelot.toc`, `GatherMapData.lua`, `GatherMapWorldPins.xml`, and `GatherMapForever.lua`. The old `GatherMap.toc` and `GatherMap.lua` are intentionally preserved as the **legacy 0.4.3 source**, not loaded by the Forever manifest.
 
-The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder now exists but remains opt-in and game-unverified; legacy migration still requires separate source review and in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
+The Forever runtime currently reads only `map:<UiMapID>` nodes. **Do not migrate legacy `continent:zone` keys by numeric assumption or enable speculative gathering writes.** `/gmap testpin` creates an unsaved test marker; `/gmap clear` removes it. The source-level recorder remains opt-in and game-unverified. The schema-v1/v2/v3 and old map-key copier is implemented but requires explicit backups, linking and confirmation; actual Forever geometry and persistence still need in-game evidence. Validate new changes with `tests/test_forever_static.py` and Lua syntax checks when available.
+
+## Phase 7 performance and coexistence boundaries
+
+`GatherMapSpatial.lua` provides an optional instance-keyed world-coordinate index for larger Forever maps, and `GatherMapMarkers.lua` groups same-kind/name entries transitively using cell representatives. Maintain the original four-corner colors and the 300 **displayed-group** cap; no performance change may remove, truncate or silently re-key SavedVariables. Cache only derived display state, invalidate it on relevant capture/migration or skill changes, and keep native map providers and GameTooltip owned by their respective addons. Do not add chat spam or repeated pollers. Run the 24k-node synthetic benchmark and mocked alternate-provider fixture, but require actual Forever tests with other map/gathering addons before claiming coexistence.
 
 ## Phase 6 legacy migration safety boundary
 

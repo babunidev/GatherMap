@@ -112,3 +112,9 @@ AI-assisted work rebuilt the grouping around those same boundaries, replaced sha
 An old place on my map should not vanish merely because the game now gives it a different number. Those saved encounters belong to the journeys that led there, including the uncertain ones and the gathering spots that may no longer exist.
 
 The Forever port now offers an AI-assisted, deliberately guarded way to copy some of that history. A zone must first be matched by its recorded name, then previewed and explicitly confirmed, while the original record stays untouched. Backups and a refusal to overwrite later discoveries matter more here than the convenience of an automatic conversion. The script and mock-data tests passed in the development workflow, but whether the old coordinates still land on the right patch of ground remains a question for the actual game.
+
+## November 4, 2026: keeping the map quiet as it fills
+
+The more places my map remembers, the less sense it makes to search every old discovery whenever a character takes another step. The map should stay a small companion, showing what is nearby without making the game feel heavier as its memory grows.
+
+AI-assisted development separated location data from the moment-to-moment picture, adding a spatial index and making dense groups easier to calculate. The existing four corners and the 300-visible-group limit remain familiar. Synthetic tests now cover thousands of overlapping markers and a second mocked map provider. Actual performance and coexistence with other Forever addons still need to be observed in the game itself.

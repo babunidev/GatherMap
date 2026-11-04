@@ -49,6 +49,12 @@ Legacy continent/zone indexes cannot be assumed to equal Forever's numeric map I
 
 Copies are non-destructive and preserve raw v1/v2/v3 history, with weighted merging of duplicate observations and an idempotency ledger. Snapshots allow rollback only if no newer data would be overwritten. An independent physical backup is still necessary because an in-SavedVariables snapshot does not protect against file loss. The exact equality of historical and Forever coordinate systems remains unverified; no public migration readiness is claimed.
 
+## November 4, 2026 — optimize work, not the saved history
+
+The Phase 7 implementation keeps the original 300 **displayed-group** cap instead of silently changing how many discoveries can be stored. Markers still group by matching name and kind with transitive overlap; a cached spatial index changes which records must be examined for each minimap view, not what data a character has learned. Skill changes invalidate marker colors, while new discoveries invalidate coordinates and layouts.
+
+The code retains non-interactive pin ownership within GatherMap and does not override other addons' MapCanvas providers or the global GameTooltip. A mocked second provider survives redraws, but any assertion of actual compatibility with Mapster, TomTom, GatherMemory or custom minimap addons requires direct Forever gameplay testing. Memory use grows linearly for the optional spatial index; a 128-record threshold avoids that extra allocation on small maps. No creative redesign or public release was authorized by this engineering checkpoint.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |
