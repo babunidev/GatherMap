@@ -3,11 +3,11 @@
 -- key migration are deliberately disabled until separately verified.
 local addonName, ns = ...
 local R = ns.resources
+local difficulty = ns.GatherMapDifficulty
 local db, provider, checkbox
 local miniPins, mapPins = {}, {}
-local ranks = { herb = 0, mineral = 0, skin = 0, lock = 0, wood = 0 }
 local worldCache = setmetatable({}, { __mode = "k" })
-local activeTooltip, dirty, tick, skillTick = nil, true, 0, 0
+local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
 local previewMarker -- temporary test fixture; never saved
 local MAX_PINS, DOT_SIZE = 300, 3
 local f = CreateFrame("Frame")
@@ -19,68 +19,15 @@ local function Valid(n)
     if issecretvalue and issecretvalue(n) then return false end
     return type(n)=="number" and n==n and n>=0 and n<=1
 end
-local function SkillValue(info)
-    if not info or info.isHeader then return 0 end
-    return (tonumber(info.rank) or 0)+(tonumber(info.modifier) or 0)
-        +(tonumber(info.tempPoints) or 0)
-end
-local skillIDs = { herb=182, mineral=186, skin=393, lock=633 }
-local function RefreshSkills()
-    if not C_SkillInfo then return false end
-    local new = { herb=0, mineral=0, skin=0, lock=0, wood=0 }
-    if C_SkillInfo.GetSkillLineInfoByID then
-        for kind,id in pairs(skillIDs) do
-            new[kind] = SkillValue(C_SkillInfo.GetSkillLineInfoByID(id))
-        end
-    end
-    if C_SkillInfo.GetNumSkillLines and C_SkillInfo.GetSkillLineInfo then
-        for i=1,(C_SkillInfo.GetNumSkillLines() or 0) do
-            local info=C_SkillInfo.GetSkillLineInfo(i)
-            if info and not info.isHeader then
-                for kind,name in pairs(R.resourceSkills) do
-                    if kind~="wood" and info.name==name and new[kind]==0 then
-                        new[kind]=SkillValue(info)
-                    end
-                end
-            end
-        end
-    end
-    local changed=false
-    for kind,value in pairs(new) do
-        if ranks[kind]~=value then changed=true; ranks[kind]=value end
-    end
-    if changed then dirty=true end
-    return changed
-end
-
+-- Difficulty is computed from this character's active skills. Never stored
+-- alongside account-wide discoveries in GatherMapDB.
 local function Difficulty(node)
-    local kind=node.kind or "herb"
-    local required=tonumber(node.required)
-    if not required then
-        local lookup = kind=="herb" and R.herbRequirements
-            or kind=="mineral" and R.mineralRequirements
-            or kind=="treasure" and R.treasureLevels
-            or kind=="wood" and R.treeRequirements
-        required=lookup and lookup[node.name]
-    end
-    if not required then return "unknown" end
-    if kind=="treasure" then
-        local d=required-(UnitLevel("player") or 0)
-        if d>=6 then return "red" elseif d>=3 then return "orange"
-        elseif d>=-2 then return "yellow" elseif d>=-9 then return "green"
-        else return "gray" end
-    end
-    local skill=ranks[kind] or 0
-    if skill<required then return "red"
-    elseif skill<required+25 then return "orange"
-    elseif skill<required+50 then return "yellow"
-    elseif skill<required+100 then return "green"
-    else return "gray" end
+    return difficulty.Color(node, UnitLevel("player"))
 end
 local function ShowNode(node)
-    local kind=node.kind or "herb"
-    return kind=="treasure" or (ranks[kind] or 0)>0
+    return difficulty.IsVisible(node)
 end
+
 local function Icon(node)
     local kind,name=node.kind or "herb",node.name
     if kind=="skin" and R.skinIcons[name] then return R.skinIcons[name] end
@@ -423,7 +370,7 @@ local function Initialize()
     if db.enabled==nil then db.enabled=true end
     if db.worldMapEnabled==nil then db.worldMapEnabled=true end
     if db.version==nil then db.version=3 end
-    RefreshSkills()
+    difficulty.Refresh()
     SetupWorld()
     dirty=true
 end
@@ -437,8 +384,16 @@ local function Status()
     end
     Print("Forever preview: "..mapped.." UiMapID records, "..legacy..
         " untouched legacy records. Map "..tostring(PlayerMapID()))
-    Print("Herbalism "..ranks.herb..", Mining "..ranks.mineral..
-        ", Skinning "..ranks.skin..", Lockpicking "..ranks.lock)
+    local function SkillText(kind)
+        local observed = difficulty.Skill(kind)
+        if not observed or not observed.present then return "not learned" end
+        local bonus = observed.effective - observed.rank
+        if bonus == 0 then return tostring(observed.rank) end
+        return tostring(observed.rank) .. " (" .. (bonus >= 0 and "+" or "") ..
+            tostring(bonus) .. " bonus)"
+    end
+    Print("Herbalism "..SkillText("herb")..", Mining "..SkillText("mineral")..
+        ", Skinning "..SkillText("skin")..", Lockpicking "..SkillText("lock"))
     if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
     Print("Legacy saved-location migration is pending.")
 end
@@ -482,6 +437,10 @@ f:RegisterEvent("ZONE_CHANGED")
 f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 f:RegisterEvent("PLAYER_MAP_CHANGED")
 f:RegisterEvent("PLAYER_REGEN_ENABLED")
+f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+f:RegisterEvent("PROFESSION_EQUIPMENT_CHANGED")
+f:RegisterEvent("UNIT_AURA")
+f:RegisterEvent("PLAYER_LEVEL_UP")
 f:SetScript("OnEvent",function(self,event,loaded)
     if event=="ADDON_LOADED" then
         if loaded==addonName then Initialize()
@@ -489,18 +448,28 @@ f:SetScript("OnEvent",function(self,event,loaded)
         return
     end
     if not db then return end
-    if event=="PLAYER_ENTERING_WORLD" then RefreshSkills();SetupWorld()
-    elseif event=="SKILL_LINES_CHANGED" or event=="CHAT_MSG_SKILL" then RefreshSkills()
-    elseif event=="PLAYER_REGEN_ENABLED" then SetupWorld() end
-    dirty=true
+    if event=="PLAYER_ENTERING_WORLD" then
+        skillDirty=true
+        SetupWorld()
+        dirty=true
+    elseif event=="SKILL_LINES_CHANGED" or event=="CHAT_MSG_SKILL"
+        or event=="PLAYER_EQUIPMENT_CHANGED"
+        or event=="PROFESSION_EQUIPMENT_CHANGED" then
+        skillDirty=true
+    elseif event=="UNIT_AURA" then
+        if issecretvalue and issecretvalue(loaded) then return end
+        if loaded=="player" then skillDirty=true end
+    else
+        if event=="PLAYER_REGEN_ENABLED" then SetupWorld() end
+        dirty=true
+    end
 end)
 f:SetScript("OnUpdate",function(self,dt)
     if not db then return end
     tick=tick+dt
-    skillTick=skillTick+dt
-    if skillTick>=3 then
-        skillTick=0
-        if RefreshSkills() then DrawWorld() end
+    if skillDirty then
+        skillDirty=false
+        if difficulty.Refresh() then dirty=true end
     end
     if tick<0.35 and not dirty then return end
     tick=0

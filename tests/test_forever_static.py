@@ -15,6 +15,7 @@ MANIFEST = ROOT / "GatherMap_Camelot.toc"
 RUNTIME = ROOT / "GatherMapForever.lua"
 CAPTURE = ROOT / "GatherMapCapture.lua"
 DATA = ROOT / "GatherMapData.lua"
+DIFFICULTY = ROOT / "GatherMapDifficulty.lua"
 XML = ROOT / "GatherMapWorldPins.xml"
 
 
@@ -26,7 +27,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, XML.name, RUNTIME.name, CAPTURE.name])
+        self.assertEqual(files, [DATA.name, DIFFICULTY.name, XML.name, RUNTIME.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
@@ -47,7 +48,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          "GatherMapForeverWorldPinMixin")
 
     def test_uses_modern_apis_and_preserves_legacy_data(self):
-        source = RUNTIME.read_text()
+        source = RUNTIME.read_text() + "\n" + DIFFICULTY.read_text()
         for symbol in (
             "C_SkillInfo.GetSkillLineInfoByID",
             "C_Map.GetBestMapForUnit",
@@ -79,7 +80,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          if shutil.which(command)), None)
         if not compiler:
             self.skipTest("No luac executable available; syntax not checked")
-        for path in (RUNTIME, DATA, CAPTURE):
+        for path in (RUNTIME, DATA, DIFFICULTY, CAPTURE):
             result = subprocess.run(
                 [compiler, "-p", str(path)],
                 capture_output=True, text=True, check=False)

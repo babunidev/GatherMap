@@ -6,6 +6,7 @@
 ## SavedVariables: GatherMapDB
 
 GatherMapData.lua
+GatherMapDifficulty.lua
 GatherMapWorldPins.xml
 GatherMapForever.lua
 GatherMapCapture.lua
