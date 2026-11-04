@@ -215,6 +215,14 @@ function Migration.Link(key)
         return false,"zone name mismatch: legacy "..zone.." / Forever "..info.name
     end
     if type(db.migrationLinks)~="table" then db.migrationLinks={} end
+    -- Avoid two historical indexes accidentally importing the same locations
+    -- twice under one modern zone without independent review.
+    for sourceKey,existingLink in pairs(db.migrationLinks) do
+        if sourceKey~=key and type(existingLink)=="table"
+            and existingLink.mapID==mapID then
+            return false,"another historical key is already linked to this UiMapID"
+        end
+    end
     local old=db.migrationLinks[key]
     if old and (old.mapID~=mapID or old.name~=zone) then
         return false,"different mapping already linked; no overwrite"
