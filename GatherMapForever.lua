@@ -8,6 +8,7 @@ local miniPins, mapPins = {}, {}
 local ranks = { herb = 0, mineral = 0, skin = 0, lock = 0, wood = 0 }
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillTick = nil, true, 0, 0
+local previewMarker -- temporary test fixture; never saved
 local MAX_PINS, DOT_SIZE = 300, 3
 local f = CreateFrame("Frame")
 
@@ -15,6 +16,7 @@ local function Print(s)
     if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff68cc70Gather Map:|r "..s) end
 end
 local function Valid(n)
+    if issecretvalue and issecretvalue(n) then return false end
     return type(n)=="number" and n==n and n>=0 and n<=1
 end
 local function SkillValue(info)
@@ -95,6 +97,14 @@ end
 local function MapNodes(mapID)
     if not db or type(db.nodes)~="table" or type(mapID)~="number" then return end
     local nodes=db.nodes["map:"..mapID]
+    if previewMarker and previewMarker.mapID==mapID then
+        local combined={}
+        if type(nodes)=="table" then
+            for i=1,#nodes do combined[i]=nodes[i] end
+        end
+        combined[#combined+1]=previewMarker.node
+        return combined
+    end
     if type(nodes)=="table" then return nodes end
 end
 local function PlayerMapID()
@@ -185,6 +195,7 @@ local function HideMini(start)
     for i=start,#miniPins do miniPins[i]:Hide() end
 end
 local function DrawMinimap()
+    if InCombatLockdown and InCombatLockdown() then return end
     if not (db and db.enabled and Minimap and Minimap:IsShown()
         and C_Minimap and C_Minimap.GetViewRadius) then HideMini(1); return end
     local mapID,px,py=PlayerMapPosition()
@@ -273,11 +284,13 @@ function providerMethods:RefreshAllData()
     end
 end
 local function DrawWorld()
+    if InCombatLockdown and InCombatLockdown() then return end
     if provider and WorldMapFrame and WorldMapFrame:IsShown() then
         provider:RefreshAllData()
     end
 end
 local function SetupWorld()
+    if InCombatLockdown and InCombatLockdown() then return end
     if provider or not(db and WorldMapFrame and WorldMapFrame.AddDataProvider
         and MapCanvasPinMixin and MapCanvasDataProviderMixin and CreateFromMixins) then return end
     for name,method in pairs(MapCanvasPinMixin) do
@@ -360,9 +373,20 @@ SlashCmdList["GATHERMAP"]=function(message)
         db.enabled=true;dirty=true;Print("minimap overlay enabled.")
     elseif command=="off" or command=="hide" then
         db.enabled=false;dirty=true;Print("minimap overlay hidden.")
+    elseif command=="testpin" then
+        local mapID,x,y=PlayerMapPosition()
+        if not mapID then Print("No usable zone map position."); return end
+        previewMarker={mapID=mapID,node={
+            name="GatherMap preview",kind="treasure",x=x,y=y,count=1,
+        }}
+        dirty=true
+        Print("Temporary purple test marker created at your position; not saved.")
+    elseif command=="clear" then
+        previewMarker=nil;dirty=true
+        Print("Temporary marker cleared.")
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap on, off, status") end
+    else Print("commands: /gmap on, off, status, testpin, clear") end
 end
 
 f:RegisterEvent("ADDON_LOADED")
