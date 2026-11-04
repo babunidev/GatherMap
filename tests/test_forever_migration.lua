@@ -46,6 +46,9 @@ local savedVersion=old.version
 local sourceNodes=old.nodes["1:2"]
 Check(M.Link("1:2"),"explicit same-name, same-zone link")
 Check(old.migrationLinks["1:2"].mapID==37,"stable numeric UiMapID recorded")
+old.nodes["1:3"]={Node("Silverleaf","herb",0.7,0.7,1)}
+Check(not M.Link("1:3"),"two historical keys must not link to the same map without review")
+old.nodes["1:3"]=nil
 local dry=M.Preview("1:2")
 Check(dry.source==4 and dry.valid==3 and dry.skipped==1,
     "malformed record retained and reported")
