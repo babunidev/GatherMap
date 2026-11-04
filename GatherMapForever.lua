@@ -5,22 +5,34 @@ local addonName, ns = ...
 local R = ns.resources
 local difficulty = ns.GatherMapDifficulty
 local markers = ns.GatherMapMarkers
+local spatial = ns.GatherMapSpatial
 local migration = ns.GatherMapMigration
 local db, provider, checkbox
 local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
-local hoverTick = 0
-local renderRevision = 0
+local hoverTick, providerRetryTick = 0, 0
+local renderRevision, dataRevision = 0, 0
+local worldDirty = true
+local visibleMiniPins = 0
+local spatialCache, spatialMapID, worldLayout, previewCache
+local miniContext, worldContext = {}, {}
 local miniCache
 local mapLabel, mapLabelText
 local previewMarker -- temporary test fixture; never saved
 local MAX_PINS, DOT_SIZE = 300, 3
 local f = CreateFrame("Frame")
 
-local function MarkDirty()
+local function MarkStyleDirty()
     renderRevision = renderRevision + 1
+    worldLayout = nil
+    worldDirty = true
     dirty = true
+end
+local function MarkDirty()
+    dataRevision = dataRevision + 1
+    spatialCache, previewCache = nil, nil
+    MarkStyleDirty()
 end
 local function Print(s)
     if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff68cc70Gather Map:|r "..s) end
@@ -52,14 +64,21 @@ local function Icon(node)
 end
 
 local function MapNodes(mapID)
-    if not db or type(db.nodes)~="table" or type(mapID)~="number" then return end
+    if issecretvalue and issecretvalue(mapID) then return end
+    if not db or type(db.nodes)~="table" or type(mapID)~="number"
+        or mapID<1 or mapID~=math.floor(mapID) then return end
     local nodes=db.nodes["map:"..mapID]
     if previewMarker and previewMarker.mapID==mapID then
+        if previewCache and previewCache.source==nodes
+            and previewCache.preview==previewMarker then
+            return previewCache.nodes
+        end
         local combined={}
         if type(nodes)=="table" then
             for i=1,#nodes do combined[i]=nodes[i] end
         end
         combined[#combined+1]=previewMarker.node
+        previewCache={source=nodes,preview=previewMarker,nodes=combined}
         return combined
     end
     if type(nodes)=="table" then return nodes end
@@ -68,16 +87,25 @@ local function PlayerMapID()
     if not (C_Map and C_Map.GetBestMapForUnit and C_Map.GetMapInfo) then return end
     local id=C_Map.GetBestMapForUnit("player")
     for i=1,8 do
-        if not id then return end
+        if issecretvalue and issecretvalue(id) then return end
+        if type(id)~="number" or id<1 or id~=math.floor(id) then return end
         local info=C_Map.GetMapInfo(id)
-        if not info then return end
-        if info.mapType==3 then return id end
-        if info.mapType<3 or not info.parentMapID or info.parentMapID==0 then return end
-        id=info.parentMapID
+        if issecretvalue and issecretvalue(info) then return end
+        if type(info)~="table" then return end
+        local mapType=info.mapType
+        if issecretvalue and issecretvalue(mapType) then return end
+        if type(mapType)~="number" then return end
+        if mapType==3 then return id end
+        if mapType<3 then return end
+        local parent=info.parentMapID
+        if issecretvalue and issecretvalue(parent) then return end
+        if type(parent)~="number" or parent<1 or parent==id then return end
+        id=parent
     end
 end
 local function VectorXY(value)
-    if not value then return nil end
+    if issecretvalue and issecretvalue(value) then return nil end
+    if type(value)~="table" and type(value)~="userdata" then return nil end
     if value.GetXY then return value:GetXY() end
     return value.x, value.y
 end
@@ -104,6 +132,7 @@ ns.GatherMapRecord = function(observation)
         return false,"invalid resource"
     end
     local id,x,y=observation.mapID,observation.x,observation.y
+    if issecretvalue and issecretvalue(id) then return false,"position" end
     if type(id)~="number" or id<1 or id~=math.floor(id)
         or not Valid(x) or not Valid(y) then return false,"position" end
     local key="map:"..id
@@ -118,8 +147,10 @@ ns.GatherMapRecord = function(observation)
         and math.abs(lastRecorded.y-y)<=RECENT_DISTANCE then
         return false,"duplicate event"
     end
-    local required=tonumber(observation.required)
-    if required and (required<1 or required>999) then required=nil end
+    local requirement=observation.required
+    if issecretvalue and issecretvalue(requirement) then requirement=nil end
+    local required=tonumber(requirement)
+    if required and (required<1 or required>999 or required~=required) then required=nil end
     local texture=observation.texture
     if type(texture)~="number" and type(texture)~="string" then texture=nil end
     local zoneName=type(observation.zoneName)=="string" and observation.zoneName or ""
@@ -130,9 +161,12 @@ ns.GatherMapRecord = function(observation)
             and Valid(node.x) and Valid(node.y)
             and math.abs(node.x-x)<=RECENT_DISTANCE
             and math.abs(node.y-y)<=RECENT_DISTANCE then
-            local count=tonumber(node.count) or 1
-            if count<1 then count=1 end
-            if count>100000000 then count=100000000 end
+            local count=node.count
+            if count==nil then count=1 end
+            if type(count)~="number" or count~=count or count<1
+                or count>=100000000 or count~=math.floor(count) then
+                return false,"invalid saved occurrence count"
+            end
             node.x=(node.x*count+x)/(count+1)
             node.y=(node.y*count+y)/(count+1)
             node.count=count+1
@@ -155,7 +189,7 @@ ns.GatherMapRecord = function(observation)
 end
 
 local function WorldPosition(id,x,y,node)
-    if not C_Map.GetWorldPosFromMapPos then return end
+    if not (C_Map and C_Map.GetWorldPosFromMapPos and Valid(x) and Valid(y)) then return end
     if node then
         local cached=worldCache[node]
         if cached and cached.id==id and cached.x==x and cached.y==y then
@@ -164,11 +198,31 @@ local function WorldPosition(id,x,y,node)
     end
     local mapPosition = CreateVector2D and CreateVector2D(x, y) or {x=x, y=y}
     local instance,pos=C_Map.GetWorldPosFromMapPos(id,mapPosition)
+    if issecretvalue and issecretvalue(instance) then return end
     local wx,wy=VectorXY(pos)
     if not (instance and markers.Finite(wx) and markers.Finite(wy)) then return end
     if node then worldCache[node]={id=id,x=x,y=y,instance=instance,wx=wx,wy=wy} end
     return instance,wx,wy
 end
+-- Only candidate points near the character are grouped on movement.
+-- The world-space index rebuilds after a saved observation or explicit import.
+local function SpatialProject(node)
+    return WorldPosition(spatialMapID, node.x, node.y, node)
+end
+local function ProjectMini(node)
+    local context=miniContext
+    local instance,x,y=WorldPosition(context.mapID,node.x,node.y,node)
+    if instance~=context.instance or not markers.Finite(x) or not markers.Finite(y) then
+        return nil
+    end
+    return markers.MiniPoint(x-context.x,y-context.y,context.radius,
+        context.width,context.height,context.facing,context.rotate)
+end
+local function ProjectWorld(node)
+    return markers.WorldPoint(node.x,node.y,worldContext.width,
+        worldContext.height,worldContext.scale)
+end
+
 -- The four 3px dots intentionally leave the marker centre clear.
 local function AddCorners(pin)
     pin.corners = {}
@@ -202,7 +256,8 @@ local function AcquireMini(index)
     return pin
 end
 local function HideMini(first)
-    for i = first, #miniPins do miniPins[i]:Hide() end
+    for i = first, visibleMiniPins do miniPins[i]:Hide() end
+    visibleMiniPins = math.min(visibleMiniPins, first - 1)
 end
 local function ClearMini()
     miniCache = nil
@@ -220,13 +275,15 @@ local function DrawMinimap()
     if not nodes then ClearMini(); return end
     local instance, wx, wy = WorldPosition(mapID, px, py)
     local radius = C_Minimap.GetViewRadius()
+    if issecretvalue and issecretvalue(radius) then ClearMini();return end
     if not (instance and markers.Finite(wx) and markers.Finite(wy)
         and markers.Finite(radius) and radius > 0) then
         ClearMini()
         return
     end
     local width, height = Minimap:GetWidth(), Minimap:GetHeight()
-    if not (width > 0 and height > 0) then ClearMini(); return end
+    if not (markers.Finite(width) and markers.Finite(height)
+        and width > 0 and height > 0) then ClearMini();return end
     local rotate = GetCVarBool and GetCVarBool("rotateMinimap") or false
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
     if not markers.Finite(facing) then facing = 0 end
@@ -240,15 +297,30 @@ local function DrawMinimap()
         x = wx, y = wy, radius = radius, width = width, height = height,
         rotation = facing, revision = renderRevision}
 
-    local function Project(node)
-        if not (type(node.x) == "number" and type(node.y) == "number"
-            and Valid(node.x) and Valid(node.y)) then return nil end
-        local nodeInstance, x, y = WorldPosition(mapID, node.x, node.y, node)
-        if nodeInstance ~= instance then return nil end
-        return markers.MiniPoint(x - wx, y - wy, radius, width, height,
-            facing, rotate)
+    miniContext.mapID, miniContext.instance = mapID, instance
+    miniContext.x, miniContext.y = wx, wy
+    miniContext.radius, miniContext.width, miniContext.height =
+        radius, width, height
+    miniContext.facing, miniContext.rotate = facing, rotate
+    local candidates=nodes
+    if spatial then
+        if not spatialCache or spatialCache.mapID~=mapID
+            or spatialCache.source~=nodes
+            or spatialCache.revision~=dataRevision then
+            spatialMapID=mapID
+            local built=spatial.Build(nodes, SpatialProject)
+            if built and (built.valid>0 or #nodes==0) then
+                built.mapID, built.revision=mapID, dataRevision
+                spatialCache=built
+            else
+                spatialCache=nil
+            end
+        end
+        if spatialCache then
+            candidates=spatial.Nearby(spatialCache,instance,wx,wy,radius)
+        end
     end
-    local groups = markers.Group(nodes, Project, ShowNode, Difficulty, Icon)
+    local groups = markers.Group(candidates, ProjectMini, ShowNode, Difficulty, Icon)
     local count = math.min(#groups, MAX_PINS)
     for i = 1, count do
         local group, pin = groups[i], AcquireMini(i)
@@ -259,6 +331,7 @@ local function DrawMinimap()
         pin:Show()
     end
     HideMini(count + 1)
+    visibleMiniPins=count
 end
 
 -- Native Blizzard map-canvas pins follow zoom, panning and map selection.
@@ -306,10 +379,19 @@ function providerMethods:RefreshAllData()
 
     -- Collision geometry is measured in visible (zoomed) pixels.
     -- Coordinates remain normalized when assigned to MapCanvas pins.
-    local function Project(node)
-        return markers.WorldPoint(node.x, node.y, width, height, scale)
+    local mapID=map:GetMapID()
+    local previous=worldLayout
+    local groups
+    if previous and previous.mapID==mapID and previous.source==nodes
+        and previous.width==width and previous.height==height
+        and previous.scale==scale and previous.revision==renderRevision then
+        groups=previous.groups
+    else
+        worldContext.width,worldContext.height,worldContext.scale=width,height,scale
+        groups=markers.Group(nodes, ProjectWorld, ShowNode, Difficulty, Icon)
+        worldLayout={mapID=mapID,source=nodes,width=width,height=height,
+            scale=scale,revision=renderRevision,groups=groups}
     end
-    local groups = markers.Group(nodes, Project, ShowNode, Difficulty, Icon)
     local scaledWidth, scaledHeight = width * scale, height * scale
     for i = 1, math.min(#groups, MAX_PINS) do
         map:AcquirePin("GatherMapForeverWorldPinTemplate",
@@ -328,6 +410,7 @@ end
 local function DrawWorld()
     if InCombatLockdown and InCombatLockdown() then return end
     if provider and WorldMapFrame and WorldMapFrame:IsShown() then
+        worldDirty=false
         provider:RefreshAllData()
     end
 end
@@ -359,7 +442,7 @@ local function SetupWorld()
     checkbox:SetChecked(db.worldMapEnabled)
     checkbox:SetScript("OnClick", function(self)
         db.worldMapEnabled = not not self:GetChecked()
-        MarkDirty()
+        worldDirty=true
         DrawWorld()
     end)
 end
@@ -409,9 +492,11 @@ local function Hover()
         and Minimap.IsMouseOver and Minimap:IsMouseOver()
     if not worldAllowed and not miniAllowed then HideLabel(); return end
     local pool = worldAllowed and mapPins or miniPins
+    local visible = worldAllowed and #mapPins or visibleMiniPins
+    if visible==0 then HideLabel();return end
     local cx, cy = GetCursorPosition()
     local candidate
-    for i = 1, #pool do
+    for i = 1, visible do
         local pin = pool[i]
         if pin:IsShown() and pin.name and pin:GetLeft() and pin:GetRight()
             and pin:GetBottom() and pin:GetTop() then
@@ -568,7 +653,7 @@ SlashCmdList["GATHERMAP"]=function(message)
     elseif command=="world on" or command=="world off" then
         db.worldMapEnabled = command == "world on"
         if checkbox then checkbox:SetChecked(db.worldMapEnabled) end
-        MarkDirty()
+        worldDirty=true
         DrawWorld()
         Print("world-map overlay "..(db.worldMapEnabled and "enabled." or "hidden."))
     elseif command=="migrate" or command:match("^migrate%s") then
@@ -607,7 +692,7 @@ f:SetScript("OnEvent",function(self,event,loaded)
     if event=="PLAYER_ENTERING_WORLD" then
         skillDirty=true
         SetupWorld()
-        dirty=true
+        MarkDirty()
     elseif event=="SKILL_LINES_CHANGED" or event=="CHAT_MSG_SKILL"
         or event=="PLAYER_EQUIPMENT_CHANGED"
         or event=="PROFESSION_EQUIPMENT_CHANGED" then
@@ -617,7 +702,11 @@ f:SetScript("OnEvent",function(self,event,loaded)
         if loaded=="player" then skillDirty=true end
     else
         if event=="PLAYER_REGEN_ENABLED" then SetupWorld() end
-        dirty=true
+        if event=="MINIMAP_UPDATE_ZOOM" then
+            dirty=true
+        else
+            MarkStyleDirty()
+        end
     end
 end)
 f:SetScript("OnUpdate",function(self,dt)
@@ -630,17 +719,24 @@ f:SetScript("OnUpdate",function(self,dt)
     end
     if skillDirty then
         skillDirty=false
-        if difficulty.Refresh() then MarkDirty() end
+        if difficulty.Refresh() then MarkStyleDirty() end
     end
-    -- The world-map canvas is sometimes lazy-loaded after ADDON_LOADED.
-    if not provider and WorldMapFrame and db then SetupWorld() end
+    -- Retry lazy native-map initialization on a slow cadence only.
+    if not provider and WorldMapFrame then
+        providerRetryTick=providerRetryTick+dt
+        if providerRetryTick>=2 then
+            providerRetryTick=0
+            SetupWorld()
+        end
+    end
     if tick<0.35 and not dirty then return end
     tick=0
-    if dirty then SetupWorld();DrawWorld();dirty=false end
+    if dirty then dirty=false end
     if provider and provider.needsResizeRefresh and WorldMapFrame
         and WorldMapFrame:IsShown() then
         provider.needsResizeRefresh=false
-        DrawWorld()
+        worldDirty=true
     end
+    if worldDirty then DrawWorld() end
     DrawMinimap()
 end)

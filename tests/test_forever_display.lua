@@ -55,14 +55,21 @@ local canvas=Frame(UIParent);canvas:SetSize(1000,600)
 local scale=0.5
 WorldMapFrame=Frame(UIParent)
 WorldMapFrame.ScrollContainer=Frame(WorldMapFrame)
+local foreignProvider={name="UnrelatedMapAddon"}
+local foreignPin={name="Other addon pin"}
+WorldMapFrame.providers={foreignProvider}
+WorldMapFrame.otherAddonPins={foreignPin}
 function WorldMapFrame:GetMapID() return 37 end
 function WorldMapFrame:GetCanvas() return canvas end
 function WorldMapFrame:GetCanvasScale() return scale end
 function WorldMapFrame:AddDataProvider(provider)
+    self.providers[#self.providers+1]=provider
     self.provider=provider
     provider:OnAdded(self)
 end
 function WorldMapFrame:RemoveAllPinsByTemplate(template)
+    assert(template=="GatherMapForeverWorldPinTemplate",
+        "GatherMap may only remove its own pin template")
     self.pins={}
 end
 function WorldMapFrame:AcquirePin(template,group,w,h)
@@ -131,6 +138,7 @@ ns.GatherMapDifficulty={
     Skill=function() return {present=false} end,
 }
 assert(loadfile("GatherMapMarkers.lua"))("GatherMap",ns)
+assert(loadfile("GatherMapSpatial.lua"))("GatherMap",ns)
 assert(loadfile("GatherMapMigration.lua"))("GatherMap",ns)
 local first={name="Battered Chest",kind="treasure",x=0.5,y=0.5,count=1}
 local second={name="Battered Chest",kind="treasure",x=0.518,y=0.5,count=1}
@@ -145,6 +153,10 @@ assert(type(mainFrame.scripts.OnEvent)=="function")
 mainFrame.scripts.OnEvent(mainFrame,"ADDON_LOADED","GatherMap")
 mainFrame.scripts.OnUpdate(mainFrame,0.4)
 assert(WorldMapFrame.provider~=nil)
+assert(WorldMapFrame.providers[1]==foreignProvider
+    and #WorldMapFrame.providers==2)
+assert(WorldMapFrame.otherAddonPins[1]==foreignPin,
+    "other map addon pins cannot be removed by our provider")
 assert(#WorldMapFrame.pins==1,"at half zoom the two chests merge")
 assert(GatherMapDB.enabled==false and GatherMapDB.worldMapEnabled==true,
     "two display preferences must be independent")
@@ -244,4 +256,39 @@ mainFrame.scripts.OnUpdate(mainFrame,0.15)
 assert(not label:IsShown(),"hover label must hide when the cursor leaves")
 assert(GatherMapDB.nodes==sameNodes)
 print("PASS: world zoom/resize, native provider, custom tooltips, UI scale, stored toggles, preview and data safety")
+
+-- Incomplete map APIs and malformed SavedVariables must fail closed.
+WorldMapFrame:Hide()
+Minimap:Show()
+SlashCmdList.GATHERMAP("on")
+local oldGetBest=C_Map.GetBestMapForUnit
+C_Map.GetBestMapForUnit=function() return nil end
+mainFrame.scripts.OnEvent(mainFrame,"PLAYER_MAP_CHANGED")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+C_Map.GetBestMapForUnit=function() return 37 end
+local oldInfo=C_Map.GetMapInfo
+C_Map.GetMapInfo=function() return {mapType="invalid"} end
+mainFrame.scripts.OnEvent(mainFrame,"PLAYER_MAP_CHANGED")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+C_Map.GetMapInfo=oldInfo
+local priorWorldPos=C_Map.GetWorldPosFromMapPos
+C_Map.GetWorldPosFromMapPos=nil
+mainFrame.scripts.OnEvent(mainFrame,"PLAYER_MAP_CHANGED")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+C_Map.GetWorldPosFromMapPos=priorWorldPos
+C_Map.GetBestMapForUnit=oldGetBest
+GatherMapDB.nodes["map:37"][3]={name="Corrupted",kind="herb",x=0/0,y=0.2}
+GatherMapDB.nodes["map:37"][4]={name="Other Corruption",kind="herb",x=1.2,y=0.2}
+GatherMapDB.nodes["map:37"][5]="not-a-resource"
+mainFrame.scripts.OnEvent(mainFrame,"PLAYER_ENTERING_WORLD")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(GatherMapDB.nodes["map:37"][3].name=="Corrupted"
+    and #GatherMapDB.nodes["map:37"]==5)
+assert(WorldMapFrame.otherAddonPins[1]==foreignPin)
+assert(WorldMapFrame.providers[1]==foreignProvider
+    and #WorldMapFrame.providers==2)
+assert(Minimap.mouseEnabled~=false,
+    "our pins must never disable input on other minimap owners")
+print("PASS: native provider coexists with another provider; malformed records and missing map functions fail closed")
+
 

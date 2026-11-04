@@ -47,12 +47,21 @@ local function Group(nodes, project, shown, difficulty, icon)
                         local key = (cx + dx) .. ":" .. (cy + dy)
                         local nearby = byName[key]
                         if nearby then
-                            for j = 1, #nearby do
-                                local k = nearby[j]
-                                local other = points[k]
-                                if math.abs(other.x - x) <= CELL_SIZE
-                                    and math.abs(other.y - y) <= CELL_SIZE then
-                                    Union(parent, sizes, i, k)
+                            if dx == 0 and dy == 0 then
+                                -- All points in one 14px cell overlap. Every
+                                -- inserted point joins the first representative.
+                                Union(parent, sizes, i, nearby[1])
+                            else
+                                -- All points within a neighbor cell are already
+                                -- connected. One overlapping witness suffices.
+                                for j = 1, #nearby do
+                                    local k = nearby[j]
+                                    local other = points[k]
+                                    if math.abs(other.x - x) <= CELL_SIZE
+                                        and math.abs(other.y - y) <= CELL_SIZE then
+                                        Union(parent, sizes, i, k)
+                                        break
+                                    end
                                 end
                             end
                         end

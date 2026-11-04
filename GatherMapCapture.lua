@@ -321,7 +321,9 @@ ns.GatherMapSetCapture=function(enabled)
         Notify("Cannot change recording: saved database unavailable.")
         return
     end
-    GatherMapDB.recordingEnabled=not not enabled
+    local requested=not not enabled
+    if GatherMapDB.recordingEnabled==requested then return end
+    GatherMapDB.recordingEnabled=requested
     pending=nil;unlock=nil;lootCaptured=false
     Notify(CaptureStatus())
 end

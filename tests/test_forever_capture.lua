@@ -20,7 +20,8 @@ local slotTexture=123
 local level=12
 local records={}
 GatherMapDB={nodes={}}
-DEFAULT_CHAT_FRAME={AddMessage=function() end}
+local messages={}
+DEFAULT_CHAT_FRAME={AddMessage=function(_,msg) messages[#messages+1]=msg end}
 local actions={}
 CreateFrame=function()
     f={events={},
@@ -93,6 +94,9 @@ sent(2366);succeeded(2366);loot()
 assert(#records==0)
 ns.GatherMapSetCapture(true)
 assert(GatherMapDB.recordingEnabled==true)
+local firstNotice=#messages
+ns.GatherMapSetCapture(true)
+assert(#messages==firstNotice,"repeated enable must not spam chat")
 
 -- Cast start and cast stop alone are not sufficient.
 sent(2366);loot()
@@ -182,6 +186,9 @@ clear()
 sent(133);succeeded(133);loot()
 assert(#records==0)
 ns.GatherMapSetCapture(false)
+local offNotice=#messages
+ns.GatherMapSetCapture(false)
+assert(#messages==offNotice,"repeated disable must not spam chat")
 clear()
 sent(2366);succeeded(2366);loot()
 assert(#records==0)

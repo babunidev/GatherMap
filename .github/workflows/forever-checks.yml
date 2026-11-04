@@ -27,6 +27,7 @@ jobs:
         run: |
           luac5.4 -p GatherMapData.lua
           luac5.4 -p GatherMapMarkers.lua
+          luac5.4 -p GatherMapSpatial.lua
           luac5.4 -p GatherMapDifficulty.lua
           luac5.4 -p GatherMapMigration.lua
           luac5.4 -p GatherMapForever.lua
@@ -35,12 +36,14 @@ jobs:
         run: |
           luac5.1 -p GatherMapData.lua
           luac5.1 -p GatherMapMarkers.lua
+          luac5.1 -p GatherMapSpatial.lua
           luac5.1 -p GatherMapDifficulty.lua
           luac5.1 -p GatherMapMigration.lua
           luac5.1 -p GatherMapForever.lua
           luac5.1 -p GatherMapCapture.lua
           lua5.1 tests/test_forever_migration.lua
           lua5.1 tests/test_forever_markers.lua
+          lua5.1 tests/test_forever_performance.lua
           lua5.1 tests/test_forever_display.lua
           lua5.1 tests/test_forever_difficulty.lua
           lua5.1 tests/test_forever_capture.lua
@@ -48,6 +51,7 @@ jobs:
         run: |
           lua5.4 tests/test_forever_migration.lua
           lua5.4 tests/test_forever_markers.lua
+          lua5.4 tests/test_forever_performance.lua
           lua5.4 tests/test_forever_display.lua
       - name: Test skill and difficulty behavior with mocked Forever APIs
         run: lua5.4 tests/test_forever_difficulty.lua

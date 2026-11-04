@@ -17,6 +17,7 @@ CAPTURE = ROOT / "GatherMapCapture.lua"
 DATA = ROOT / "GatherMapData.lua"
 DIFFICULTY = ROOT / "GatherMapDifficulty.lua"
 MARKERS = ROOT / "GatherMapMarkers.lua"
+SPATIAL = ROOT / "GatherMapSpatial.lua"
 MIGRATION = ROOT / "GatherMapMigration.lua"
 XML = ROOT / "GatherMapWorldPins.xml"
 
@@ -29,7 +30,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("OptionalDeps: Interact", text)
         files = [line.strip() for line in text.splitlines()
                  if line.strip() and not line.lstrip().startswith("##")]
-        self.assertEqual(files, [DATA.name, MARKERS.name, DIFFICULTY.name, MIGRATION.name, XML.name, RUNTIME.name, CAPTURE.name])
+        self.assertEqual(files, [DATA.name, MARKERS.name, SPATIAL.name, DIFFICULTY.name, MIGRATION.name, XML.name, RUNTIME.name, CAPTURE.name])
         for name in files:
             self.assertTrue((ROOT / name).is_file(), name)
         self.assertNotIn("GatherMap.lua", files)
@@ -111,6 +112,24 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertIn("MAX_PINS", runtime)
         self.assertIn("GatherMapMarkers.lua", MANIFEST.read_text())
 
+    def test_performance_and_coexistence_guards(self):
+        source = RUNTIME.read_text()
+        grouping = MARKERS.read_text()
+        index = SPATIAL.read_text()
+        self.assertIn("spatial.Nearby(", source)
+        self.assertIn("spatial.Build(", source)
+        self.assertIn("MarkStyleDirty()", source)
+        self.assertIn("visibleMiniPins", source)
+        self.assertIn("worldLayout", source)
+        self.assertIn("worldDirty", source)
+        self.assertIn("Union(parent, sizes, i, nearby[1])", grouping)
+        self.assertIn("break", grouping)
+        self.assertIn("MAX_QUERY_CELLS", index)
+        self.assertIn("MAX_PINS", source)
+        self.assertNotIn("GameTooltip:SetOwner", source)
+        self.assertNotIn("hooksecurefunc(", source)
+        self.assertNotIn("SetMapZoom(", source)
+
     def test_legacy_migration_integrity(self):
         runtime = RUNTIME.read_text()
         source = MIGRATION.read_text()
@@ -138,7 +157,7 @@ class ForeverCompatibilityTests(unittest.TestCase):
                          if shutil.which(command)), None)
         if not compiler:
             self.skipTest("No luac executable available; syntax not checked")
-        for path in (RUNTIME, DATA, MARKERS, DIFFICULTY, MIGRATION, CAPTURE):
+        for path in (RUNTIME, DATA, MARKERS, SPATIAL, DIFFICULTY, MIGRATION, CAPTURE):
             result = subprocess.run(
                 [compiler, "-p", str(path)],
                 capture_output=True, text=True, check=False)
