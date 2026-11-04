@@ -10,6 +10,7 @@
 - Preserved the original legacy zone tables. Backed-up source/target snapshots and guarded rollback prevent overwriting later discoveries.
 - Added `Backup-GatherMap.ps1` for physical account/character SavedVariables backups with the game closed. Updated `Upgrade-SavedData.ps1` to select the Forever manifest while retaining the old OctoGather rename flow.
 - Added mock Lua saved-variable round-trip/migration regression tests and disposable PowerShell filesystem tests.
+- **Automated verification passed:** [successful Phase 6 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41909880251), including Lua 5.1/5.4 migration fixtures, PowerShell rename/backup tests, previous regression tests and Python static checks.
 - **Known limitation:** a matching historical zone name does not establish map-art/coordinate equivalence. No automatic mapping or live Forever SavedVariables migration was performed; public release remains unapproved.
 
 ## Unreleased — Step 5 map overlay (November 4, 2026)

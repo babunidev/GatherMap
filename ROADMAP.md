@@ -31,6 +31,8 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [ ] Confirm exact zone-to-UiMapID links, shared geography and positional equivalence on **actual Forever maps**; add reviewed mapping evidence.
 - [ ] Confirm saved records persist across real Forever logout/reload and character switching with physical file backups.
 
+**Automated checks:** The [successful Phase 6 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41909880251) compiled and exercised Lua 5.1 and Lua 5.4 migration, display, difficulty and capture fixtures; PowerShell's renamed-data and physical-backup tests passed using disposable files, as did Python static checks.
+
 All completed checkboxes mean **implemented/tested in mocks**; no real Forever user data was migrated or game-tested.
 
 ### Phase 5 — minimap and world-map presentation (November 4, 2026)
