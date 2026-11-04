@@ -18,7 +18,7 @@ The `feat/forever-port` branch now includes:
 | `GatherMapDifficulty.lua` | Current-character profession reads, skill modifiers and Forever-specific known color thresholds; separate from account-wide SavedVariables |
 | `GatherMapMarkers.lua` | Pixel-space geometry, same-resource transitive overlap grouping and zoom/rotation projection |
 | `GatherMapWorldPins.xml` | Virtual map-canvas pin template |
-| `GatherMapForever.lua` | Modern event callbacks, `C_SkillInfo` rank reads, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
+| `GatherMapForever.lua` | Modern event callbacks, `C_Map` and `C_Minimap` coordinates, native world-map provider, four-corner rendering, hover and display controls |
 | `tests/test_forever_static.py` | Static manifest/API/asset regression checks; optional Lua parsing only if `luac` is installed |
 
 Modern node reads are namespaced as `GatherMapDB.nodes["map:" .. UiMapID]`, **without changing or deleting** old `continent:zone` keys. At this Phase 2 checkpoint no writes were enabled; **Phase 3 subsequently added opt-in new-location writes only**. A temporary `/gmap testpin` marker is created in memory and disappears after `/gmap clear` or reload; it does not alter SavedVariables.
@@ -43,7 +43,7 @@ The native `WorldMapFrame` provider uses `map:GetCanvas()` for the real artwork 
 
 The mouse-disabled custom hover label has its own small background and border, preserving 0.10-second cursor responsiveness without reading or changing the native `GameTooltip`. Overlay controls remain independent: `/gmap on|off` governs minimap pins; the world-map `Gather Map` checkbox and `/gmap world on|off` govern world-map pins. Both preferences remain in `GatherMapDB`, and neither turns off gathering capture.
 
-**Automated verification:** `tests/test_forever_markers.lua` checks transitive grouping, kind/name separation, difficult-group priority, dense chains and the 300-display-cap boundary; pure map geometry covers world-map zoom, rotation, non-square minimaps and edge clipping. `tests/test_forever_display.lua` uses mocked Blizzard frames to exercise provider refreshes, zoom/resize regrouping, UI scale, hover, display controls, preview pin and SavedVariables safety. Python static checks and Lua 5.1/5.4 syntax tests remain in CI. These mocks are not screenshots or evidence of in-game success.
+**Automated verification:** [Step 5 GitHub Actions run 41907106572](https://github.com/babunidev/GatherMap/actions/runs/41907106572) passed under Lua 5.1 and Lua 5.4. `tests/test_forever_markers.lua` checks transitive grouping, kind/name separation, difficult-group priority, dense chains and the 300-display-cap boundary; pure map geometry covers world-map zoom, rotation, non-square minimaps and edge clipping. `tests/test_forever_display.lua` uses mocked Blizzard frames to exercise provider refreshes, zoom/resize regrouping, UI scale, hover, display controls, preview pin and SavedVariables safety. Python static checks and Lua 5.1/5.4 syntax tests remain in CI. These mocks are not screenshots or evidence of in-game success.
 
 **Remaining live work:** Confirm the current `GetBuildInfo()` and canvas API; compare original screenshots to the Forever four-corner design on circular/square minimaps and zones/cities/new Forever maps; test zoom, pan, varying UI scale, tooltip/click layers, map inset and switching maps. Do not claim true visual or combat compatibility without that evidence.
 

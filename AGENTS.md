@@ -1,7 +1,7 @@
 # GatherMap — development instructions for humans and AI collaborators
 
 **Creative direction and authorship:** Babuni.  
-**Current installed identity:** GatherMap, formerly OctoGather, manifest version 0.4.3 for Vanilla interface 11200.
+**Historical public identity:** GatherMap, formerly OctoGather, legacy manifest 0.4.3 / Interface 11200. **Current development manifest:** `GatherMap_Camelot.toc`, 0.5.0-alpha / Interface 16001; unreleased and not game-verified.
 
 ## Read before changing anything
 

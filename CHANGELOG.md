@@ -12,6 +12,7 @@
 - Replaced use of GameTooltip with a compact private mouse-pass-through label, leaving the game's tooltip and map interactions untouched.
 - Restored persistent independent minimap/world-map visibility controls and added optional `/gmap world on|off` diagnostic commands.
 - Added Lua 5.1/5.4 grouping, geometry and mocked map-provider tests, including different UI scales, zooming, resizing, and unchanged SavedVariables.
+- **Automatically verified:** [GitHub Actions run 41907106572](https://github.com/babunidev/GatherMap/actions/runs/41907106572) passed Lua 5.1/5.4 compilation and mocked display, geometry, skill, capture and static tests.
 - **Not yet tested in-game:** precise alignment on the active Forever build, mouse-layer behavior, custom minimap masks and unusual zone layouts. No public release.
 
 ## Unreleased — Step 4 dynamic difficulty (November 4, 2026)

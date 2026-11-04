@@ -33,6 +33,8 @@ Target only World of Warcraft Forever. The `feat/forever-port` development branc
 - [ ] Verify UI controls, tooltip coexistence and visual fidelity with screenshots in the running Forever client.
 - [ ] Verify unusual/client-specific maps and compatibility with other minimap/map addons.
 
+**Automated verification:** [Step 5 GitHub Actions run](https://github.com/babunidev/GatherMap/actions/runs/41907106572) completed successfully under Lua 5.1 and Lua 5.4. It exercised grouping, geometry, mock map-canvas provider, tooltip/UI scaling, controls, earlier difficulty/capture fixtures and static checks.
+
 Source and mock-test completion **does not** establish in-game success.
 
 ### Phase 4 — skill-aware marker colors (November 4, 2026)
