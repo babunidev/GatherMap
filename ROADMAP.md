@@ -21,6 +21,7 @@
 - [x] Override passthrough handling only on GatherMap's mouse-disabled pin template; rely on XML to disable mouse input instead of calling `EnableMouse(false)` at runtime.
 - [x] Correct counterclockwise-facing minimap rotation and respect the client's minimap rotation-ignore setting.
 - [x] Add regression tests that intentionally make the inherited passthrough method fail, simulate walking away from a fixed `/gmap testpin` marker and check it disappears beyond range.
+- [x] Verify the dedicated fix branch through [successful Lua/PowerShell/static CI run 41963074092](https://github.com/babunidev/GatherMap/actions/runs/41963074092); no in-game resolution claim.
 - [x] Add `/gmap pinpos` for opt-in saved-vs-current position diagnostics; no saved discovery modification.
 - [ ] **In-game:** confirm the blocked-action error no longer appears opening, zooming, panning or closing the world map, including in combat.
 - [ ] **In-game:** verify the temporary marker remains at its original world location as the character walks and rotates the minimap; capture `/gmap pinpos` before and after moving.

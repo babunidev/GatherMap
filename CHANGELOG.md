@@ -10,6 +10,7 @@
 - Corrected rotating-minimap screen projection to turn the world opposite the character's counterclockwise facing, and honor the Forever `C_Minimap.IsRotateMinimapIgnored` setting.
 - Added `/gmap pinpos` to inspect a temporary test marker's frozen location against current player coordinates and world-space delta. `/gmap testpin` remains unsaved.
 - Extended simulated MapCanvas acquisition tests to raise an error if the inherited protected mouse method runs, and added walking/range/rotation regression fixtures.
+- **Automated checks passed:** [CI run 41963074092](https://github.com/babunidev/GatherMap/actions/runs/41963074092), including Lua 5.1/5.4 syntax, a mocked protected-passthrough failure trap, a walking/static-preview regression, coordinate rotation tests, prior capture/migration fixtures, PowerShell backups and package integrity.
 - **Live retest still required:** no error-free Forever run or stable minimap marker position is claimed until independently observed. No public release was made.
 
 ## Unreleased — map settings and gathering diagnostics (November 5, 2026)
