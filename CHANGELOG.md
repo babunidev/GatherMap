@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — frame-rate minimap marker tracking (November 5, 2026)
+
+- Addressed a real Forever movement report: a GatherMap marker stayed world-located but advanced in visible jumps, apparently drawing back toward the character before stopping again.
+- Separated **per-frame pin positioning** from slower `0.35 s` resource grouping. The display now retains world-space center anchors for each already-grouped marker and repositions only visible pooled minimap frames as the player's current map position changes.
+- Added a pure inverse minimap projection `MiniWorldAnchor` so existing same-kind/name transitive grouping and four-corner marker dimensions survive between render passes.
+- Kept 300-visible-group limit, stored discoveries, minimap/world toggles, native quest markers and source/loot recording unchanged. Position refresh handles rotation, zoom-change invalidation, range clipping and absent map coordinates safely.
+- Added Lua regression checks for sub-0.35-second movement without regrouping, inverse coordinate transform and rotation-ignore behavior.
+- Actual Forever FPS and smoothness remain to be confirmed in-game. No public release.
+
 ## Unreleased — blocked map-pin action and minimap orientation (November 5, 2026)
 
 - Fixed a **reported live Forever blocked action**: the inherited map-pin `CheckMouseButtonPassthrough` calls the protected `Frame:SetPassThroughButtons()` during Blizzard map refresh. GatherMap's own non-interactive pin overrides that method with a no-op without changing Blizzard's global mixin.

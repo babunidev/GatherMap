@@ -15,6 +15,15 @@
 - [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
 - [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
+### November 5 — minimap marker smoothness
+
+- [x] Identify coarse 0.35-second marker repositioning as a likely cause of the reported movement lag, distinct from Blizzard's normal overlapping quest-objective icon.
+- [x] Keep resource search/merging on the throttled interval, but cache fixed world-space group centers and update existing minimap marker positions on individual game frames.
+- [x] Honor current rotation, rotation-ignore and minimap view radius, hiding out-of-range pins without changing their stored coordinates.
+- [x] Add sub-0.35-second movement, rotation, grouping-budget and fixed-world-anchor regression tests.
+- [ ] **In-game:** confirm markers travel continuously relative to player position while walking, turning, changing zoom and UI scale.
+- [ ] **In-game:** compare performance for dense zones, during combat and after adding a new resource; check for residual 0.35-second jumps or stale pins.
+
 ### November 5 — blocked world-map action and moving test marker
 
 - [x] Trace the reported `ADDON_ACTION_BLOCKED Frame:SetPassThroughButtons()` to Blizzard `MapCanvasMixin:AcquirePin` invoking the inherited passthrough callback.

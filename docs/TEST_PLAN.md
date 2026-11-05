@@ -25,6 +25,18 @@
 | Rotate, zoom and resize minimap; UI scale changes; move to city/custom map | No misaligned/stuck corners, Lua errors or map input blocking | Zone, minimap shape and UI-scale notes |
 | Hover markers, click map, drag map, combat on/off | Label appears without stealing GameTooltip or blocking normal actions | Errors, input behavior |
 
+### Regression: smooth marker movement without changing quest indicators
+
+The screenshot's highlighted quest objective and its minimap pointer are the game's ordinary quest overlay. Test GatherMap's **four-corner resource marker** separately; do not classify the Blizzard quest objective as an addon error.
+
+1. Stand near a temporary or genuinely learned GatherMap marker. Start walking at normal speed with the minimap visible. **Expected:** the marker drifts continuously against the minimap art each frame, not in roughly 0.35-second hops or springing toward the player's center.
+2. Stop, face several directions, toggle rotating minimap, then turn the character. **Expected:** marker location remains fixed against the map terrain with consistent facing changes.
+3. Walk beyond the visible minimap range, then back toward the spot. **Expected:** the marker clips off the minimap and reappears at its fixed location; saved node counts never change.
+4. Change minimap zoom, UI scale, map shape and map visibility; test entering/leaving combat. **Expected:** no stale positions, protected function errors or heavy allocation/CPU spikes.
+5. Record the current Forever build, client FPS during travel, whether `/gmap pinpos` changes its world delta correctly, and whether remaining jumps coincide with position data changes.
+
+These are **pending live-client checks**; synthetic tests verify the intended per-frame math, not the actual rendering cadence.
+
 ### Regression: protected world map actions and fixed minimap pins
 
 The first Forever test revealed `[ADDON_ACTION_BLOCKED] AddOn 'GatherMap' tried to call Frame:SetPassThroughButtons()` when opening the world map, along with a temporary square reported to follow the character.

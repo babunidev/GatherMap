@@ -31,6 +31,10 @@ Start with this `AGENTS.md` and `docs/DOCUMENTATION.md`, then inspect `README.md
 
 The old-zone importer must refuse `apply` unless two distant historical node coordinates have been explicitly matched against positions on the same Forever client build (`/gmap migrate anchor`). A link by zone name is not geometry proof. Preserve every legacy source row, backups and rollback protection. Recording remains **OFF** by default until live evidence and explicit direction justify otherwise. Do not assign a LICENSE, publish a tag or upload to CurseForge without Babuni's specific approval.
 
+## November 5 — smooth minimap follow-up
+
+A live Forever playtest confirmed that a nearby quest-objective marker is ordinary Blizzard UI; GatherMap must not hook, hide or modify it. The actual issue is the GatherMap resource marker's coarse ~0.35-second motion. The current source separates slow/cached resource grouping from `TrackMiniPositions`, which repositions already-visible pooled frames each game frame based on **fixed world-space anchors**. Preserve these anchors, frame pooling, the 300-group limit, inverse minimap rotation, tooltip input safety, and unmodified SavedVariables. Do not move grouping onto every frame or invent a moving marker animation. Lua tests must cover 0.016-second movement with no regroup, map rotation and range clipping; actual engine smoothness and performance still require on-client verification.
+
 ## November 5 — MapCanvas protected-action evidence
 
 The live Forever stack trace shows `MapCanvasMixin:AcquirePin` invoking the inherited `MapCanvasPinMixin:CheckMouseButtonPassthrough`, which calls protected `Frame:SetPassThroughButtons`. GatherMap pins have `enableMouse="false"` in `GatherMapWorldPins.xml`; the addon's local pin mixin must keep its passthrough method a no-op and must not redundantly call protected `EnableMouse(false)` during `OnLoad`. Do not modify Blizzard's global mixin or disable native map handling. Regression mocks intentionally throw on these calls.

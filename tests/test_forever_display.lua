@@ -162,6 +162,12 @@ ns.GatherMapDifficulty={
     Skill=function() return {present=false} end,
 }
 assert(loadfile("GatherMapMarkers.lua"))("GatherMap",ns)
+local groupCalls=0
+local originalGroup=ns.GatherMapMarkers.Group
+ns.GatherMapMarkers.Group=function(...)
+    groupCalls=groupCalls+1
+    return originalGroup(...)
+end
 assert(loadfile("GatherMapSpatial.lua"))("GatherMap",ns)
 assert(loadfile("GatherMapMigration.lua"))("GatherMap",ns)
 local first={name="Battered Chest",kind="treasure",x=0.5,y=0.5,count=1}
@@ -258,14 +264,38 @@ assert(previewPin and previewPin.lastPoint,"preview marker should be visible")
 local initialX,initialY=previewPin.lastPoint[4],previewPin.lastPoint[5]
 assert(math.abs(initialX)<0.0001 and math.abs(initialY)<0.0001,
     "testpin begins where character stands")
+local groupsBeforeMove=groupCalls
+playerX=0.51
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
+assert(groupCalls==groupsBeforeMove,
+    "a short frame must reposition without rebuilding grouped resources")
+assert(previewPin.lastPoint and previewPin.lastPoint[5]<initialY,
+    "fixed marker must move on the first short movement frame")
 playerX=0.55
-mainFrame.scripts.OnUpdate(mainFrame,0.4)
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
+assert(groupCalls==groupsBeforeMove,
+    "walking at frame rate must reuse resource groups")
 assert(previewPin.lastPoint,
     "preview marker should remain visible after a short walk")
 local movedX,movedY=previewPin.lastPoint[4],previewPin.lastPoint[5]
 assert(math.abs(movedY-initialY)>1 and movedY<initialY,
     "fixed testpin must move south on minimap when player travels north")
 assert(math.abs(movedX-initialX)<0.001)
+local rotateMinimap,ignoredRotation,playerFacing=false,false,0
+GetCVarBool=function(name) return name=="rotateMinimap" and rotateMinimap end
+GetPlayerFacing=function() return playerFacing end
+C_Minimap.IsRotateMinimapIgnored=function() return ignoredRotation end
+rotateMinimap=true;playerFacing=math.pi/2
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
+assert(previewPin.lastPoint and previewPin.lastPoint[4]<-10,
+    "rotation must reposition the pinned marker before the 0.35s grouping tick")
+assert(groupCalls==groupsBeforeMove)
+ignoredRotation=true
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
+assert(math.abs(previewPin.lastPoint[4])<0.001,
+    "minimap rotation-ignore mode must disable addon rotation immediately")
+rotateMinimap=false;ignoredRotation=false;playerFacing=0
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
 SlashCmdList.GATHERMAP("pinpos")
 assert(chats[#chats]:find("world delta",1,true)
     and chats[#chats]:find("-50.0",1,true),

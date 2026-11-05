@@ -267,6 +267,69 @@ local function ClearMini()
     miniCache = nil
     HideMini(1)
 end
+local function MinimapFacing()
+    local rotate=GetCVarBool and GetCVarBool("rotateMinimap") or false
+    if issecretvalue and issecretvalue(rotate) then rotate=false end
+    if rotate and C_Minimap and C_Minimap.IsRotateMinimapIgnored then
+        local ignored=C_Minimap.IsRotateMinimapIgnored()
+        if not (issecretvalue and issecretvalue(ignored)) and ignored then
+            rotate=false
+        end
+    end
+    local facing=rotate and GetPlayerFacing and GetPlayerFacing() or 0
+    if issecretvalue and issecretvalue(facing) then facing=0 end
+    if not markers.Finite(facing) then facing=0 end
+    return rotate,facing
+end
+-- Frame-rate tracking updates only already pooled marker anchors. Expensive
+-- discovery grouping and spatial indexing stay on the slower map refresh.
+local function TrackMiniPositions()
+    if visibleMiniPins==0 or not (db and db.enabled and Minimap
+        and Minimap:IsShown() and miniCache) then return end
+    if InCombatLockdown and InCombatLockdown() then return end
+    if not (C_Minimap and C_Minimap.GetViewRadius) then return end
+    -- The zone ID is established by the slower map refresh. Only read the
+    -- current vector here; do not traverse the map hierarchy every frame.
+    local mapID=miniContext.mapID
+    if not (mapID and C_Map and C_Map.GetPlayerMapPosition) then
+        dirty=true;return
+    end
+    local pos=C_Map.GetPlayerMapPosition(mapID,"player")
+    local x,y=VectorXY(pos)
+    if not Valid(x) or not Valid(y) then dirty=true;return end
+    local instance,wx,wy=WorldPosition(mapID,x,y)
+    if instance~=miniContext.instance or not markers.Finite(wx)
+        or not markers.Finite(wy) then dirty=true;return end
+    local width,height=Minimap:GetWidth(),Minimap:GetHeight()
+    local radius=C_Minimap.GetViewRadius()
+    if issecretvalue and issecretvalue(radius) then dirty=true;return end
+    if not (markers.Finite(radius) and radius>0
+        and width==miniContext.width and height==miniContext.height
+        and radius==miniContext.radius) then dirty=true;return end
+    local rotate,facing=MinimapFacing()
+    if miniContext.lastWX==wx and miniContext.lastWY==wy
+        and miniContext.lastFacing==facing and miniContext.lastRotate==rotate then
+        return
+    end
+    miniContext.lastWX,miniContext.lastWY=wx,wy
+    miniContext.lastFacing,miniContext.lastRotate=facing,rotate
+    for i=1,visibleMiniPins do
+        local pin=miniPins[i]
+        local sx,sy
+        if pin.worldInstance==instance and markers.Finite(pin.worldX)
+            and markers.Finite(pin.worldY) then
+            sx,sy=markers.MiniPoint(pin.worldX-wx,pin.worldY-wy,
+                radius,width,height,facing,rotate)
+        end
+        if sx then
+            pin:ClearAllPoints()
+            pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
+            pin:Show()
+        else
+            pin:Hide()
+        end
+    end
+end
 local function DrawMinimap()
     if InCombatLockdown and InCombatLockdown() then return end
     if not (db and db.enabled and Minimap and Minimap:IsShown()
@@ -288,15 +351,7 @@ local function DrawMinimap()
     local width, height = Minimap:GetWidth(), Minimap:GetHeight()
     if not (markers.Finite(width) and markers.Finite(height)
         and width > 0 and height > 0) then ClearMini();return end
-    local rotate = GetCVarBool and GetCVarBool("rotateMinimap") or false
-    if rotate and C_Minimap.IsRotateMinimapIgnored then
-        local ignored = C_Minimap.IsRotateMinimapIgnored()
-        if not (issecretvalue and issecretvalue(ignored)) and ignored then
-            rotate = false
-        end
-    end
-    local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
-    if not markers.Finite(facing) then facing = 0 end
+    local rotate,facing=MinimapFacing()
     local previous = miniCache
     if previous and previous.mapID == mapID and previous.instance == instance
         and previous.x == wx and previous.y == wy
@@ -334,14 +389,20 @@ local function DrawMinimap()
     local count = math.min(#groups, MAX_PINS)
     for i = 1, count do
         local group, pin = groups[i], AcquireMini(i)
-        Style(pin, group)
+        Style(pin,group)
+        local sx=(group.left+group.right)/2
+        local sy=(group.bottom+group.top)/2
+        pin.worldX,pin.worldY=markers.MiniWorldAnchor(sx,sy,wx,wy,
+            radius,width,height,facing,rotate)
+        pin.worldInstance=instance
         pin:ClearAllPoints()
-        pin:SetPoint("CENTER", Minimap, "CENTER",
-            (group.left + group.right) / 2, (group.bottom + group.top) / 2)
+        pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
         pin:Show()
     end
-    HideMini(count + 1)
+    HideMini(count+1)
     visibleMiniPins=count
+    miniContext.lastWX,miniContext.lastWY=wx,wy
+    miniContext.lastFacing,miniContext.lastRotate=facing,rotate
 end
 
 -- Native Blizzard map-canvas pins follow zoom, panning and map selection.
@@ -853,6 +914,7 @@ f:SetScript("OnUpdate",function(self,dt)
         skillDirty=false
         if difficulty.Refresh() then MarkStyleDirty() end
     end
+    TrackMiniPositions()
     -- Retry lazy native-map initialization on a slow cadence only.
     if not provider and WorldMapFrame then
         providerRetryTick=providerRetryTick+dt

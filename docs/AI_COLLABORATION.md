@@ -68,3 +68,9 @@ Babuni reported that the installed addon loaded and showed its world-map checkbo
 Babuni reported an actual Forever `ADDON_ACTION_BLOCKED` trace showing `Frame:SetPassThroughButtons()` in Blizzard's `MapCanvasMixin:AcquirePin`, plus a temporary minimap square following the character. AI investigation compared the captured call stack to the Forever UI-source implementation and identified the inherited mouse-passthrough method. Code overrides it only in GatherMap's own pin mixin and relies on the XML template for mouse-disabled behavior. It also reverses the minimap-facing rotation transform, checks for rotation-ignore mode and adds a `/gmap pinpos` diagnostic.
 
 Regression fixtures simulate blocked inherited pin methods and player movement; [CI run 41963074092](https://github.com/babunidev/GatherMap/actions/runs/41963074092) passed under Lua 5.1 and 5.4, plus existing PowerShell/static checks. No live client was operated by AI. These changes should not be presented as verified in-game until the original error and moving-marker reproduction are retested there.
+
+## November 5, 2026 — minimizing movement jitter without expensive full redraws
+
+Babuni reported a minimap marker moving in visible steps and clarified that a nearby quest-objective indicator was normal Blizzard behavior. AI investigation found that the Forever runtime projected visible resource groups only at a 0.35-second refresh. The new code retains throttled resource grouping and builds a per-group fixed world-space center for frame-rate repositioning, with inverse projection and rotation/clipping guards. Tests simulate 0.016-second movement and require the resource-group call count not to increase during those frames.
+
+No Blizzard quest indicator was modified. The private client was not accessible; smoothness and any performance impact remain game-unverified.

@@ -115,6 +115,23 @@ assert(M.MiniPoint(500,0,100,200,200,0,false)==nil)
 assert(M.MiniPoint(98,0,100,200,200,0,false)==nil,
     "clip marker before corners go outside minimap")
 assert(M.MiniPoint(0,0,0,200,200,0,false)==nil)
+-- Reconstruct a grouped center's world anchor at different zoom and
+-- rotation settings. The anchor must remain identical while the view moves.
+for _,rotate in ipairs({false,true}) do
+    for _,facing in ipairs({0,math.pi/2,math.pi,3*math.pi/2}) do
+        local sx,sy=M.MiniPoint(15,-24,300,220,180,facing,rotate)
+        local wx,wy=M.MiniWorldAnchor(sx,sy,500,600,300,220,180,
+            facing,rotate)
+        assert(wx and math.abs(wx-515)<0.00001)
+        assert(math.abs(wy-576)<0.00001,
+            "fixed marker world anchor must survive inverse minimap projection")
+        local newX,newY=M.MiniPoint(wx-506,wy-596,300,220,180,facing,rotate)
+        assert(newX and newY and math.abs(newX-sx)>0.01,
+            "pinned resource must move immediately relative to new player position")
+    end
+end
+assert(M.MiniWorldAnchor(0,0,0,0,0,220,180,0,false)==nil)
+
 -- Marker is fixed in world-space: when the player walks north past it,
 -- its projection must move south (not stay at the player's minimap center).
 local nodeX,nodeY=700,100

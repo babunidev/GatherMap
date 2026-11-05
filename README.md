@@ -30,6 +30,14 @@ The first Forever playtest reported a protected `Frame:SetPassThroughButtons()` 
 
 The minimap projection now applies the inverse of the character's counterclockwise facing when the map rotates, and respects `C_Minimap.IsRotateMinimapIgnored()`. `/gmap testpin` remains deliberately **temporary and unsaved**: the marker's world location should remain fixed as the character walks. `/gmap pinpos` exposes the stored/current coordinates and separation for diagnosing a remaining live-client problem. Automated pin-acquisition and walking tests are not proof of visual correctness in the actual client.
 
+## Smooth minimap tracking — development fix (November 5)
+
+The Forever playtest confirmed that the quest objective overlapping the minimap was **Blizzard's normal quest overlay**, not a GatherMap resource marker. GatherMap's own saved/test markers were reported to lag and jump toward the player during movement.
+
+The runtime now separates **position tracking** from resource grouping. Its regular grouping and spatial candidate lookup stay on the 0.35-second update cycle, but each visible marker remembers a fixed world-space anchor. During movement, the existing minimap frames are repositioned on individual game frames from the current player position, including minimap rotation, range clipping and zoom invalidation. The SavedVariables coordinates and four-corner appearance are unchanged. There is no invented interpolation or player-following animation.
+
+**Testing status:** Lua mock checks cover movement at 0.016-second increments without regrouping, rotation and rotation-ignore behavior, fixed-anchor geometry and out-of-range hiding. This still requires in-game movement and combat checks on Forever.
+
 ## Map settings button
 
 Open the world map and click **GatherMap** in the upper-left map area. A small panel opens with independent switches for **Minimap markers**, **World-map markers**, **Record discoveries**, and **Diagnostic chat**. The old checkbox has been removed. Recording remains **OFF by default**, even when both marker displays are visible. Switch it on explicitly before gathering; saved discoveries do not depend on the panel remaining open.

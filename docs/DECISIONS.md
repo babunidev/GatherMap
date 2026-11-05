@@ -73,6 +73,12 @@ The first Forever world-map test produced a protected-call report for `Frame:Set
 
 A separate minimap report said a small square moved with the player instead of remaining at a recorded location. The projection's facing rotation was reversed and is corrected; the client rotation-ignore API is now respected. A new temporary-pin position diagnostic and walking mock test help distinguish geometry from in-game map-data behavior. It is not yet known whether these changes fully resolve the observed live motion.
 
+## November 5, 2026 — retain throttled grouping, update positioning every frame
+
+The latest Forever playtest clarified that the overlapping quest-objective indicator was Blizzard's normal map overlay. GatherMap's separate symptom was a fixed marker that visually jumped or tugged toward the player as the character walked. The source rendered positions only during a 0.35-second full regrouping pass. Moving the expensive grouping to every frame would worsen performance, so the engineering fix retains slow grouping but stores each displayed group's world-space anchor and updates the existing noninteractive marker frames between passes.
+
+This preserves the original four-corner markers, SavedVariables, independent toggles, resource grouping and 300-group display limit. The source solution is covered by short-frame fixtures, but no direct Forever FPS or smoothness evidence exists yet.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

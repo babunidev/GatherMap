@@ -136,3 +136,9 @@ The requested change is a small map button with a compact menu for both overlays
 On my first Forever map test, the little square didn't behave as a remembered place should, and opening the world map triggered a protected-action error. The old icon wasn't the problem by itself; an inherited Blizzard map-pin method tried to change protected mouse settings while the addon was drawing.
 
 AI-assisted investigation traced that call through Forever's native map canvas and narrowed the fix to GatherMap's own mouse-disabled pin template. The minimap's rotation direction was corrected as well, and a temporary test pin can now report its fixed position against the character's changing coordinates. Mock tests can guard those calculations, but the actual ground beneath that square is still the test that matters.
+
+## November 5, 2026: giving a remembered place a steadier hand
+
+The quest pointer on my minimap turned out to be doing exactly what Blizzard intended. GatherMap's little square was the one with an awkward gait: it held the right general location, but slid toward my character in short steps while moving through the world.
+
+The previous overlay placed the whole set of markers only a few times per second. With AI-assisted changes, the map still groups nearby discoveries at that slower pace, while each existing marker keeps its own world-space anchor and can move smoothly against the player's position every frame. The four corners, the account's saved places and the quest overlay remain untouched. Actual movement in Forever will decide whether the new timing matches the terrain.

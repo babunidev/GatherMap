@@ -19,6 +19,14 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — frame-rate minimap positioning over cached resource groups
+
+The first live movement report showed world-fixed markers advancing in small jumps instead of keeping pace with the minimap. The source cause is likely the previous `DrawMinimap` path: it projected every displayed group only at the 0.35-second throttled redraw, even though the character position can change each frame.
+
+`DrawMinimap` continues to perform expensive spatial candidate lookup, same-kind/name transitive grouping, color selection and frame-pool assignment at its normal throttled rate. Each visible group's screen-space center is converted back to a **fixed world-space anchor** using the pure `GatherMapMarkers.MiniWorldAnchor` helper and the grouping pass's player position, minimap radius, size and rotation. `TrackMiniPositions` runs during `OnUpdate`, reads the current player's position on the cached `UiMapID`, and moves only already-visible pooled frames with `markers.MiniPoint`. No node positions are changed or stored in `GatherMapDB`; original marker dimensions/color are retained. If a node leaves the viewport it is hidden until it returns or the next grouping pass assigns a new candidate. Changed zoom/dimensions/position failures request a full redraw; the main grouping pass still controls new arrivals.
+
+Tests require visible pins to move after a 0.016-second frame while the group-counter stays unchanged, confirm inverse projection for rotated and non-square maps, and handle rotation-ignore mode. No extrapolation, lerping or raw-event polling was added. This is a **game-frame position update**, not a game-tested FPS claim; engine position resolution, restrictions and actual UI behavior still need Forever verification.
+
 ## November 5 — world-pin taint fix and anchored minimap markers
 
 The Forever client reported `ADDON_ACTION_BLOCKED` for `Frame:SetPassThroughButtons()`. Blizzard's native `MapCanvasMixin:AcquirePin` invokes `pin:CheckMouseButtonPassthrough("RightButton")` even for a custom non-clickable frame. The inherited `MapCanvasPinMixin:CheckMouseButtonPassthrough` clears and sets passthrough using the protected C API. `GatherMapForeverWorldPinMixin` now defines a local no-op override because the XML template already specifies `enableMouse="false"`. `OnLoad` no longer redundantly calls potentially protected `EnableMouse(false)`. This leaves global Blizzard/other-addons' map mixins unchanged.

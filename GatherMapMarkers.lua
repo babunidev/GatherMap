@@ -127,10 +127,28 @@ local function MiniPoint(dx, dy, radius, width, height, facing, rotate)
     if (sx / safeX) ^ 2 + (sy / safeY) ^ 2 > 1 then return nil end
     return sx, sy
 end
+-- Recover the fixed world location of a grouped marker's screen center.
+-- The group can be repositioned each frame without regrouping saved nodes.
+local function MiniWorldAnchor(sx,sy,wx,wy,radius,width,height,facing,rotate)
+    if not (Finite(sx) and Finite(sy) and Finite(wx) and Finite(wy)
+        and Finite(radius) and radius>0
+        and Finite(width) and Finite(height) and width>0 and height>0) then
+        return nil
+    end
+    if rotate then
+        if not Finite(facing) then return nil end
+        local sn,cs=math.sin(facing),math.cos(facing)
+        -- Undo the inverse-facing minimap rotation from MiniPoint.
+        sx,sy=sx*cs-sy*sn,sx*sn+sy*cs
+    end
+    return wx + sy*radius*2/height, wy - sx*radius*2/width
+end
+
 ns.GatherMapMarkers = {
     Group = Group,
     Finite = Finite,
     WorldPoint = WorldPoint,
     MiniPoint = MiniPoint,
+    MiniWorldAnchor = MiniWorldAnchor,
     HalfSize = HALF_SIZE,
 }
