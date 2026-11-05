@@ -24,6 +24,12 @@ The historical `GatherMap.toc` (`Interface: 11200`) and `GatherMap.lua` remain i
 - **Performance:** Event-aware redraws, reusable minimap frames, grouped world-map pins and a spatial index for larger saved zone databases.
 - **Historical data:** Raw schema-v1/v2/v3 and old `continent:zone` entries are preserved. An opt-in importer supports explicit mapping, preview, two real-world coordinate anchors, before/after snapshots and guarded rollback; no automatic historical zone conversion occurs.
 
+## Map marker bugfix — November 5 development checkpoint
+
+The first Forever playtest reported a protected `Frame:SetPassThroughButtons()` call while the world map created GatherMap pins. Blizzard's map canvas invokes a mouse-button-passthrough callback on acquired pins; the default implementation calls the protected function. GatherMap now overrides that callback **only for its own mouse-disabled marker template**, and relies on the XML's `enableMouse="false"` instead of mutating mouse state at runtime.
+
+The minimap projection now applies the inverse of the character's counterclockwise facing when the map rotates, and respects `C_Minimap.IsRotateMinimapIgnored()`. `/gmap testpin` remains deliberately **temporary and unsaved**: the marker's world location should remain fixed as the character walks. `/gmap pinpos` exposes the stored/current coordinates and separation for diagnosing a remaining live-client problem. Automated pin-acquisition and walking tests are not proof of visual correctness in the actual client.
+
 ## Map settings button
 
 Open the world map and click **GatherMap** in the upper-left map area. A small panel opens with independent switches for **Minimap markers**, **World-map markers**, **Record discoveries**, and **Diagnostic chat**. The old checkbox has been removed. Recording remains **OFF by default**, even when both marker displays are visible. Switch it on explicitly before gathering; saved discoveries do not depend on the panel remaining open.
@@ -38,6 +44,7 @@ The last capture result appears at the bottom of the panel. For more detailed re
 | `/gmap on` / `/gmap off` | Enable/disable **minimap** markers only |
 | `/gmap world on` / `/gmap world off` | Enable/disable **world-map** markers only; world-map settings are also available through the GatherMap button |
 | `/gmap testpin` / `/gmap clear` | Show/remove a temporary unsaved test marker |
+| `/gmap pinpos` | Show the fixed test marker position, current player position and world-space offset; useful when diagnosing minimap motion |
 | `/gmap menu` | Open or close the same settings panel while the world map is visible |
 | `/gmap capture status` | Show recording policy |
 | `/gmap capture on` / `/gmap capture off` | Explicitly enable/disable **experimental** recording |

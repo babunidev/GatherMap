@@ -62,3 +62,9 @@ An earlier manual migration path was found to depend on matched names without in
 ## November 5, 2026 — gather recording triage and settings menu
 
 Babuni reported that the installed addon loaded and showed its world-map checkbox but did not save actual harvested resources, and requested one compact button with all on/off settings. AI source investigation found the recording default was disabled independently of visibility, identified two Forever gathering spell IDs and added opt-in capture diagnostics, a safer delayed-loot retry and a four-row map menu. Lua mock tests were extended for the panel and recorder. These do not constitute an actual in-game success test or permission to publish a public version.
+
+## November 5, 2026 — protected MapCanvas pin call and moving minimap marker
+
+Babuni reported an actual Forever `ADDON_ACTION_BLOCKED` trace showing `Frame:SetPassThroughButtons()` in Blizzard's `MapCanvasMixin:AcquirePin`, plus a temporary minimap square following the character. AI investigation compared the captured call stack to the Forever UI-source implementation and identified the inherited mouse-passthrough method. Code overrides it only in GatherMap's own pin mixin and relies on the XML template for mouse-disabled behavior. It also reverses the minimap-facing rotation transform, checks for rotation-ignore mode and adds a `/gmap pinpos` diagnostic.
+
+Regression fixtures simulate blocked inherited pin methods and player movement; no live client was operated by AI. These changes should not be presented as verified in-game until the original error and moving-marker reproduction are retested there.

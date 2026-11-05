@@ -119,7 +119,9 @@ local function MiniPoint(dx, dy, radius, width, height, facing, rotate)
     if rotate then
         if not Finite(facing) then return nil end
         local sn, cs = math.sin(facing), math.cos(facing)
-        sx, sy = sx * cs - sy * sn, sx * sn + sy * cs
+        -- Facing increases counterclockwise, but rotating the minimap
+        -- turns the world in the opposite direction (player stays upright).
+        sx, sy = sx * cs + sy * sn, -sx * sn + sy * cs
     end
     local safeX, safeY = math.max(1, halfX - 8), math.max(1, halfY - 8)
     if (sx / safeX) ^ 2 + (sy / safeY) ^ 2 > 1 then return nil end

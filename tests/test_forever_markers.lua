@@ -101,11 +101,30 @@ assert(x==0 and y==10)
 x,y=M.MiniPoint(0,10,100,200,200,0,false)
 assert(x==-10 and y==0)
 x,y=M.MiniPoint(10,0,100,200,200,math.pi/2,true)
-assert(math.abs(x+10)<0.00001 and math.abs(y)<0.00001)
+assert(math.abs(x-10)<0.00001 and math.abs(y)<0.00001,
+    "north lies to the right when facing west on a rotating minimap")
+x,y=M.MiniPoint(10,0,100,200,200,3*math.pi/2,true)
+assert(math.abs(x+10)<0.00001 and math.abs(y)<0.00001,
+    "north lies to the left when facing east on a rotating minimap")
+x,y=M.MiniPoint(0,10,100,200,200,math.pi/2,true)
+assert(math.abs(x)<0.00001 and math.abs(y-10)<0.00001,
+    "west lies ahead when facing west")
 x,y=M.MiniPoint(10,0,100,300,160,0,false)
 assert(x==0 and y==8,"non-square minimap projection")
 assert(M.MiniPoint(500,0,100,200,200,0,false)==nil)
 assert(M.MiniPoint(98,0,100,200,200,0,false)==nil,
     "clip marker before corners go outside minimap")
 assert(M.MiniPoint(0,0,0,200,200,0,false)==nil)
+-- Marker is fixed in world-space: when the player walks north past it,
+-- its projection must move south (not stay at the player's minimap center).
+local nodeX,nodeY=700,100
+local playerX,playerY=700,100
+x,y=M.MiniPoint(nodeX-playerX,nodeY-playerY,100,200,200,0,false)
+assert(x==0 and y==0)
+playerX=710
+x,y=M.MiniPoint(nodeX-playerX,nodeY-playerY,100,200,200,0,false)
+assert(x==0 and y==-10)
+playerX=810
+assert(M.MiniPoint(nodeX-playerX,nodeY-playerY,100,200,200,0,false)==nil,
+    "fixed landmark disappears once outside the minimap radius")
 print("PASS: markers transitive/separate, colors, clipping, dense sets, zoom, scaling and rotation")

@@ -31,6 +31,12 @@ Start with this `AGENTS.md` and `docs/DOCUMENTATION.md`, then inspect `README.md
 
 The old-zone importer must refuse `apply` unless two distant historical node coordinates have been explicitly matched against positions on the same Forever client build (`/gmap migrate anchor`). A link by zone name is not geometry proof. Preserve every legacy source row, backups and rollback protection. Recording remains **OFF** by default until live evidence and explicit direction justify otherwise. Do not assign a LICENSE, publish a tag or upload to CurseForge without Babuni's specific approval.
 
+## November 5 — MapCanvas protected-action evidence
+
+The live Forever stack trace shows `MapCanvasMixin:AcquirePin` invoking the inherited `MapCanvasPinMixin:CheckMouseButtonPassthrough`, which calls protected `Frame:SetPassThroughButtons`. GatherMap pins have `enableMouse="false"` in `GatherMapWorldPins.xml`; the addon's local pin mixin must keep its passthrough method a no-op and must not redundantly call protected `EnableMouse(false)` during `OnLoad`. Do not modify Blizzard's global mixin or disable native map handling. Regression mocks intentionally throw on these calls.
+
+A reported temporary testpin followed the player. Minimap rotation must invert counterclockwise `GetPlayerFacing()` and respect `C_Minimap.IsRotateMinimapIgnored()`; the saved node coordinates remain constant and projected offsets change as the character walks. `/gmap pinpos` is the opt-in diagnostic. Only actual Forever testing can establish that world anchoring and user input work on the installed client.
+
 ## November 5 — live feedback and compact map controls
 
 The first actual Forever installation found the addon loaded and the world-map control visible but did **not** record gathering. The source's recording default is disabled, independently of map visibility; this is a known configuration explanation, not proof that active Forever gathering events work. Babuni explicitly requested replacing the old world-map checkbox with a **GatherMap** button opening a small panel of independent minimap, world-map, gathering-recording and diagnostic toggles. Preserve the recording-OFF default and require real gameplay evidence before declaring the issue fixed. Diagnostic messages are opt-in and should explain failures without flooding normal chat. The four-corner marker design and existing saved keys must remain intact.

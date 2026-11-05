@@ -25,6 +25,19 @@
 | Rotate, zoom and resize minimap; UI scale changes; move to city/custom map | No misaligned/stuck corners, Lua errors or map input blocking | Zone, minimap shape and UI-scale notes |
 | Hover markers, click map, drag map, combat on/off | Label appears without stealing GameTooltip or blocking normal actions | Errors, input behavior |
 
+### Regression: protected world map actions and fixed minimap pins
+
+The first Forever test revealed `[ADDON_ACTION_BLOCKED] AddOn 'GatherMap' tried to call Frame:SetPassThroughButtons()` when opening the world map, along with a temporary square reported to follow the character.
+
+1. With the updated development build and `/console scriptErrors 1`, open/close the world map several times. Zoom and pan; repeat after `/gmap testpin` and with world markers toggled. **Expected:** no `SetPassThroughButtons` protected call; other providers, clicks and map controls still work.
+2. Stand still outdoors, enable minimap markers, type `/gmap testpin`, then `/gmap pinpos`. Write down (or redact for sharing) the fixed marker and player map coordinates and the initial world-space delta (approximately 0, 0).
+3. Walk in one direction for enough distance to visibly move the minimap. Run `/gmap pinpos` again. **Expected:** the saved temporary marker coordinates **do not change**, the player coordinates and world-space delta **do**, and the marker moves opposite the player's travel rather than staying beneath the arrow. Eventually it leaves the minimap radius.
+4. Toggle **Rotate Minimap** and turn the character west/east while stationary. **Expected:** pins rotate with the map art in the correct direction; the saved marker stays anchored to its world location. Test places where the game ignores minimap rotation.
+5. Run `/gmap clear`. **Expected:** no test marker remains and `GatherMapDB.nodes` was never modified. Run `/gmap status` to check counts.
+6. Repeat with a **real gathered** resource and after `/reload`, with other gathering addons disabled first. Record the Forever build, map type, rotation setting and any remaining errors.
+
+**Status:** The regression checks above are instructions for the player; only automated mocks have been exercised as part of this source change.
+
 ## B — Recording (enable only on disposable test data)
 
 1. Record saved-node counts with `/gmap status` before starting. Open the world-map **GatherMap** button and turn **Record discoveries ON** (or use `/gmap capture on`). It begins OFF by default. Turn it OFF after testing. Temporarily enable **Diagnostic chat** if a successful gather is not saved.

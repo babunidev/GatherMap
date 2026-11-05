@@ -117,6 +117,13 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn('GatherMapForeverMapToggle', runtime)
         self.assertIn("MAX_PINS", runtime)
         self.assertIn("GatherMapMarkers.lua", MANIFEST.read_text())
+        self.assertIn("GatherMapForeverWorldPinMixin:CheckMouseButtonPassthrough()", runtime)
+        self.assertNotIn("self:SetPassThroughButtons(", runtime)
+        self.assertNotIn('self:EnableMouse(false)', runtime.split(
+            "function GatherMapForeverWorldPinMixin:OnLoad()", 1)[1].split("end", 1)[0])
+        self.assertIn("IsRotateMinimapIgnored", runtime)
+        self.assertIn('command=="pinpos"', runtime)
+        self.assertIn("sx * cs + sy * sn", grouping)
 
     def test_performance_and_coexistence_guards(self):
         source = RUNTIME.read_text()

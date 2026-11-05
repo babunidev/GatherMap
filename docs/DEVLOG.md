@@ -130,3 +130,9 @@ AI-assisted work checked a newer Forever UI-source snapshot, separated old insta
 The first installed Forever build put its control on my map, yet harvesting a resource taught GatherMap nothing. Its old checkbox only governed visibility, while the recording system began disabled in the background. Having these controls apart made the problem hard to spot.
 
 The requested change is a small map button with a compact menu for both overlays and the gathering recorder, plus optional diagnostics. AI-assisted debugging also recognized newer Forever gathering spell IDs and added a second opportunity to read loot details after a confirmed interaction. Automated checks can exercise the code, but seeing an actual harvest appear on the map remains the decisive game test.
+
+## November 5, 2026: a marker that belongs to the ground
+
+On my first Forever map test, the little square didn't behave as a remembered place should, and opening the world map triggered a protected-action error. The old icon wasn't the problem by itself; an inherited Blizzard map-pin method tried to change protected mouse settings while the addon was drawing.
+
+AI-assisted investigation traced that call through Forever's native map canvas and narrowed the fix to GatherMap's own mouse-disabled pin template. The minimap's rotation direction was corrected as well, and a temporary test pin can now report its fixed position against the character's changing coordinates. Mock tests can guard those calculations, but the actual ground beneath that square is still the test that matters.

@@ -15,8 +15,11 @@ local function Frame(parent)
     function f:IsShown() return self.visible end
     function f:Show() self.visible=true end
     function f:Hide() self.visible=false end
-    function f:SetPoint() end
-    function f:ClearAllPoints() end
+    function f:SetPoint(...) self.lastPoint={...} end
+    function f:ClearAllPoints() self.lastPoint=nil end
+    function f:SetPassThroughButtons()
+        error("Protected SetPassThroughButtons called by GatherMap map pin")
+    end
     function f:SetAlpha(a) self.alpha=a end
     function f:RegisterEvent() end
     function f:RegisterUnitEvent() end
@@ -76,6 +79,11 @@ end
 function WorldMapFrame:AcquirePin(template,group,w,h)
     self.pins=self.pins or {}
     local pin=Frame(canvas)
+    -- The virtual XML template explicitly sets enableMouse="false".
+    pin.mouseEnabled=false
+    function pin:EnableMouse()
+        error("Protected EnableMouse must not be called during pin OnLoad")
+    end
     for name,value in pairs(GatherMapForeverWorldPinMixin) do
         pin[name]=value
     end
@@ -86,6 +94,10 @@ function WorldMapFrame:AcquirePin(template,group,w,h)
     end
     pin:OnLoad()
     pin:OnAcquired(group,w,h)
+    -- Model the exact protected call reported by the Forever client:
+    -- MapCanvas:AcquirePin invokes this after OnAcquired.
+    pin:CheckMouseButtonPassthrough("RightButton")
+    assert(pin.mouseEnabled==false,"map pin must not intercept input")
     self.pins[#self.pins+1]=pin
 end
 WorldMapFrame.pins={}
@@ -101,7 +113,12 @@ function CreateFromMixins(...)
     end
     return result
 end
-MapCanvasPinMixin={}
+MapCanvasPinMixin={
+    CheckMouseButtonPassthrough=function(self)
+        -- A non-overridden inherited method would invoke a protected API.
+        self:SetPassThroughButtons()
+    end,
+}
 MapCanvasDataProviderMixin={
     OnAdded=function(self,map) self.owningMap=map end,
     GetMap=function(self) return self.owningMap end,
@@ -115,15 +132,17 @@ GetZoneText=function() return "Elwynn Forest" end
 GetSubZoneText=function() return "Northshire Valley" end
 UnitLevel=function() return 20 end
 CreateVector2D=function(x,y) return {x=x,y=y} end
+local playerX,playerY=0.5,0.5
 C_Map={
     GetBestMapForUnit=function() return 37 end,
     GetMapInfo=function(id) return {mapType=3} end,
-    GetPlayerMapPosition=function(id) return {x=0.5,y=0.5} end,
+    GetPlayerMapPosition=function(id) return {x=playerX,y=playerY} end,
     GetWorldPosFromMapPos=function(id,position)
         return 1,{x=position.x*1000,y=position.y*1000}
     end,
 }
-C_Minimap={GetViewRadius=function() return 300 end}
+C_Minimap={GetViewRadius=function() return 300 end,
+    IsRotateMinimapIgnored=function() return false end}
 local chats={}
 DEFAULT_CHAT_FRAME={AddMessage=function(_,msg) chats[#chats+1]=msg end}
 SlashCmdList={}
@@ -226,6 +245,40 @@ for _,fr in ipairs(frames) do
     if fr.parent==Minimap and fr:IsShown() then miniCount=miniCount+1 end
 end
 assert(miniCount>0,"minimap group must appear")
+-- A temporary testpin must stay fixed in world coordinates while the
+-- character moves, rather than remaining attached to the player arrow.
+SlashCmdList.GATHERMAP("testpin")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+local previewPin
+for _,fr in ipairs(frames) do
+    if fr.parent==Minimap and fr.name=="GatherMap preview"
+        and fr:IsShown() then previewPin=fr;break end
+end
+assert(previewPin and previewPin.lastPoint,"preview marker should be visible")
+local initialX,initialY=previewPin.lastPoint[4],previewPin.lastPoint[5]
+assert(math.abs(initialX)<0.0001 and math.abs(initialY)<0.0001,
+    "testpin begins where character stands")
+playerX=0.55
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(previewPin.lastPoint,
+    "preview marker should remain visible after a short walk")
+local movedX,movedY=previewPin.lastPoint[4],previewPin.lastPoint[5]
+assert(math.abs(movedY-initialY)>1 and movedY<initialY,
+    "fixed testpin must move south on minimap when player travels north")
+assert(math.abs(movedX-initialX)<0.001)
+SlashCmdList.GATHERMAP("pinpos")
+assert(chats[#chats]:find("world delta",1,true)
+    and chats[#chats]:find("-50.0",1,true),
+    "position diagnostics must report the fixed marker offset")
+playerX=0.95
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(not previewPin:IsShown(),
+    "fixed marker must disappear outside minimap radius")
+SlashCmdList.GATHERMAP("clear")
+playerX=0.5
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(#GatherMapDB.nodes["map:37"]==2,
+    "moving temporary marker cannot write discoveries")
 SlashCmdList.GATHERMAP("off")
 mainFrame.scripts.OnUpdate(mainFrame,0.4)
 for _,fr in ipairs(frames) do

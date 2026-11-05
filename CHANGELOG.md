@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — blocked map-pin action and minimap orientation (November 5, 2026)
+
+- Fixed a **reported live Forever blocked action**: the inherited map-pin `CheckMouseButtonPassthrough` calls the protected `Frame:SetPassThroughButtons()` during Blizzard map refresh. GatherMap's own non-interactive pin overrides that method with a no-op without changing Blizzard's global mixin.
+- Removed redundant runtime `EnableMouse(false)` from the GatherMap world-pin mixin; its XML template already disables mouse input.
+- Corrected rotating-minimap screen projection to turn the world opposite the character's counterclockwise facing, and honor the Forever `C_Minimap.IsRotateMinimapIgnored` setting.
+- Added `/gmap pinpos` to inspect a temporary test marker's frozen location against current player coordinates and world-space delta. `/gmap testpin` remains unsaved.
+- Extended simulated MapCanvas acquisition tests to raise an error if the inherited protected mouse method runs, and added walking/range/rotation regression fixtures.
+- **Live retest still required:** no error-free Forever run or stable minimap marker position is claimed until independently observed. No public release was made.
+
 ## Unreleased — map settings and gathering diagnostics (November 5, 2026)
 
 - Replaced the separate world-map checkbox with a compact **GatherMap** button and an expandable four-switch panel for minimap markers, world-map markers, opt-in gathering recording and diagnostic chat. Existing display and capture SavedVariables are preserved.

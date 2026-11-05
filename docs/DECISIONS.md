@@ -67,6 +67,12 @@ Babuni requested that the single world-map checkbox be replaced by a compact **G
 
 A source review identified two additional possible reasons for silent recording failure: missing active Forever herbalism/mining IDs and loot-slot data becoming available after `LOOT_READY`. Explicit spell IDs and a second `LOOT_OPENED` attempt were added while retaining the successful cast + correlated loot-source requirement. The initial report establishes that the old installation did not record; it does not establish that the new implementation has worked in Forever.
 
+## November 5, 2026 — keep the map input owned by Blizzard
+
+The first Forever world-map test produced a protected-call report for `Frame:SetPassThroughButtons()` in Blizzard's map-canvas acquisition path. The native pin provider remains the intended implementation, but GatherMap's non-interactive marker template does not need mouse passthrough configuration. The targeted fix overrides that callback only on GatherMap's own pin mixin and lets the XML template disable mouse input. No global Blizzard mixin, hook or other addon provider is modified.
+
+A separate minimap report said a small square moved with the player instead of remaining at a recorded location. The projection's facing rotation was reversed and is corrected; the client rotation-ignore API is now respected. A new temporary-pin position diagnostic and walking mock test help distinguish geometry from in-game map-data behavior. It is not yet known whether these changes fully resolve the observed live motion.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

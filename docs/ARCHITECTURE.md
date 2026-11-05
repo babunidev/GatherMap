@@ -19,6 +19,14 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — world-pin taint fix and anchored minimap markers
+
+The Forever client reported `ADDON_ACTION_BLOCKED` for `Frame:SetPassThroughButtons()`. Blizzard's native `MapCanvasMixin:AcquirePin` invokes `pin:CheckMouseButtonPassthrough("RightButton")` even for a custom non-clickable frame. The inherited `MapCanvasPinMixin:CheckMouseButtonPassthrough` clears and sets passthrough using the protected C API. `GatherMapForeverWorldPinMixin` now defines a local no-op override because the XML template already specifies `enableMouse="false"`. `OnLoad` no longer redundantly calls potentially protected `EnableMouse(false)`. This leaves global Blizzard/other-addons' map mixins unchanged.
+
+`GatherMapMarkers.MiniPoint` projects fixed world deltas into minimap offsets. The map's rotation is the inverse of counterclockwise `GetPlayerFacing()`, so it uses `sx' = sx cos(f) + sy sin(f)` and `sy' = -sx sin(f) + sy cos(f)`. `C_Minimap.IsRotateMinimapIgnored()` suppresses projection rotation if the client itself ignores it. Existing node/world-position caching uses the saved node's fixed map coordinates, not the player's position; only the camera center updates. `/gmap pinpos` reports the immutable temporary pin coordinates and current relative world displacement.
+
+Lua fixtures now force a failure if GatherMap inherits the protected passthrough callback, or tries changing mouse state during pin `OnLoad`; simulated character walking must change the pin's minimap offset and eventually hide it beyond the minimap radius. Actual gameplay, map layering and camera transformations remain unverified.
+
 ## November 5 — settings menu and experimental capture diagnostics
 
 The Forever runtime defines a single world-map **GatherMap** button and a lazily accessed settings panel with four independent rows. `GatherMapDB.enabled` controls minimap markers, `GatherMapDB.worldMapEnabled` controls world-map markers, `GatherMapDB.recordingEnabled` enables confirmed gathering capture, and `GatherMapDB.captureDebug` enables optional diagnostic chat. The first three keys already existed; `captureDebug` is additive and defaults false. Panels are parented to `WorldMapFrame` and only the small controls accept clicks; world-map resource pins remain passive.

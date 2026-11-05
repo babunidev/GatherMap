@@ -289,6 +289,12 @@ local function DrawMinimap()
     if not (markers.Finite(width) and markers.Finite(height)
         and width > 0 and height > 0) then ClearMini();return end
     local rotate = GetCVarBool and GetCVarBool("rotateMinimap") or false
+    if rotate and C_Minimap.IsRotateMinimapIgnored then
+        local ignored = C_Minimap.IsRotateMinimapIgnored()
+        if not (issecretvalue and issecretvalue(ignored)) and ignored then
+            rotate = false
+        end
+    end
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
     if not markers.Finite(facing) then facing = 0 end
     local previous = miniCache
@@ -341,10 +347,18 @@ end
 -- Native Blizzard map-canvas pins follow zoom, panning and map selection.
 -- Frame templates are mouse-disabled to preserve the game's map controls.
 GatherMapForeverWorldPinMixin = {}
+-- Forever's MapCanvas:AcquirePin() calls this after OnAcquired, and the
+-- inherited implementation invokes the protected SetPassThroughButtons().
+-- Our frame is completely mouse-disabled; it requires no passthrough setup.
+-- Override ONLY our own template, never Blizzard's global pin mixin.
+function GatherMapForeverWorldPinMixin:CheckMouseButtonPassthrough()
+    -- Deliberately empty.
+end
 function GatherMapForeverWorldPinMixin:OnLoad()
     self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
     self:SetScalingLimits(1, 1, 1)
-    self:EnableMouse(false)
+    -- The XML template already has enableMouse="false". Avoid another
+    -- protected mouse-state mutation during client map refreshes.
     self.icon = self:CreateTexture(nil, "ARTWORK")
     self.icon:SetPoint("TOPLEFT", self, "TOPLEFT", 3, -3)
     self.icon:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -3, 3)
@@ -735,6 +749,27 @@ SlashCmdList["GATHERMAP"]=function(message)
     elseif command=="clear" then
         previewMarker=nil;MarkDirty()
         Print("Temporary marker cleared.")
+    elseif command=="pinpos" then
+        local id,x,y=PlayerMapPosition()
+        if not id then Print("Current player map position unavailable."); return end
+        if not previewMarker then
+            Print("No temporary test marker; use /gmap testpin first.")
+            return
+        end
+        if previewMarker.mapID~=id then
+            Print("Test marker belongs to another zone map.")
+            return
+        end
+        local currentInstance,wx,wy=WorldPosition(id,x,y)
+        local savedInstance,nx,ny=WorldPosition(id,
+            previewMarker.node.x,previewMarker.node.y,previewMarker.node)
+        if currentInstance~=savedInstance or not nx or not wx then
+            Print("Player/test marker world coordinates unavailable.")
+            return
+        end
+        Print(string.format(
+            "Test marker fixed (%.4f, %.4f); player (%.4f, %.4f); world delta (%.1f, %.1f).",
+            previewMarker.node.x,previewMarker.node.y,x,y,nx-wx,ny-wy))
     elseif command=="world on" or command=="world off" then
         db.worldMapEnabled = command == "world on"
         worldDirty=true
@@ -763,7 +798,7 @@ SlashCmdList["GATHERMAP"]=function(message)
         else Print("Open the world map to access GatherMap settings.") end
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap menu, on, off, world on|off, status, testpin, clear, migrate help, capture on|off|status|debug") end
+    else Print("commands: /gmap menu, on, off, world on|off, status, testpin, pinpos, clear, migrate help, capture on|off|status|debug") end
 end
 
 f:RegisterEvent("ADDON_LOADED")
