@@ -21,6 +21,7 @@
 - [x] Build same-name/kind transitive groups once per map/data/zoom/style revision in a fixed world-coordinate plane; preserve rectangle bounds and group identity across character movement.
 - [x] Index stable group centers for large databases and query only nearby groups at the view refresh; reuse pooled frames and per-frame position tracking.
 - [x] Add a regression that crosses the exact viewport boundary where a two-node merged rectangle previously shrank to a single 14px square.
+- [x] [Lua 5.1/5.4 and complete mock/fixture checks passed](https://github.com/babunidev/GatherMap/actions/runs/41967656417), including repeated 0.35-second boundary transitions and cached-group indexing.
 - [ ] **In-game:** confirm no rectangle/square flip or periodic snap while walking, turning or approaching the edge of the minimap.
 - [ ] **In-game:** verify overlapping group bounds on rotating/non-square minimaps and confirm large groups are not visually oversized.
 - [ ] **In-game:** profile cache rebuilding at zoom/style/data changes and long travel, including frame behavior in combat.

@@ -9,6 +9,7 @@
 - Rebuilt minimap group membership in a stationary unrotated world coordinate system, **independent of player movement and temporary viewport clipping**. Group dimensions and world centers are cached across view updates and used by the existing per-frame marker positioning.
 - Extended the existing spatial index to locate nearby pre-projected groups; preserved transitive same-resource merging, four-corner colors, the 300-displayed-group cap, original SavedVariables, independent controls and native world-map/quest pins.
 - Added walking-boundary regression fixtures (a 2-node rectangle remaining stable when one member leaves the viewport) and group-index data validation checks.
+- **Automatically verified:** [GitHub Actions run 41967656417](https://github.com/babunidev/GatherMap/actions/runs/41967656417) passed Lua 5.1/5.4 compilation and grouping/motion, capture, migration, performance, PowerShell and packaging regression checks.
 - No public release; actual client appearance, rotated grouped rectangles and performance require in-game retesting.
 
 ## Unreleased — frame-rate minimap marker tracking (November 5, 2026)
