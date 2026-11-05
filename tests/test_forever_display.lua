@@ -6,7 +6,10 @@ local function Frame(parent)
     function f:GetFrameLevel() return 4 end
     function f:SetFrameLevel() end
     function f:SetFrameStrata() end
-    function f:SetSize(w,h) self.width=w;self.height=h end
+    function f:SetSize(w,h)
+        self.width=w;self.height=h
+        self.sizeCalls=(self.sizeCalls or 0)+1
+    end
     function f:GetWidth() return self.width end
     function f:GetHeight() return self.height end
     function f:SetWidth(w) self.width=w end
@@ -27,6 +30,8 @@ local function Frame(parent)
     function f:CreateTexture()
         local t=Frame(self)
         function t:SetColorTexture(r,g,b,a) self.color={r,g,b,a} end
+        function t:SetSnapToPixelGrid(value) self.pixelSnap=value end
+        function t:SetTexelSnappingBias(value) self.snapBias=value end
         function t:SetTexture(texture) self.texture=texture end
         function t:SetTexCoord() end
         function t:SetAllPoints() end
@@ -128,6 +133,8 @@ GetTime=function() return now end
 GetCursorPosition=function() return 300,200 end
 GetCVarBool=function() return false end
 GetPlayerFacing=function() return 0 end
+local inCombat=false
+InCombatLockdown=function() return inCombat end
 GetZoneText=function() return "Elwynn Forest" end
 GetSubZoneText=function() return "Northshire Valley" end
 UnitLevel=function() return 20 end
@@ -262,6 +269,12 @@ end
 assert(chestPin and chestPin:GetHeight()>14,
     "two nearby chest nodes must form the original merged rectangle")
 local fixedWidth,fixedHeight=chestPin:GetWidth(),chestPin:GetHeight()
+local styleCount=chestPin.sizeCalls
+local originalCorners=chestPin.corners
+for _,corner in ipairs(originalCorners) do
+    assert(corner.pixelSnap==false and corner.snapBias==0,
+        "four corners should not pixel-snap independently while moving")
+end
 local initialGroupCalls=groupCalls
 playerX=0.78
 mainFrame.scripts.OnUpdate(mainFrame,0.4)
@@ -278,6 +291,29 @@ mainFrame.scripts.OnUpdate(mainFrame,0.4)
 assert(chestPin:GetWidth()==fixedWidth and chestPin:GetHeight()==fixedHeight)
 assert(groupCalls==initialGroupCalls,
     "repeated slow refreshes must use the same stable world groups")
+assert(chestPin.sizeCalls==styleCount and chestPin.corners==originalCorners,
+    "walking and slow refresh must not restyle or resize the marker")
+-- A new marker entering/leaving the view must never steal or resize
+-- another marker's pooled frame. The old index-based pool did just that.
+playerX=0.70
+SlashCmdList.GATHERMAP("testpin")
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin.name=="Battered Chest" and chestPin:IsShown(),
+    "new test marker cannot steal existing chest frame")
+local stableOwner,stableShapeCalls=chestPin, chestPin.sizeCalls
+playerX=0.27
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin==stableOwner and chestPin.name=="Battered Chest"
+    and chestPin.sizeCalls==stableShapeCalls and chestPin:IsShown(),
+    "other visible group leaving view must not change surviving frame")
+playerX=0.70
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin==stableOwner and chestPin.name=="Battered Chest"
+    and chestPin.sizeCalls==stableShapeCalls,
+    "another visible group returning cannot restyle the chest")
+SlashCmdList.GATHERMAP("clear")
+playerX=0.5
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
 -- A temporary testpin must stay fixed in world coordinates while the
 -- character moves, rather than remaining attached to the player arrow.
 SlashCmdList.GATHERMAP("testpin")
@@ -308,6 +344,24 @@ local movedX,movedY=previewPin.lastPoint[4],previewPin.lastPoint[5]
 assert(math.abs(movedY-initialY)>1 and movedY<initialY,
     "fixed testpin must move south on minimap when player travels north")
 assert(math.abs(movedX-initialX)<0.001)
+-- Combat is NOT a world-map edit. Unprotected minimap pins must stay
+-- anchored while the character fights, not hitchhike on the player arrow.
+local beforeCombat=previewPin.lastPoint[5]
+local styleBeforeCombat=chestPin.sizeCalls
+inCombat=true
+playerX=0.60
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
+assert(previewPin.lastPoint[5]<beforeCombat,
+    "minimap marker must move relative to player during combat")
+local duringCombat=previewPin.lastPoint[5]
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(previewPin.lastPoint[5]==duringCombat,
+    "slow refresh may not snap a stable pin back in combat")
+assert(chestPin.sizeCalls==styleBeforeCombat or not chestPin:IsShown(),
+    "combat movement must not resize old marker frames")
+inCombat=false
+playerX=0.55
+mainFrame.scripts.OnUpdate(mainFrame,0.016)
 local rotateMinimap,ignoredRotation,playerFacing=false,false,0
 GetCVarBool=function(name) return name=="rotateMinimap" and rotateMinimap end
 GetPlayerFacing=function() return playerFacing end

@@ -10,6 +10,8 @@ local migration = ns.GatherMapMigration
 local db, provider, menuButton, settingsPanel
 local menuRows, menuStatus = {}, nil
 local miniPins, mapPins = {}, {}
+local activeMiniPins = {}
+local miniGeneration = 0
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
 local hoverTick, providerRetryTick = 0, 0
@@ -233,6 +235,10 @@ local function AddCorners(pin)
     for i = 1, 4 do
         local dot = pin:CreateTexture(nil, "OVERLAY")
         dot:SetSize(DOT_SIZE, DOT_SIZE)
+        -- Fractional minimap offsets must not independently pixel-snap each
+        -- corner; that makes a stable rectangle appear to shear or flip.
+        if dot.SetSnapToPixelGrid then dot:SetSnapToPixelGrid(false) end
+        if dot.SetTexelSnappingBias then dot:SetTexelSnappingBias(0) end
         dot:SetPoint(points[i], pin, points[i], 0, 0)
         pin.corners[i] = dot
     end
@@ -248,23 +254,30 @@ local function Style(pin, group)
     end
     if pin.icon then pin.icon:SetTexture(group.icon) end
 end
-local function AcquireMini(index)
-    local pin = miniPins[index]
-    if pin then return pin end
-    pin = CreateFrame("Frame", nil, Minimap)
-    pin:SetFrameLevel(Minimap:GetFrameLevel() + 5)
+-- Keep a frame owned by the SAME group for its entire visible lifetime.
+-- A moving viewport must never restyle an old frame as a different resource.
+local function AcquireMini()
+    for i=1,#miniPins do
+        local pin=miniPins[i]
+        if not pin.group then return pin end
+    end
+    if #miniPins>=MAX_PINS then return nil end
+    local pin=CreateFrame("Frame",nil,Minimap)
+    pin:SetFrameLevel(Minimap:GetFrameLevel()+5)
     pin:EnableMouse(false)
     AddCorners(pin)
-    miniPins[index] = pin
+    miniPins[#miniPins+1]=pin
     return pin
 end
-local function HideMini(first)
-    for i = first, visibleMiniPins do miniPins[i]:Hide() end
-    visibleMiniPins = math.min(visibleMiniPins, first - 1)
-end
 local function ClearMini()
-    miniCache = nil
-    HideMini(1)
+    miniCache=nil
+    for i=1,#miniPins do
+        local pin=miniPins[i]
+        if pin.group then pin.group.pin=nil;pin.group=nil end
+        pin:Hide()
+    end
+    for i=1,#activeMiniPins do activeMiniPins[i]=nil end
+    visibleMiniPins=0
 end
 local function MinimapFacing()
     local rotate=GetCVarBool and GetCVarBool("rotateMinimap") or false
@@ -285,26 +298,34 @@ end
 local function TrackMiniPositions()
     if visibleMiniPins==0 or not (db and db.enabled and Minimap
         and Minimap:IsShown() and miniCache) then return end
-    if InCombatLockdown and InCombatLockdown() then return end
-    if not (C_Minimap and C_Minimap.GetViewRadius) then return end
+    -- These are our own unprotected minimap frames. Their positions MUST
+    -- continue updating in combat; only the native world-map provider is
+    -- subject to the protected-operation guard.
+    if not (C_Minimap and C_Minimap.GetViewRadius) then
+        ClearMini();dirty=true;return
+    end
     -- The zone ID is established by the slower map refresh. Only read the
     -- current vector here; do not traverse the map hierarchy every frame.
     local mapID=miniContext.mapID
     if not (mapID and C_Map and C_Map.GetPlayerMapPosition) then
-        dirty=true;return
+        ClearMini();dirty=true;return
     end
     local pos=C_Map.GetPlayerMapPosition(mapID,"player")
     local x,y=VectorXY(pos)
-    if not Valid(x) or not Valid(y) then dirty=true;return end
+    if not Valid(x) or not Valid(y) then ClearMini();dirty=true;return end
     local instance,wx,wy=WorldPosition(mapID,x,y)
     if instance~=miniContext.instance or not markers.Finite(wx)
-        or not markers.Finite(wy) then dirty=true;return end
+        or not markers.Finite(wy) then ClearMini();dirty=true;return end
     local width,height=Minimap:GetWidth(),Minimap:GetHeight()
     local radius=C_Minimap.GetViewRadius()
-    if issecretvalue and issecretvalue(radius) then dirty=true;return end
+    if issecretvalue and issecretvalue(radius) then
+        ClearMini();dirty=true;return
+    end
     if not (markers.Finite(radius) and radius>0
         and width==miniContext.width and height==miniContext.height
-        and radius==miniContext.radius) then dirty=true;return end
+        and radius==miniContext.radius) then
+        ClearMini();dirty=true;return
+    end
     local rotate,facing=MinimapFacing()
     if miniContext.lastWX==wx and miniContext.lastWY==wy
         and miniContext.lastFacing==facing and miniContext.lastRotate==rotate then
@@ -313,7 +334,7 @@ local function TrackMiniPositions()
     miniContext.lastWX,miniContext.lastWY=wx,wy
     miniContext.lastFacing,miniContext.lastRotate=facing,rotate
     for i=1,visibleMiniPins do
-        local pin=miniPins[i]
+        local pin=activeMiniPins[i]
         local sx,sy
         if pin.worldInstance==instance and markers.Finite(pin.worldX)
             and markers.Finite(pin.worldY) then
@@ -321,16 +342,17 @@ local function TrackMiniPositions()
                 radius,width,height,facing,rotate)
         end
         if sx then
-            pin:ClearAllPoints()
-            pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
-            pin:Show()
-        else
+            if pin.lastSX~=sx or pin.lastSY~=sy then
+                pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
+                pin.lastSX,pin.lastSY=sx,sy
+            end
+            if not pin:IsShown() then pin:Show() end
+        elseif pin:IsShown() then
             pin:Hide()
         end
     end
 end
 local function DrawMinimap()
-    if InCombatLockdown and InCombatLockdown() then return end
     if not (db and db.enabled and Minimap and Minimap:IsShown()
         and C_Minimap and C_Minimap.GetViewRadius) then
         ClearMini()
@@ -400,24 +422,54 @@ local function DrawMinimap()
             radius*1.15)
         table.sort(candidates,SortMiniGroups)
     end
-    local count=0
+    miniGeneration=miniGeneration+1
+    local generation=miniGeneration
+    local visibleGroups={}
     for i=1,#candidates do
-        if count>=MAX_PINS then break end
+        if #visibleGroups>=MAX_PINS then break end
         local group=candidates[i]
         local sx,sy=markers.MiniPoint(group.worldX-wx,group.worldY-wy,
             radius,width,height,facing,rotate)
         if sx then
-            count=count+1
-            local pin=AcquireMini(count)
-            Style(pin,group)
-            pin.worldX,pin.worldY=group.worldX,group.worldY
-            pin.worldInstance=instance
-            pin:ClearAllPoints()
-            pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
-            pin:Show()
+            group.generation=generation
+            group.drawX,group.drawY=sx,sy
+            visibleGroups[#visibleGroups+1]=group
         end
     end
-    HideMini(count+1)
+
+    -- Release only groups that actually left the view. All other groups
+    -- retain their frame identity and corner dimensions across redraws.
+    for i=1,#miniPins do
+        local pin=miniPins[i]
+        if pin.group and pin.group.generation~=generation then
+            pin.group.pin=nil
+            pin.group=nil
+            pin:Hide()
+        end
+    end
+    local count=0
+    for i=1,#visibleGroups do
+        local group=visibleGroups[i]
+        local pin=group.pin
+        if not pin then
+            pin=AcquireMini()
+            if not pin then break end
+            group.pin=pin
+            pin.group=group
+            Style(pin,group)
+        end
+        count=count+1
+        pin.worldX,pin.worldY=group.worldX,group.worldY
+        pin.worldInstance=instance
+        if pin.lastSX~=group.drawX or pin.lastSY~=group.drawY then
+            -- One CENTER point: SetPoint replaces this same anchor.
+            pin:SetPoint("CENTER",Minimap,"CENTER",group.drawX,group.drawY)
+            pin.lastSX,pin.lastSY=group.drawX,group.drawY
+        end
+        if not pin:IsShown() then pin:Show() end
+        activeMiniPins[count]=pin
+    end
+    for i=count+1,#activeMiniPins do activeMiniPins[i]=nil end
     visibleMiniPins=count
     miniContext.lastWX,miniContext.lastWY=wx,wy
     miniContext.lastFacing,miniContext.lastRotate=facing,rotate
@@ -665,7 +717,7 @@ local function Hover()
     local miniAllowed = not worldOpen and Minimap and Minimap:IsShown()
         and Minimap.IsMouseOver and Minimap:IsMouseOver()
     if not worldAllowed and not miniAllowed then HideLabel(); return end
-    local pool = worldAllowed and mapPins or miniPins
+    local pool = worldAllowed and mapPins or activeMiniPins
     local visible = worldAllowed and #mapPins or visibleMiniPins
     if visible==0 then HideLabel();return end
     local cx, cy = GetCursorPosition()

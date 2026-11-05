@@ -138,6 +138,20 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertIn("MarkStyleDirty()", source)
         self.assertIn("visibleMiniPins", source)
         self.assertIn("TrackMiniPositions()", source)
+        self.assertIn("local pin=activeMiniPins[i]", source)
+        self.assertIn("pin.group=group", source)
+        self.assertIn("pin.group.generation~=generation", source)
+        self.assertIn("dot:SetSnapToPixelGrid(false)", source)
+        self.assertIn("dot:SetTexelSnappingBias(0)", source)
+        self.assertNotIn("Style(pin,group)\n        pin.worldX", source)
+        self.assertNotIn("InCombatLockdown", source.split(
+            "local function TrackMiniPositions()", 1)[1].split(
+            "local function MinimapFacing", 1)[0].split(
+            "local function DrawMinimap()", 1)[0].replace(
+            "-- subject to the protected-operation guard.", ""))
+        self.assertNotIn("InCombatLockdown", source.split(
+            "local function DrawMinimap()", 1)[1].split(
+            "-- Native Blizzard map-canvas", 1)[0])
         self.assertIn("pin.worldX,pin.worldY=group.worldX,group.worldY", source)
         self.assertIn("miniContext.lastWX", source)
         self.assertIn("MiniWorldAnchor = MiniWorldAnchor", grouping)
