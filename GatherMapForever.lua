@@ -7,7 +7,8 @@ local difficulty = ns.GatherMapDifficulty
 local markers = ns.GatherMapMarkers
 local spatial = ns.GatherMapSpatial
 local migration = ns.GatherMapMigration
-local db, provider, checkbox
+local db, provider, menuButton, settingsPanel
+local menuRows, menuStatus = {}, nil
 local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
@@ -420,6 +421,98 @@ local function DrawWorld()
         provider:RefreshAllData()
     end
 end
+-- A single map button opens a compact toggle panel. Saved nodes are untouched.
+local function UpdateMenu()
+    if not settingsPanel then return end
+    local flags={db and db.enabled,db and db.worldMapEnabled,
+        db and db.recordingEnabled,db and db.captureDebug}
+    local names={"Minimap markers","World-map markers",
+        "Record discoveries","Diagnostic chat"}
+    for i=1,#menuRows do
+        local active=flags[i]==true
+        local text=menuRows[i].label
+        text:SetText(names[i]..": "..(active and "ON" or "OFF"))
+        if active then text:SetTextColor(0.42,0.85,0.56)
+        else text:SetTextColor(0.72,0.72,0.72) end
+    end
+    if menuStatus then
+        menuStatus:SetText("Last: "..(ns.GatherMapCaptureLast
+            and ns.GatherMapCaptureLast()
+            or "Capture diagnostics unavailable"))
+    end
+end
+local function ToggleSetting(index)
+    if not db then return end
+    if index==1 then
+        db.enabled=not db.enabled
+        MarkStyleDirty()
+        if not db.enabled then ClearMini() end
+    elseif index==2 then
+        db.worldMapEnabled=not db.worldMapEnabled
+        worldDirty=true
+        DrawWorld()
+    elseif index==3 then
+        if ns.GatherMapSetCapture then
+            ns.GatherMapSetCapture(not db.recordingEnabled)
+        end
+    elseif index==4 then
+        if ns.GatherMapSetCaptureDebug then
+            ns.GatherMapSetCaptureDebug(not db.captureDebug)
+        end
+    end
+    UpdateMenu()
+end
+local function CreateMenu()
+    if menuButton or not WorldMapFrame then return end
+    local anchor=WorldMapFrame.ScrollContainer or WorldMapFrame
+    menuButton=CreateFrame("Button","GatherMapForeverMenuButton",WorldMapFrame)
+    menuButton:SetSize(104,24)
+    menuButton:SetPoint("TOPLEFT",anchor,"TOPLEFT",14,-30)
+    menuButton:SetFrameLevel(WorldMapFrame:GetFrameLevel()+10)
+    local background=menuButton:CreateTexture(nil,"BACKGROUND")
+    background:SetAllPoints(menuButton)
+    background:SetColorTexture(0.08,0.12,0.10,0.94)
+    local caption=menuButton:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+    caption:SetPoint("CENTER",menuButton,"CENTER")
+    caption:SetText("GatherMap")
+    caption:SetTextColor(0.55,0.9,0.65)
+
+    settingsPanel=CreateFrame("Frame","GatherMapForeverSettingsPanel",WorldMapFrame)
+    settingsPanel:SetSize(236,194)
+    settingsPanel:SetPoint("TOPLEFT",menuButton,"BOTTOMLEFT",0,-3)
+    settingsPanel:SetFrameLevel(menuButton:GetFrameLevel()+2)
+    settingsPanel:EnableMouse(true)
+    local back=settingsPanel:CreateTexture(nil,"BACKGROUND")
+    back:SetAllPoints(settingsPanel)
+    back:SetColorTexture(0.055,0.075,0.075,0.96)
+    local heading=settingsPanel:CreateFontString(nil,"OVERLAY","GameFontNormal")
+    heading:SetPoint("TOPLEFT",settingsPanel,"TOPLEFT",12,-10)
+    heading:SetText("GatherMap settings")
+    for i=1,4 do
+        local row=CreateFrame("Button","GatherMapForeverSetting"..i,settingsPanel)
+        row:SetSize(212,26)
+        row:SetPoint("TOPLEFT",settingsPanel,"TOPLEFT",12,-(31+(i-1)*28))
+        local tile=row:CreateTexture(nil,"BACKGROUND")
+        tile:SetAllPoints(row)
+        tile:SetColorTexture(0.15,0.19,0.17,0.96)
+        row.label=row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        row.label:SetPoint("LEFT",row,"LEFT",8,0)
+        row:SetScript("OnClick",function() ToggleSetting(i) end)
+        menuRows[i]=row
+    end
+    menuStatus=settingsPanel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    menuStatus:SetPoint("TOPLEFT",settingsPanel,"TOPLEFT",12,-150)
+    menuStatus:SetWidth(212)
+    menuStatus:SetJustifyH("LEFT")
+    menuStatus:SetText("No gathering captured yet")
+    settingsPanel:Hide()
+    menuButton:SetScript("OnClick",function()
+        if settingsPanel:IsShown() then settingsPanel:Hide()
+        else UpdateMenu();settingsPanel:Show() end
+    end)
+    UpdateMenu()
+end
+
 local function SetupWorld()
     if InCombatLockdown and InCombatLockdown() then return end
     if provider or not (db and WorldMapFrame and WorldMapFrame.AddDataProvider
@@ -432,25 +525,7 @@ local function SetupWorld()
     end
     provider = CreateFromMixins(MapCanvasDataProviderMixin, providerMethods)
     WorldMapFrame:AddDataProvider(provider)
-    checkbox = CreateFrame("CheckButton", "GatherMapForeverMapToggle",
-        WorldMapFrame, "UICheckButtonTemplate")
-    checkbox:SetSize(24, 24)
-    checkbox:SetPoint("TOPLEFT", WorldMapFrame.ScrollContainer or WorldMapFrame,
-        "TOPLEFT", 14, -30)
-    checkbox:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 10)
-    local label = _G.GatherMapForeverMapToggleText
-    if not label then
-        label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        label:SetPoint("LEFT", checkbox, "RIGHT", 2, 0)
-    end
-    label:SetText("Gather Map")
-    label:SetTextColor(0.41, 0.80, 0.44)
-    checkbox:SetChecked(db.worldMapEnabled)
-    checkbox:SetScript("OnClick", function(self)
-        db.worldMapEnabled = not not self:GetChecked()
-        worldDirty=true
-        DrawWorld()
-    end)
+    CreateMenu()
 end
 
 -- A private label avoids reading or modifying GameTooltip during gathering.
@@ -662,8 +737,8 @@ SlashCmdList["GATHERMAP"]=function(message)
         Print("Temporary marker cleared.")
     elseif command=="world on" or command=="world off" then
         db.worldMapEnabled = command == "world on"
-        if checkbox then checkbox:SetChecked(db.worldMapEnabled) end
         worldDirty=true
+        UpdateMenu()
         DrawWorld()
         Print("world-map overlay "..(db.worldMapEnabled and "enabled." or "hidden."))
     elseif command=="migrate" or command:match("^migrate%s") then
@@ -674,9 +749,21 @@ SlashCmdList["GATHERMAP"]=function(message)
         if ns.GatherMapSetCapture then ns.GatherMapSetCapture(false) end
     elseif command=="capture status" then
         if ns.GatherMapCaptureStatus then Print(ns.GatherMapCaptureStatus()) end
+    elseif command=="capture debug" then
+        if ns.GatherMapCaptureDiagnostics then Print(ns.GatherMapCaptureDiagnostics()) end
+    elseif command=="capture debug on" or command=="capture debug off" then
+        if ns.GatherMapSetCaptureDebug then
+            ns.GatherMapSetCaptureDebug(command=="capture debug on")
+            Print("Capture diagnostic chat "..(db.captureDebug and "enabled." or "disabled."))
+        end
+    elseif command=="menu" then
+        if settingsPanel then
+            if settingsPanel:IsShown() then settingsPanel:Hide()
+            else UpdateMenu();settingsPanel:Show() end
+        else Print("Open the world map to access GatherMap settings.") end
     elseif command=="count" or command=="status" or command=="debug" or command=="" then
         Status()
-    else Print("commands: /gmap on, off, world on|off, status, testpin, clear, migrate help, capture on|off|status") end
+    else Print("commands: /gmap menu, on, off, world on|off, status, testpin, clear, migrate help, capture on|off|status|debug") end
 end
 
 f:RegisterEvent("ADDON_LOADED")

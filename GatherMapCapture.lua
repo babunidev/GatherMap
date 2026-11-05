@@ -5,9 +5,14 @@ local addonName, ns = ...
 local R = ns.resources
 local frame = CreateFrame("Frame")
 local pending, unlock, lootCaptured
+local stats={
+    casts=0,successes=0,loot=0,sourceMatches=0,saved=0,
+    rejected=0,failures=0,last="No gathering captured yet",
+}
 local MAX_WAIT, UNLOCK_WAIT = 10, 18
 local spellKinds = {
-    [2366] = "herb", [2575] = "mineral",
+    [2366] = "herb", [1235236] = "herb",
+    [2575] = "mineral", [1235230] = "mineral",
     [8613] = "skin", [8617] = "skin", [8618] = "skin",
     [10768] = "skin", [3365] = "treasure", [22810] = "treasure",
     [1804] = "lock",
@@ -40,6 +45,16 @@ local function Notify(message)
     if DEFAULT_CHAT_FRAME then
         DEFAULT_CHAT_FRAME:AddMessage("|cff68cc70Gather Map:|r " .. message)
     end
+end
+local function Trace(reason)
+    stats.last=reason
+    if type(GatherMapDB)=="table" and GatherMapDB.captureDebug==true then
+        Notify("diagnostic: "..reason)
+    end
+end
+local function Reject(reason)
+    stats.rejected=stats.rejected+1
+    stats.last=reason
 end
 local function SpellKind(spellID)
     spellID = PublicNumber(spellID)
@@ -164,6 +179,8 @@ local function Start(unit,target,castGUID,spellID)
         return
     end
     local ctx=CaptureContext(kind,target)
+    stats.casts=stats.casts+1
+    Trace("Cast "..kind.." ("..tostring(spellID)..")")
     pending={kind=kind,castGUID=PublicString(castGUID),
         spellID=PublicNumber(spellID),ctx=ctx,
         at=Now(),success=false}
@@ -198,6 +215,8 @@ local function Completed(unit,castGUID,spellID)
     end
     previous.success=true
     previous.at=now
+    stats.successes=stats.successes+1
+    Trace("Cast succeeded: "..previous.kind.." ("..tostring(spellID)..")")
     if not previous.ctx.position then previous.ctx.position=CurrentLocation() end
     if kind=="lock" then
         unlock={ctx=previous.ctx,at=now}
@@ -210,6 +229,8 @@ local function Failed(unit,castGUID,spellID)
     if not pending then return end
     local guid=PublicString(castGUID)
     if (pending.castGUID and guid and pending.castGUID~=guid) then return end
+    stats.failures=stats.failures+1
+    Trace("Gathering cast failed or interrupted")
     pending=nil
     lootCaptured=false
 end
@@ -247,15 +268,32 @@ local function Record(kind,name,ctx,texture)
         zoneName=GetZoneText and PublicString(GetZoneText()) or nil,
         areaName=GetSubZoneText and PublicString(GetSubZoneText()) or nil,
     }
-    local ok=ns.GatherMapRecord(observed)
-    return ok==true
+    local ok,reason=ns.GatherMapRecord(observed)
+    if ok==true then
+        stats.saved=stats.saved+1
+        Trace("Saved "..kind..": "..name.." ("..tostring(reason)..")")
+        return true
+    end
+    Reject("Database rejected: "..tostring(reason))
+    return false
 end
 local function LootReady()
-    if not Enabled() or not pending or not pending.success or lootCaptured then return end
-    if Now()-pending.at>MAX_WAIT then pending=nil;return end
-    if not (GetNumLootItems and GetLootSlotInfo and GetLootSourceInfo) then return end
+    if not Enabled() then return end
+    stats.loot=stats.loot+1
+    if not pending then Reject("Loot without recognized gathering cast");return end
+    if not pending.success then Reject("Loot before confirmed cast success");return end
+    if lootCaptured then return end
+    if Now()-pending.at>MAX_WAIT then
+        Reject("Gathering cast expired before loot")
+        pending=nil
+        return
+    end
+    if not (GetNumLootItems and GetLootSlotInfo and GetLootSourceInfo) then
+        Reject("Loot APIs unavailable")
+        return
+    end
     local count=PublicNumber(GetNumLootItems()) or 0
-    if count<=0 then return end
+    if count<=0 then Reject("Loot window has no items");return end
     local kind,ctx=pending.kind,pending.ctx
     local sourceWanted=kind=="skin" and "creature" or "object"
     local matching={}
@@ -268,14 +306,15 @@ local function LootReady()
             anyMatch=true
         end
     end
-    if not anyMatch then return end
+    if not anyMatch then Reject("No matching loot GameObject/creature GUID");return end
+    stats.sourceMatches=stats.sourceMatches+1
     -- Ignore loot from other sources when the window contains several objects.
     if not ctx.guid and #matching>0 then ctx.guid=matching[1].source end
     local sameSource={}
     for _,entry in ipairs(matching) do
         if entry.source==ctx.guid then sameSource[#sameSource+1]=entry end
     end
-    if #sameSource==0 then return end
+    if #sameSource==0 then Reject("Loot source differs from cast target");return end
     matching=sameSource
     local name=ctx.name
     if kind=="herb" or kind=="mineral" then
@@ -291,7 +330,11 @@ local function LootReady()
                 end
             end
         end
-        if name then Record(kind,name,ctx,matching[1].texture) end
+        if name then
+            Record(kind,name,ctx,matching[1].texture)
+        else
+            Reject("Resource name unavailable from target, tooltip or loot")
+        end
     elseif kind=="skin" then
         -- Skinning points are remembered material/hunting locations, not spawns.
         local seen={}
@@ -303,6 +346,8 @@ local function LootReady()
         end
     elseif (kind=="lock" or kind=="treasure") and IsChest(name) then
         Record(kind,name,ctx,matching[1].texture)
+    elseif kind=="lock" or kind=="treasure" then
+        Reject("Loot source is not a recognized chest")
     end
     lootCaptured=true
     pending=nil
@@ -313,9 +358,22 @@ local function ClearLoot()
 end
 local function CaptureStatus()
     return "Recording "..(Enabled() and "enabled (experimental)" or
-        "disabled (default)").."; confirmed spell + matching loot source required."
+        "disabled").."; confirmed spell + matching loot source required."
 end
 ns.GatherMapCaptureStatus=CaptureStatus
+ns.GatherMapCaptureDiagnostics=function()
+    return "Casts "..stats.casts..", success "..stats.successes..
+        ", loot "..stats.loot..", matched "..stats.sourceMatches..
+        ", saved "..stats.saved..", refused "..stats.rejected..
+        ", failed "..stats.failures..". Last: "..stats.last
+end
+ns.GatherMapCaptureLast=function()
+    return stats.last
+end
+ns.GatherMapSetCaptureDebug=function(enabled)
+    if type(GatherMapDB)~="table" then return end
+    GatherMapDB.captureDebug=not not enabled
+end
 ns.GatherMapSetCapture=function(enabled)
     if type(GatherMapDB)~="table" or type(GatherMapDB.nodes)~="table" then
         Notify("Cannot change recording: saved database unavailable.")
@@ -344,7 +402,12 @@ frame:SetScript("OnEvent",function(_,event,...)
     elseif event=="LOOT_READY" then LootReady()
     elseif event=="LOOT_OPENED" then
         local _,fromItem=...
-        if not IsSecret(fromItem) and fromItem==true then pending=nil end
+        if not IsSecret(fromItem) and fromItem==true then
+            pending=nil
+        elseif pending and pending.success and not lootCaptured then
+            -- Some clients publish useful loot-source data only at LOOT_OPENED.
+            LootReady()
+        end
     elseif event=="LOOT_CLOSED" then ClearLoot()
     elseif event=="PLAYER_ENTERING_WORLD" then
         pending=nil;unlock=nil;lootCaptured=false

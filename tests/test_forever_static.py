@@ -110,7 +110,11 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertNotIn("GameTooltip:SetOwner", runtime)
         self.assertNotIn("GameTooltip:Hide", runtime)
         self.assertIn('db.enabled=true;MarkDirty()', runtime)
-        self.assertIn('db.worldMapEnabled = not not self:GetChecked()', runtime)
+        self.assertIn('db.worldMapEnabled=not db.worldMapEnabled', runtime)
+        self.assertIn('GatherMapForeverMenuButton', runtime)
+        self.assertIn('GatherMapForeverSettingsPanel', runtime)
+        self.assertIn('ns.GatherMapSetCapture(not db.recordingEnabled)', runtime)
+        self.assertNotIn('GatherMapForeverMapToggle', runtime)
         self.assertIn("MAX_PINS", runtime)
         self.assertIn("GatherMapMarkers.lua", MANIFEST.read_text())
 

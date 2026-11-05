@@ -33,6 +33,7 @@ local function Frame(parent)
         local t=Frame(self)
         function t:SetText(v) self.text=v end
         function t:SetTextColor() end
+        function t:SetJustifyH() end
         function t:GetText() return self.text end
         function t:GetStringWidth() return #(self.text or "")*6 end
         return t
@@ -132,6 +133,9 @@ local ns={resources={
     skinIcons={},woodIcons={},mineralIcons={},herbIcons={Peacebloom="icon-herb"},
     fallbackIcons={treasure="chest-texture",mineral="ore-texture"},
 }}
+ns.GatherMapSetCapture=function(enabled) GatherMapDB.recordingEnabled=enabled end
+ns.GatherMapSetCaptureDebug=function(enabled) GatherMapDB.captureDebug=enabled end
+ns.GatherMapCaptureLast=function() return "No capture event" end
 ns.GatherMapDifficulty={
     Refresh=function() return false end,
     Color=function() return "unknown" end,
@@ -176,14 +180,40 @@ canvas:SetSize(500,300)
 WorldMapFrame.provider:OnCanvasSizeChanged()
 mainFrame.scripts.OnUpdate(mainFrame,0.4)
 assert(#WorldMapFrame.pins==1,"narrower canvas should merge normalized nodes")
-local toggle=assert(_G.GatherMapForeverMapToggle)
-toggle:SetChecked(false)
-toggle.scripts.OnClick(toggle)
+local menuButton=assert(_G.GatherMapForeverMenuButton)
+local panel=assert(_G.GatherMapForeverSettingsPanel)
+assert(not panel:IsShown(),"settings panel starts collapsed")
+assert(_G.GatherMapForeverMapToggle==nil,"old map checkbox removed")
+menuButton.scripts.OnClick(menuButton)
+assert(panel:IsShown(),"one click opens settings")
+local miniRow=assert(_G.GatherMapForeverSetting1)
+local worldRow=assert(_G.GatherMapForeverSetting2)
+local captureRow=assert(_G.GatherMapForeverSetting3)
+local debugRow=assert(_G.GatherMapForeverSetting4)
+assert(worldRow.label.text=="World-map markers: ON")
+worldRow.scripts.OnClick(worldRow)
 assert(GatherMapDB.worldMapEnabled==false and GatherMapDB.enabled==false)
-assert(#WorldMapFrame.pins==0,"turning off the world overlay removes pins")
-toggle:SetChecked(true)
-toggle.scripts.OnClick(toggle)
+assert(worldRow.label.text=="World-map markers: OFF")
+assert(#WorldMapFrame.pins==0,"world-map toggle only removes our world pins")
+worldRow.scripts.OnClick(worldRow)
+assert(GatherMapDB.worldMapEnabled==true)
 assert(#WorldMapFrame.pins==1,"restoring world overlay reacquires pins")
+assert(GatherMapDB.recordingEnabled==nil)
+captureRow.scripts.OnClick(captureRow)
+assert(GatherMapDB.recordingEnabled==true,"capture setting is independently toggled")
+assert(captureRow.label.text=="Record discoveries: ON")
+debugRow.scripts.OnClick(debugRow)
+assert(GatherMapDB.captureDebug==true,"diagnostics toggle saved")
+debugRow.scripts.OnClick(debugRow)
+assert(GatherMapDB.captureDebug==false)
+captureRow.scripts.OnClick(captureRow)
+assert(GatherMapDB.recordingEnabled==false)
+menuButton.scripts.OnClick(menuButton)
+assert(not panel:IsShown(),"button collapses settings")
+SlashCmdList.GATHERMAP("menu")
+assert(panel:IsShown(),"/gmap menu opens identical panel")
+SlashCmdList.GATHERMAP("menu")
+assert(not panel:IsShown())
 
 -- Independently enable minimap without changing world setting.
 WorldMapFrame:Hide()

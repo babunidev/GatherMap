@@ -118,6 +118,43 @@ now=now+4
 loot();check("herb","Silverleaf")
 clear()
 
+-- Forever 1.60.1 gathering spells have new active spell IDs.
+target,tooltipName,lootName="Peacebloom","Peacebloom","Peacebloom"
+npcGuid,lootGuid="GameObject-forever-herb","GameObject-forever-herb"
+sent(1235236);succeeded(1235236);loot()
+check("herb","Peacebloom")
+clear()
+target,tooltipName,lootName="","","Copper Ore"
+npcGuid,lootGuid="GameObject-forever-ore","GameObject-forever-ore"
+sent(1235230);succeeded(1235230);loot()
+check("mineral","Copper Vein")
+clear()
+
+-- LOOT_READY may precede complete source/item availability; LOOT_OPENED
+-- provides a safe second chance, but ONLY after a confirmed cast success.
+target,tooltipName,lootName="Peacebloom","Peacebloom","Peacebloom"
+npcGuid,lootGuid="GameObject-delayed","GameObject-delayed"
+local oldCount=GetNumLootItems
+GetNumLootItems=function() return 0 end
+sent(2366);succeeded(2366);loot()
+assert(#records==0)
+GetNumLootItems=oldCount
+event("LOOT_OPENED",false,false)
+check("herb","Peacebloom")
+clear()
+
+local diagnostics=assert(ns.GatherMapCaptureDiagnostics)()
+assert(diagnostics:find("saved ",1,true) and diagnostics:find("Last:",1,true))
+assert(type(ns.GatherMapCaptureLast())=="string")
+ns.GatherMapSetCaptureDebug(true)
+assert(GatherMapDB.captureDebug==true)
+local messagesBefore=#messages
+sent(2366);succeeded(2366);loot()
+assert(#messages>messagesBefore,"opt-in diagnostic chat should report correlated events")
+ns.GatherMapSetCaptureDebug(false)
+assert(GatherMapDB.captureDebug==false)
+clear()
+
 -- FAILED and INTERRUPTED events both suppress recording.
 sent(2366)
 event("UNIT_SPELLCAST_FAILED","player","cast-"..now,2366)
