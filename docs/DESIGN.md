@@ -10,7 +10,7 @@ The work is not an alternative full-screen navigation app. It attaches to the na
 
 ## Four corners, space in the middle
 
-A small resource is marked by **four 3-pixel colored corner dots**, leaving its center mostly clear on the minimap. When the world map is open, a resource icon sits inside matching colored corners. The design moved here from early full rectangular outlines, with a visible September 7 commit documenting that choice.
+A small resource is marked by **four colored corner dots**, leaving its center mostly clear on the minimap. Historically these were 3-pixel flat squares; the November 5 Forever development uses small rounded illustrated textures displayed at 6×6 UI units. When the world map is open, a resource icon sits inside matching colored corners. The design moved here from early full rectangular outlines, with a visible September 7 commit documenting that choice.
 
 Hovering uses a separate compact label frame so the map can display the resource name without competing with the native GameTooltip used during gathering. This is especially appropriate in a 1.12 UI, where tooltip behavior and mouse layers vary.
 
@@ -50,11 +50,17 @@ Lua fixtures cover grouping and mathematical positions at different zooms, sizes
 
 After the first Forever installation showed the world-map checkbox but no new discoveries, the map control was changed to a small **GatherMap** button that opens four ON/OFF rows. This makes the previously separate recording policy visible alongside the two display controls. The optional diagnostic toggle controls temporary chat detail, while a short last-capture result appears in the panel. This menu does not redesign the four-corner marker language, and retains independent saved preferences. Its layout and click behavior are currently verified only with mocked UI frames.
 
+## November 5 — illustrated difficulty dots
+
+Babuni selected six subtly textured, rounded corner-dot images for the new Forever markers. They were generated with AI art tools under this direction, then cropped into six compact transparent **16×16 RGBA TGA** assets. The four corners remain **independent 6×6 image textures** anchored to the same invisible marker frame: the center is still clear, and nearby identical discoveries still merge into square or rectangular group frames. Red/orange/yellow/green/gray/unknown-purple show difficulty without text; gray retains 85% marker opacity. Native world-map resource icons remain inside the corners.
+
+This is a **texture replacement**, not a nine-slice redesign or a change to saved observations. The intention is stronger legibility and less apparent corner shimmer, but whether it improves actual Forever pixels is unverified until tested.
+
 ## Areas requiring genuine user testing
 
 - Dense nodes vs. 300-group drawing cap.
 - Different minimap sizes, UI scaling and indoor/outdoor zoom.
-- Readability of colored 3px corner dots and 85%-opacity gray in varying environments.
+- Readability of colored 6px illustrated corner dots and 85%-opacity gray in varying environments.
 - Hover zones and mouse-layer conflicts with other minimap addons.
 - Whether skinning hunting areas need their own visual distinction from stationary herbs and ore.
 - Whether hidden-profession defaults match the creator's preferred exploration style.

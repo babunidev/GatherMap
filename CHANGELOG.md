@@ -3,6 +3,14 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — illustrated difficulty corner textures (November 5, 2026)
+
+- Implemented Babuni's request to use the **six generated rounded, subtly textured images** in GatherMap itself, replacing four flat-color texture fills per node with small image textures while preserving the original four-corner frame design.
+- Added `Textures/Markers/marker_{red,orange,yellow,green,gray,purple}.tga`, created from the directed AI-generated source images and cropped/downsampled to **16×16 RGBA TGA** with transparent margins; each appears at **6×6 UI units**.
+- `unknown` difficulty displays the purple image. Existing six difficulty semantics, gray's 85% frame alpha, grouped-square/rectangle geometry, map pin ownership, native quest overlays and saved resource records are unchanged.
+- Updated `tools/check_forever_package.py` to validate the six assets and include them in development-only packages, plus UI/static regression fixtures for all difficulty variants. No extra addon dependencies.
+- **In-game appearance is unverified**; real-client smoothing, color distinction at tiny sizes and image loading require player testing. No release tag or publication.
+
 ## Unreleased — minimap frame stability and combat tracking (November 5, 2026)
 
 - Investigated continued **real-client** shape flipping and minimap drift despite fixed-world grouping. Found that a visible-group ordinal determined the pooled frame, and `Style` reapplied dimensions each slower refresh. A group entering or leaving view could cause one frame to be resized/reassigned to another resource.

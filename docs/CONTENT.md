@@ -36,6 +36,10 @@ The custom area dimension table includes **Hyjal, Scarlet Enclave, Lapidis Isle,
 
 Additional aliases translate a few old/current displayed names, including `Mount Hyjal` and `Island of Lapidis`. Other standard Vanilla maps use zone-name scaling and per-continent zoom metrics. The configured dimensions should be tested on the intended map clients before calling them accurate.
 
+## Forever six-color minimap/world-map marker textures
+
+Babuni-directed AI-generated rounded, subtly textured colored dots are cropped and stored as `Textures/Markers/marker_red.tga`, `marker_orange.tga`, `marker_yellow.tga`, `marker_green.tga`, `marker_gray.tga`, `marker_purple.tga`. Each runtime asset is **16×16 RGBA** with transparent surroundings, shown as a **6×6 UI-unit texture** at each of four corners. The difficulty subsystem uses `unknown` as the internal key for purple. These new images are independent of the 29 historic herb icons; see [asset provenance](THIRD_PARTY_ASSETS.md).
+
 ## Bundled images and screenshots
 
 The repository contains **29 `Icons/Herb*.tga` files** and **four `Screenshots/*.png` files** used for documentation:

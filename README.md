@@ -24,6 +24,14 @@ The historical `GatherMap.toc` (`Interface: 11200`) and `GatherMap.lua` remain i
 - **Performance:** Event-aware redraws, reusable minimap frames, grouped world-map pins and a spatial index for larger saved zone databases.
 - **Historical data:** Raw schema-v1/v2/v3 and old `continent:zone` entries are preserved. An opt-in importer supports explicit mapping, preview, two real-world coordinate anchors, before/after snapshots and guarded rollback; no automatic historical zone conversion occurs.
 
+## Textured four-corner markers — November 5 development build
+
+The six difficulty colors now use individual **transparent, slightly rounded illustrated corner-dot textures** instead of flat 3×3 Lua-colored squares. AI-generated designs were directed by Babuni, cropped and reduced to **16×16, RGBA TGA** files under `Textures/Markers/`; they display as **6×6 UI-unit dots** on each of the four corners. Red, orange, yellow, green, gray and **purple for unknown** retain the same meanings. Merged square/rectangular marker frames, resource icons, world-position tracking and SavedVariables are unchanged.
+
+When the installed AddOns directory is linked directly to the repository, a `git pull` updates the six images and Lua together; the optional development ZIP is **not needed** for that workflow. The files do not require entries in the `.toc` because Lua loads their exact texture paths.
+
+A real Forever-client visual check is still needed: image textures may improve corner consistency but do **not guarantee** that small UI elements stop shimmering at fractional screen positions.
+
 ## Map marker bugfix — November 5 development checkpoint
 
 The first Forever playtest reported a protected `Frame:SetPassThroughButtons()` call while the world map created GatherMap pins. Blizzard's map canvas invokes a mouse-button-passthrough callback on acquired pins; the default implementation calls the protected function. GatherMap now overrides that callback **only for its own mouse-disabled marker template**, and relies on the XML's `enableMouse="false"` instead of mutating mouse state at runtime.

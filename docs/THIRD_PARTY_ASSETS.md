@@ -14,6 +14,12 @@ The [Gatherer CurseForge project](https://www.curseforge.com/wow/addons/gatherer
 - Grim Reaches dimensions were credited to [MetaHunt](https://octowow.st/git/Meta/MetaHunt), a mirror pointing to [Duvelcorp/MetaHunt on Codeberg](https://codeberg.org/Duvelcorp/MetaHunt). We did not establish the precise original source file, copyright grant, or whether these dimensions are still used by the new Forever runtime. The historical attribution stays intact.
 - Existing screenshots are documentation, not required addon runtime assets. Their original authorship and publication permissions remain subject to normal project review.
 
+## New Forever marker dots — AI-directed original artwork (November 5, 2026)
+
+Six new `Textures/Markers/marker_{red,orange,yellow,green,gray,purple}.tga` images were **generated at Babuni's direction** from the six colored icon designs in the development conversation, then cropped/downsampled to 16×16 RGBA TGA by AI tooling. They are **new assets**, separate from Gatherer's existing 29 herb textures. No Gatherer images were modified or copied to create them.
+
+These records explain their origin, **not** a blanket assignment of license or proof of suitability for every downstream redistribution. The original AI-generated 1254×1254 images were not included as runtime assets; only the six 16×16 derivatives are committed. Publication still requires resolving the older Gatherer asset licensing and any relevant rights/attribution conditions.
+
 ## Pending decisions and release boundary
 
 - **Do not assign a repository-wide license without Babuni's authorization.** This repository currently has no root `LICENSE`. Public visibility alone does not grant redistribution rights.

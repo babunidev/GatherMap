@@ -31,6 +31,10 @@ Start with this `AGENTS.md` and `docs/DOCUMENTATION.md`, then inspect `README.md
 
 The old-zone importer must refuse `apply` unless two distant historical node coordinates have been explicitly matched against positions on the same Forever client build (`/gmap migrate anchor`). A link by zone name is not geometry proof. Preserve every legacy source row, backups and rollback protection. Recording remains **OFF** by default until live evidence and explicit direction justify otherwise. Do not assign a LICENSE, publish a tag or upload to CurseForge without Babuni's specific approval.
 
+## November 5 — generated rounded marker-dot images
+
+Babuni directed six rounded, subtly textured, transparent marker-dot images for red/orange/yellow/green/gray/purple. The images were generated with AI tools and committed as six original 16×16 RGBA TGA files under `Textures/Markers/` in the Forever development branch. The `unknown` difficulty uses purple; the four corners now display those images at 6×6 UI units on **both** minimap and world map, retaining the grouped parent frames, marker identity, 85% gray opacity, resource visibility and saved locations. The generated graphics do not authorize changes to historic Gatherer art or public release. Keep the six texture files included in the package audit and do not regress into flat `SetColorTexture` corners without Babuni's decision. Actual smoothing must be verified in the client.
+
 ## November 5 — minimap frame ownership and combat observations
 
 A real Forever follow-up showed that world-space grouping alone did not solve shape and movement glitches. During combat the minimap pins followed the player and snapped back after combat—two explicit `InCombatLockdown()` returns in the minimap-specific paths were responsible. These returns are removed for unprotected minimap marker drawing; keep the combat guards on the *native world-map canvas* and provider setup. If map coordinates become unavailable/secret, hide stale minimap frames instead of leaving them fixed to the player arrow.
@@ -65,7 +69,7 @@ The first actual Forever installation found the addon loaded and the world-map c
 
 ## Phase 5 map presentation boundaries
 
-`GatherMapMarkers.lua` is the Forever-only screen-space geometry/grouping module. Retain four 3px corner dots, world-map resource icons, 85%-opacity gray, resource name/kind separation, transitive overlap merging and the 300 **displayed-group** limit. Do not merge saved nodes to optimize visual clustering. The minimap and world-map preferences remain independent of each other and of discovery recording. Use a private mouse-disabled hover label; do not take ownership of native map clicks/dragging or GameTooltip. Run `tests/test_forever_markers.lua` and `tests/test_forever_display.lua` with Lua 5.1/5.4, then verify real map zoom, scaling, city/custom zones and other addons in Forever before claiming visual fidelity.
+`GatherMapMarkers.lua` is the Forever-only screen-space geometry/grouping module. Retain four corner dots (now illustrated 6px textures in Forever), world-map resource icons, 85%-opacity gray, resource name/kind separation, transitive overlap merging and the 300 **displayed-group** limit. Do not merge saved nodes to optimize visual clustering. The minimap and world-map preferences remain independent of each other and of discovery recording. Use a private mouse-disabled hover label; do not take ownership of native map clicks/dragging or GameTooltip. Run `tests/test_forever_markers.lua` and `tests/test_forever_display.lua` with Lua 5.1/5.4, then verify real map zoom, scaling, city/custom zones and other addons in Forever before claiming visual fidelity.
 
 ## Phase 4 color system and evidence standard
 

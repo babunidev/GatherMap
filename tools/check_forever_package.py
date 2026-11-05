@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "GatherMap_Camelot.toc"
 ADDON_NAME = "GatherMap"
 INTERFACE = "16001"
+MARKER_COLORS = ("red", "orange", "yellow", "green", "gray", "purple")
+MARKER_FILES = [f"Textures/Markers/marker_{color}.tga" for color in MARKER_COLORS]
 RUNTIME_FILES = [
     "GatherMapData.lua",
     "GatherMapMarkers.lua",
@@ -47,7 +49,28 @@ def verify():
     assert len(icons) == 29, "original resource art inventory changed"
     assert referenced <= names, "missing resource textures: " + ", ".join(sorted(referenced-names))
     assert all(icon.stat().st_size > 18 for icon in icons), "empty or malformed TGA assets"
-    paths = [MANIFEST] + [ROOT / f for f in files] + icons
+    marker_runtime = (ROOT / "GatherMapForever.lua").read_text(encoding="utf-8")
+    assert 'DOT_SIZE, MIN_INDEX_NODES = 300, 6, 128' in marker_runtime, (
+        "textured four-corner marker dimensions changed"
+    )
+    assert 'markerRoot = "Interface\\\\AddOns\\\\GatherMap\\\\Textures\\\\Markers\\\\marker_"' in marker_runtime
+    assert 'markerRoot.."purple.tga"' in marker_runtime, "unknown color fallback missing"
+    for color in MARKER_COLORS:
+        assert f'markerRoot.."{color}.tga"' in marker_runtime, (
+            f"marker texture {color} is not referenced by the UI"
+        )
+    marker_paths = [ROOT / name for name in MARKER_FILES]
+    for path in marker_paths:
+        assert path.is_file(), f"missing marker art: {path.relative_to(ROOT)}"
+        raw = path.read_bytes()
+        assert len(raw) >= 18 + 16 * 16 * 4, (
+            f"truncated RGBA marker: {path.relative_to(ROOT)}"
+        )
+        # Uncompressed 16x16, 32-bit TGA with 8-bit alpha (no Pillow dependency).
+        assert raw[2] == 2 and raw[16] == 32 and raw[17] & 15 == 8
+        assert int.from_bytes(raw[12:14], "little") == 16
+        assert int.from_bytes(raw[14:16], "little") == 16
+    paths = [MANIFEST] + [ROOT / f for f in files] + icons + marker_paths
     assert len(paths) == len({p.relative_to(ROOT).as_posix() for p in paths})
     assert all(p.is_file() and p.stat().st_size > 0 for p in paths)
     assert all(p.suffix.lower() in (".toc", ".lua", ".xml", ".tga") for p in paths)
@@ -60,7 +83,8 @@ def main():
     args = parser.parse_args()
     paths = verify()
     print(f"PASS: Forever {INTERFACE} manifest, {len(paths)} installable files, "
-          "29 existing herb icons; no legacy runtime or TOC included")
+          "29 existing herb icons and 6 new RGBA marker textures; "
+          "no legacy runtime or TOC included")
     print("NOTE: Source/API compliance, artwork licensing and gameplay remain unverified.")
     if args.output:
         target = args.output.expanduser().resolve()

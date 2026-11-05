@@ -76,6 +76,18 @@ The first Forever test revealed `[ADDON_ACTION_BLOCKED] AddOn 'GatherMap' tried 
 
 **Status:** The regression checks above are instructions for the player; only automated mocks have been exercised as part of this source change.
 
+### Regression: six illustrated difficulty-color marker assets
+
+This development revision replaces 3×3 solid-color corner dots with **four 6×6 rounded, subtly textured RGBA dots** chosen from six 16×16 files under `Textures/Markers/`. The four-corner frame and saved positions must remain identical.
+
+1. Open the minimap and world map on Forever and inspect each possible color: red, orange, yellow, green, gray and unknown/purple. **Expected:** all four corners show the intended artwork, with no missing/green replacement textures or black opaque backgrounds.
+2. Check one isolated square, one merged rectangle and a world-map node with a resource icon. **Expected:** textured corners stay at the four frame vertices, remain visible and leave the center/resource icon unobstructed.
+3. Walk, turn, zoom, fight and change UI scale. Compare with the previous flat square renderer. **Expected:** no new shimmer, flashing, size shifts or protected calls; **actual visual improvement is not yet proven**.
+4. Check gray: alpha remains 85% relative to the other markers, and unknown/purple remains visually distinct.
+5. With the source checked out in the installable AddOns directory, verify six `Textures/Markers/*.tga` are present. The six source files must also pass `python3 tools/check_forever_package.py` and the Lua mock/static suite.
+
+Only source checks can be automated; no game-client test has been run by AI.
+
 ## B — Recording (enable only on disposable test data)
 
 1. Record saved-node counts with `/gmap status` before starting. Open the world-map **GatherMap** button and turn **Record discoveries ON** (or use `/gmap capture on`). It begins OFF by default. Turn it OFF after testing. Temporarily enable **Diagnostic chat** if a successful gather is not saved.

@@ -154,3 +154,9 @@ The next AI-assisted correction separates those ideas. Nearby discoveries now ke
 Even with the resource groups calculated in a fixed place, the minimap corners still flickered as new markers came and went. A clearer symptom showed up in combat: the corners followed the character and only returned to their places after fighting ended.
 
 That sent the AI-assisted investigation back through GatherMap's frame pool, and into the minimap code of Gatherer, GatherMate2 and a Forever-specific overlay. The grouping was no longer the only problem. A reused frame could belong to a different resource on each refresh, and an explicit combat check stopped movement updates entirely. Those parts are now separated: a group keeps its marker frame, ordinary movement updates only its position, and combat no longer freezes the overlay. The original four corners are still there; whether they finally sit still on Forever's terrain remains to be confirmed in the game.
+
+## November 5, 2026: a little color at each corner
+
+The four dots still belong around each remembered gathering place, but the plain squares looked slightly restless as I moved. Rather than changing what the marks mean, the next idea was to give each difficulty color its own tiny, softly rounded graphic—just enough texture to feel deliberate without covering the map.
+
+Six AI-generated images now supply those dots, prepared as transparent TGA textures and fitted to the same four corner anchors. The rectangle that remembers nearby resources, and the color that describes their difficulty, remain untouched. Automated tests can confirm that each texture loads by its correct path in the code; whether the details settle cleanly on the actual minimap still has to be seen in Forever.

@@ -15,6 +15,14 @@
 - [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
 - [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
+### November 5 — original colored image dots
+
+- [x] Convert Babuni-directed generated red, orange, yellow, green, gray and purple rounded-dot artwork into six small transparent 16×16 RGBA TGA textures for Forever.
+- [x] Replace flat Lua-colored corner squares with 6×6 illustrated textures on the same four-corner minimap/world-map frames; map the internal `unknown` color to purple.
+- [x] Extend the development package audit and mocked UI tests to require all six correctly referenced, nonempty 32-bit TGA assets and correct difficulty mapping.
+- [ ] **In-game:** verify every difficulty image loads with transparency, is legible at 6×6 UI units and does not obscure the center or resource icon.
+- [ ] **In-game:** compare visual shimmer while walking, zooming, using UI scale changes and moving in combat; textures do not inherently correct positional jitter.
+
 ### November 5 — repeated in-game minimap glitch: frame ownership and combat
 
 - [x] Trace the **combat-only freeze** to explicit `InCombatLockdown()` returns inside both minimap render paths; keep the world-map protected guard, but continue updating GatherMap's own non-secure minimap frames during combat.

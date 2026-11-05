@@ -125,6 +125,25 @@ class ForeverCompatibilityTests(unittest.TestCase):
         self.assertIn('command=="pinpos"', runtime)
         self.assertIn("sx * cs + sy * sn", grouping)
 
+    def test_textured_marker_palette(self):
+        source = RUNTIME.read_text()
+        self.assertIn('DOT_SIZE, MIN_INDEX_NODES = 300, 6, 128', source)
+        self.assertIn('local texture = markerTextures[group.color]', source)
+        self.assertIn('pin.corners[i]:SetTexture(texture)', source)
+        self.assertNotIn('pin.corners[i]:SetColorTexture(', source)
+        for color in ("red", "orange", "yellow", "green", "gray", "purple"):
+            self.assertIn(f'markerRoot.."{color}.tga"', source)
+            texture = ROOT / "Textures" / "Markers" / f"marker_{color}.tga"
+            self.assertTrue(texture.is_file(), color)
+            raw = texture.read_bytes()
+            self.assertGreaterEqual(len(raw), 18 + 16 * 16 * 4)
+            self.assertEqual(raw[2], 2)  # true-color TGA
+            self.assertEqual(raw[16], 32) # 32-bit RGBA
+            self.assertEqual(raw[17] & 15, 8) # alpha
+            self.assertEqual(int.from_bytes(raw[12:14], "little"), 16)
+            self.assertEqual(int.from_bytes(raw[14:16], "little"), 16)
+        self.assertIn('unknown = markerRoot.."purple.tga"', source)
+
     def test_performance_and_coexistence_guards(self):
         source = RUNTIME.read_text()
         grouping = MARKERS.read_text()

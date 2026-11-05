@@ -268,6 +268,13 @@ for _,fr in ipairs(frames) do
 end
 assert(chestPin and chestPin:GetHeight()>14,
     "two nearby chest nodes must form the original merged rectangle")
+local markerRoot="Interface\\AddOns\\GatherMap\\Textures\\Markers\\marker_"
+for _,corner in ipairs(chestPin.corners) do
+    assert(corner:GetWidth()==6 and corner:GetHeight()==6,
+        "rounded corner assets should render as 6x6 icons")
+    assert(corner.texture==markerRoot.."purple.tga",
+        "unknown difficulty uses the purple artwork on minimap")
+end
 local fixedWidth,fixedHeight=chestPin:GetWidth(),chestPin:GetHeight()
 local styleCount=chestPin.sizeCalls
 local originalCorners=chestPin.corners
@@ -450,7 +457,29 @@ GetCursorPosition=function() return 0,0 end
 mainFrame.scripts.OnUpdate(mainFrame,0.15)
 assert(not label:IsShown(),"hover label must hide when the cursor leaves")
 assert(GatherMapDB.nodes==sameNodes)
-print("PASS: world zoom/resize, native provider, custom tooltips, UI scale, stored toggles, preview and data safety")
+-- Every difficulty uses its corresponding generated RGBA image, including
+-- purple for the internal 'unknown' state. Test world-map and minimap shared
+-- Style/AddCorners code without mutating saved nodes.
+local variants={
+    {"red","red"},{"orange","orange"},{"yellow","yellow"},
+    {"green","green"},{"gray","gray"},{"unknown","purple"},
+}
+for _,entry in ipairs(variants) do
+    local group={left=0,right=14,bottom=0,top=14,name="Test",
+        kind="treasure",color=entry[1]}
+    WorldMapFrame:AcquirePin("GatherMapForeverWorldPinTemplate",group,500,500)
+    local testPin=WorldMapFrame.pins[#WorldMapFrame.pins]
+    assert(testPin and #testPin.corners==4)
+    for _,corner in ipairs(testPin.corners) do
+        assert(corner:GetWidth()==6 and corner:GetHeight()==6,
+            "world-map corners use fixed 6x6 textured dots")
+        assert(corner.texture==markerRoot..entry[2]..".tga",
+            "wrong difficulty art for "..entry[1])
+        assert(corner.color==nil,"colored artwork must not be replaced by flat RGBA")
+    end
+end
+WorldMapFrame:RemoveAllPinsByTemplate("GatherMapForeverWorldPinTemplate")
+print("PASS: six difficulty textures on minimap/world map, native provider, tooltip, settings and saved data")
 
 -- Incomplete map APIs and malformed SavedVariables must fail closed.
 WorldMapFrame:Hide()

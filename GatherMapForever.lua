@@ -23,7 +23,18 @@ local miniContext, worldContext = {}, {}
 local miniCache
 local mapLabel, mapLabelText
 local previewMarker -- temporary test fixture; never saved
-local MAX_PINS, DOT_SIZE, MIN_INDEX_NODES = 300, 3, 128
+local MAX_PINS, DOT_SIZE, MIN_INDEX_NODES = 300, 6, 128
+-- Six original tiny rounded-dot images, converted to RGBA TGA for Forever.
+-- The historical unknown-difficulty key intentionally displays purple.
+local markerRoot = "Interface\\AddOns\\GatherMap\\Textures\\Markers\\marker_"
+local markerTextures = {
+    red = markerRoot.."red.tga",
+    orange = markerRoot.."orange.tga",
+    yellow = markerRoot.."yellow.tga",
+    green = markerRoot.."green.tga",
+    gray = markerRoot.."gray.tga",
+    unknown = markerRoot.."purple.tga",
+}
 local f = CreateFrame("Frame")
 
 local function MarkStyleDirty()
@@ -228,7 +239,7 @@ local function ProjectWorld(node)
         worldContext.height,worldContext.scale)
 end
 
--- The four 3px dots intentionally leave the marker centre clear.
+-- Four small transparent textured dots leave the marker centre clear.
 local function AddCorners(pin)
     pin.corners = {}
     local points = {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
@@ -244,13 +255,13 @@ local function AddCorners(pin)
     end
 end
 local function Style(pin, group)
-    local color = R.colors[group.color] or R.colors.unknown
+    local texture = markerTextures[group.color] or markerTextures.unknown
     pin.name = group.name
     pin:SetSize(math.max(14, group.right - group.left),
         math.max(14, group.top - group.bottom))
     pin:SetAlpha(group.color == "gray" and 0.85 or 1)
     for i = 1, 4 do
-        pin.corners[i]:SetColorTexture(color[1], color[2], color[3], 1)
+        pin.corners[i]:SetTexture(texture)
     end
     if pin.icon then pin.icon:SetTexture(group.icon) end
 end

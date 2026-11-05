@@ -19,6 +19,14 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — 16×16 difficulty image assets on four corners
+
+`GatherMapForever.lua` now maps `red`, `orange`, `yellow`, `green`, `gray`, `unknown` (purple) to six local texture files under `Interface\\AddOns\\GatherMap\\Textures\\Markers\\marker_*.tga`. The images originate from Babuni-directed AI generation, cropped and resized to **16×16 uncompressed RGBA TGA**. Each of the four corner Texture regions uses `SetTexture(path)` and a **6×6 UI-unit size**. The same `AddCorners` and `Style` paths apply to minimap and native world-map pins, with the old flat `SetColorTexture` no longer used for those corner textures.
+
+The parent group frame, world anchoring, pooled identities, transitive merging, per-frame movement, private hover and saved-node schema are unchanged; gray still receives 85% parent alpha. New assets are **referenced at runtime**, not declared in the TOC. The stdlib package check requires all six files to be valid 32-bit 16×16 TGA files and includes them in the optional development-only installable bundle; mock tests check that all six classes map to exact asset paths.
+
+Image rasterization remains client-dependent, and four separate textures still have distinct pixel positions. This is a visual experiment, not a verified cure for all movement flicker. Neither historical Gatherer herb icons nor existing third-party notices were changed.
+
 ## November 5 — stable frame ownership, corner rendering and combat update
 
 After world-space grouping was implemented, actual Forever reports still showed shape flipping and movement errors. The remaining problems were frame **ownership**, not just the grouping algorithm: the previous `AcquireMini(count)` reused an existing frame based on the group's **position in the visible array**, and `Style` reset frame size and corners every 0.35 seconds, potentially for a different saved group. The other proven defect was the direct `InCombatLockdown` return in `TrackMiniPositions` and `DrawMinimap`.

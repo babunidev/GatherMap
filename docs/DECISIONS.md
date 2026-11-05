@@ -91,6 +91,12 @@ After two attempted rendering corrections, the client still showed intermittent 
 
 The approved intent remains fixed world locations and four-corner rectangles. Rather than replacing the marker system with Blizzard's unaddressable internal resource dots or importing another addon's code, the implementation now follows the shared principle seen in GatherMate2 and ForeverPlusPlus: **stable frame ownership and movement-only position updates**. The original world-map provider remains separate; combat restrictions are preserved only where required. Texture snapping is disabled where supported. The source-level reasoning is recorded in `docs/FOREVER_MINIMAP_RESEARCH.md`; the actual client result is still a pending verification.
 
+## November 5, 2026 — switch the corner glyphs to six authored images
+
+After substantial minimap stability fixes, Babuni requested replacing flat, generated-in-code color squares with the six already generated, slightly rounded and subtly textured difficulty icons. The design continues to use **four corner dots** surrounding an otherwise empty center, and retains both isolated squares and merged rectangles. Six transparent 16×16 RGBA TGA files are used at a 6×6 display size. This is deliberately **not** a nine-slice image or a new parent-marker geometry system, because merged rectangles need arbitrary width/height without stretching artwork.
+
+The colors remain red, orange, yellow, green, gray and internal `unknown` rendered purple; gray remains at 85% parent opacity. Both minimap and world-map corners use the same local assets. The historical 3px flat-color source remains in git history, and existing saved discoveries and third-party art are unchanged. Client appearance and any reduction in flicker remain to be observed.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

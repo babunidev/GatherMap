@@ -84,3 +84,9 @@ Babuni reported rectangle/square changes and snapbacks at roughly half-second in
 Babuni's repeated Forever feedback reported that GatherMap's four-corner markers changed shape while moving and followed the player during combat, despite prior source-level fixes. AI reviewed the installed branch, traced two explicit combat-update returns and a changing ordinal frame-pool assignment, and compared the historical Gatherer source with GatherMate2 and ForeverPlusPlus minimap drawing. A new documented comparison (`docs/FOREVER_MINIMAP_RESEARCH.md`) distinguishes client-native gold gathering dots from user-drawn saved markers.
 
 The technical implementation binds a pooled frame to its resource group while visible, styles it only on new assignment, keeps the per-frame movement path active during combat and requests non-snapped corner textures when available. Lua mocks test these cases and the existing regression suite. No private SavedVariables or actual Forever client was accessed by AI; passing CI never establishes that the visual issue is resolved in the user's running game.
+
+## November 5, 2026 — six generated difficulty corner textures
+
+Babuni selected six generated rounded icons as the new **red, orange, yellow, green, gray and purple** corner-dot images for GatherMap, replacing the remaining flat-color 3px squares. AI-generated artwork, resized/cropped to six transparent 16×16 RGBA TGA textures, was integrated into the existing Forever `AddCorners`/`Style` paths as 6×6 corner dots. Python/CI checks inspect the TGA headers and exact asset inventory, while Lua mock fixtures verify all six difficulty-to-texture mappings without modifying saved observations. Legacy Gatherer herb artwork was left intact.
+
+This work was approved for **development implementation**, not a release. Any improvement to minimap shimmer remains an unverified client hypothesis rather than a confirmed gameplay result.
