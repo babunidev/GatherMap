@@ -58,3 +58,7 @@ AI-assisted review used the Forever UI-source snapshot `1.60.1.70790` to cross-c
 An earlier manual migration path was found to depend on matched names without independent coordinate evidence. The implementation now requires two separated, current-build anchor checks before a user can execute an import. The method remains an explicit user-driven safety check, not verified geometry for every node.
 
 [GitHub Actions run 41920490126](https://github.com/babunidev/GatherMap/actions/runs/41920490126) passed the complete development suite, including a disposable 38-file ZIP. Automated compile, fixture and package tests remain distinct from an actual Forever session. Copyright permissions, release/version approval and CurseForge integration remain the human creative's decision and/or additional verification obligations.
+
+## November 5, 2026 — gather recording triage and settings menu
+
+Babuni reported that the installed addon loaded and showed its world-map checkbox but did not save actual harvested resources, and requested one compact button with all on/off settings. AI source investigation found the recording default was disabled independently of visibility, identified two Forever gathering spell IDs and added opt-in capture diagnostics, a safer delayed-loot retry and a four-row map menu. Lua mock tests were extended for the panel and recorder. These do not constitute an actual in-game success test or permission to publish a public version.

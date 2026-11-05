@@ -124,3 +124,9 @@ AI-assisted development separated location data from the moment-to-moment pictur
 The old GatherMap instructions still spoke mostly to a different client, even though the port's map, recording and data systems had already moved on. For anyone opening the repository now, the first page needed to describe what exists today and what has only been simulated.
 
 AI-assisted work checked a newer Forever UI-source snapshot, separated old installation notes from the active instructions, consolidated the roadmap and wrote a test plan that keeps all gameplay checks together. The same pass traced every bundled herb icon back to matching Gatherer files, without assuming that a familiar source settles the licensing question. Historical map imports now ask for two real coordinate comparisons before copying anything. The work remains a development checkpoint; no claim of live success or public release follows from it.
+
+## November 5, 2026: the checkbox was not the recorder
+
+The first installed Forever build put its control on my map, yet harvesting a resource taught GatherMap nothing. Its old checkbox only governed visibility, while the recording system began disabled in the background. Having these controls apart made the problem hard to spot.
+
+The requested change is a small map button with a compact menu for both overlays and the gathering recorder, plus optional diagnostics. AI-assisted debugging also recognized newer Forever gathering spell IDs and added a second opportunity to read loot details after a confirmed interaction. Automated checks can exercise the code, but seeing an actual harvest appear on the map remains the decisive game test.

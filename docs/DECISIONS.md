@@ -61,6 +61,12 @@ The historical data importer previously allowed a zone-name link, preview and `a
 
 The public README and active roadmap now concern Forever exclusively. Historical 0.4.3 installation notes and earlier phased development are archived rather than erased. Recording remains opt-in; changing that default or the project license is **not** an approved decision. The original herb icons remain intact while their licensing requirements are investigated.
 
+## November 5, 2026 — centralize toggles, retain verified capture safeguards
+
+Babuni requested that the single world-map checkbox be replaced by a compact **GatherMap** button opening a small menu containing all existing on/off options. The approved user interaction groups independent minimap and world-map visibility with the experimental gathering recorder and opt-in diagnostic messages. No display setting deletes discoveries or silently enables recording. Default recording remains disabled until observed live-client evidence permits changing policy.
+
+A source review identified two additional possible reasons for silent recording failure: missing active Forever herbalism/mining IDs and loot-slot data becoming available after `LOOT_READY`. Explicit spell IDs and a second `LOOT_OPENED` attempt were added while retaining the successful cast + correlated loot-source requirement. The initial report establishes that the old installation did not record; it does not establish that the new implementation has worked in Forever.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

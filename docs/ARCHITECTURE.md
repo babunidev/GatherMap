@@ -19,6 +19,12 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — settings menu and experimental capture diagnostics
+
+The Forever runtime defines a single world-map **GatherMap** button and a lazily accessed settings panel with four independent rows. `GatherMapDB.enabled` controls minimap markers, `GatherMapDB.worldMapEnabled` controls world-map markers, `GatherMapDB.recordingEnabled` enables confirmed gathering capture, and `GatherMapDB.captureDebug` enables optional diagnostic chat. The first three keys already existed; `captureDebug` is additive and defaults false. Panels are parented to `WorldMapFrame` and only the small controls accept clicks; world-map resource pins remain passive.
+
+`GatherMapCapture.lua` explicitly classifies known Forever spell IDs 1235236 (herb) and 1235230 (mining) alongside historical spell IDs. A recognized cast must still succeed, then correlate a loot GUID to the appropriate source type before `GatherMapRecord` is invoked. A second attempt on `LOOT_OPENED` handles loot-slot data absent on `LOOT_READY` without permitting cast-start-only writes. In-memory counters record recognized cast, success, loot, source match, successful record, refusal and failure; `/gmap capture debug` reports them and the latest reason. This is **mock-verified source behavior only**, not evidence of actual Forever event ordering or on-client resource recording.
+
 ## Forever installable layout and migration proof (development review)
 
 The Camelot manifest loads `GatherMapData.lua`, `GatherMapMarkers.lua`, `GatherMapSpatial.lua`, `GatherMapDifficulty.lua`, `GatherMapMigration.lua`, **`GatherMapForever.lua` then `GatherMapWorldPins.xml`**, and `GatherMapCapture.lua`. Defining `GatherMapForeverWorldPinMixin` before the XML is required for the template's `mixin` reference. `tools/check_forever_package.py` verifies this order and builds an optional local ZIP whose `GatherMap/` directory includes the Camelot TOC, its referenced Lua/XML files and the 29 inherited herb icons—never the legacy 1.12 runtime or TOC.

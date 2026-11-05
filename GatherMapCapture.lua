@@ -52,9 +52,18 @@ local function Trace(reason)
         Notify("diagnostic: "..reason)
     end
 end
+local lastRefusal, lastRefusalAt
 local function Reject(reason)
     stats.rejected=stats.rejected+1
     stats.last=reason
+    -- Diagnostic chatter is opt-in and throttled for repeated generic loot.
+    local now=Now()
+    if type(GatherMapDB)=="table" and GatherMapDB.captureDebug==true
+        and (reason~=lastRefusal or not lastRefusalAt
+            or now-lastRefusalAt>=5) then
+        lastRefusal,lastRefusalAt=reason,now
+        Notify("diagnostic: "..reason)
+    end
 end
 local function SpellKind(spellID)
     spellID = PublicNumber(spellID)

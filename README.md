@@ -18,11 +18,17 @@ The historical `GatherMap.toc` (`Interface: 11200`) and `GatherMap.lua` remain i
 
 ## Implemented in source
 
-- **Discovery:** Experimental confirmation of herbs, ore, skinning materials/hunting locations, normal treasure and lockpicking using recognized cast success plus matching loot sources. Interrupted, unrelated and duplicate actions are rejected. Survival/Woodcutting history is retained, but no current Forever recording mechanic has been established.
+- **Discovery:** Experimental confirmation of herbs, ore, skinning materials/hunting locations, normal treasure and lockpicking using recognized cast success plus matching loot sources. Forever-specific gathering spell IDs `1235236` (Herb Gathering) and `1235230` (Mining) are explicitly recognized alongside legacy IDs, and confirmed loot can be retried on `LOOT_OPENED` when not ready on `LOOT_READY`. Interrupted, unrelated and duplicate actions are rejected. Survival/Woodcutting history is retained, but no current Forever recording mechanic has been established.
 - **Display:** Four 3px colored corners, world-map resource icons and passive hover labels. Markers merge transitively only for matching resource type and name. Display is limited to 300 **groups**, not 300 saved nodes.
 - **Difficulty:** Red, orange, yellow, green, gray and unknown purple. Documented Forever-specific thresholds exist for 28 herbs and 9 ore nodes; missing thresholds remain purple. Effective profession skill includes bonuses; ordinary chest difficulty uses player level. Shared records produce different colors for different characters.
 - **Performance:** Event-aware redraws, reusable minimap frames, grouped world-map pins and a spatial index for larger saved zone databases.
 - **Historical data:** Raw schema-v1/v2/v3 and old `continent:zone` entries are preserved. An opt-in importer supports explicit mapping, preview, two real-world coordinate anchors, before/after snapshots and guarded rollback; no automatic historical zone conversion occurs.
+
+## Map settings button
+
+Open the world map and click **GatherMap** in the upper-left map area. A small panel opens with independent switches for **Minimap markers**, **World-map markers**, **Record discoveries**, and **Diagnostic chat**. The old checkbox has been removed. Recording remains **OFF by default**, even when both marker displays are visible. Switch it on explicitly before gathering; saved discoveries do not depend on the panel remaining open.
+
+The last capture result appears at the bottom of the panel. For more detailed rejection counts, use `/gmap capture debug`; opt-in diagnostic messages can be enabled from the panel or `/gmap capture debug on`. Disable them afterward to avoid chat noise.
 
 ## Commands
 
@@ -30,10 +36,13 @@ The historical `GatherMap.toc` (`Interface: 11200`) and `GatherMap.lua` remain i
 | --- | --- |
 | `/gmap status` | Current skills, saved-data status and recording policy |
 | `/gmap on` / `/gmap off` | Enable/disable **minimap** markers only |
-| `/gmap world on` / `/gmap world off` | Enable/disable **world-map** markers only; world map also has a checkbox |
+| `/gmap world on` / `/gmap world off` | Enable/disable **world-map** markers only; world-map settings are also available through the GatherMap button |
 | `/gmap testpin` / `/gmap clear` | Show/remove a temporary unsaved test marker |
+| `/gmap menu` | Open or close the same settings panel while the world map is visible |
 | `/gmap capture status` | Show recording policy |
 | `/gmap capture on` / `/gmap capture off` | Explicitly enable/disable **experimental** recording |
+| `/gmap capture debug` | Show cast/loot/source-match/save/refusal counters and last outcome |
+| `/gmap capture debug on` / `off` | Enable/disable opt-in diagnostic chat |
 | `/gmap migrate status` | Inspect historical zone counts |
 | `/gmap migrate link <old-key>` | Link a historical zone to the **current** Forever zone only when labels agree |
 | `/gmap migrate anchor <old-key> <node-index>` | Check one historical point against the character's **actual current** Forever location |

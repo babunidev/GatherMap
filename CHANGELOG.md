@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — map settings and gathering diagnostics (November 5, 2026)
+
+- Replaced the separate world-map checkbox with a compact **GatherMap** button and an expandable four-switch panel for minimap markers, world-map markers, opt-in gathering recording and diagnostic chat. Existing display and capture SavedVariables are preserved.
+- Investigated the first real installation report: the addon was visible and the overlay control loaded but gathering produced no saved nodes. The recorder was **disabled by default** and the display checkbox did not enable it. This is a confirmed source configuration explanation, not proof that no other live-client issue exists.
+- Recognize Forever active gather spell IDs `1235236` and `1235230` alongside older IDs, and retry confirmed source-matched loot on `LOOT_OPENED` if `LOOT_READY` was incomplete.
+- Add opt-in capture diagnostics: cast/success/loot/source-match/save/refusal counters and a last-result explanation, available with `/gmap capture debug` and in the settings panel. Routine recording still defaults OFF; no speculative gathering writes were enabled.
+- Update mocked Lua regression tests for the menu and both Forever spell IDs, delayed loot availability, settings persistence and diagnostic switches.
+- **Not verified in-game:** whether the user-observed gathering failure is fully resolved, actual click layering and every resource type. The public version remains unchanged.
+
 ## Unreleased — Step 8 release-readiness development review (November 4, 2026)
 
 - Audited Forever client UI-source declarations at build `1.60.1.70790` for skills, map/vector, minimap, loot and spell events; documented confirmed source signatures and remaining in-game unknowns in `docs/FOREVER_API_AUDIT.md`.

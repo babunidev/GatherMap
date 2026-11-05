@@ -34,7 +34,7 @@ This prevents the visual clutter of duplicate marks without collapsing distinct 
 
 ## Controls and affordances
 
-The minimap overlay is governed by `/gmap on` / `off`, while a **Gather Map** checkbox on the world map controls the world overlay. Both are stored. No control removes learned locations or turns off discovery merely to hide markers.
+The minimap overlay is governed by `/gmap on` / `off`, while `/gmap world on` / `off` changes the world-map overlay. Both settings are stored. The **GatherMap** button at the upper-left corner of the world map opens a compact panel with independent switches for minimap markers, world-map markers, gathering recording and diagnostic chat. No display toggle deletes discoveries or changes recording; recording starts OFF and must be enabled explicitly.
 
 The status command prints total saved points, type counts, skill ranks and whether the current zone has known scaling. This makes the system slightly diagnosable without introducing another settings window.
 
@@ -45,6 +45,10 @@ The existing four-corner design is retained: 3px corner dots, no central minimap
 The cursor label is a private, mouse-disabled miniature tooltip. It avoids interfering with Blizzard's GameTooltip while gathering and leaves map click/drag handling alone. Minimap and world-map switches retain their original independent scope and SavedVariables. A 300-group display limit does not discard recorded discoveries.
 
 Lua fixtures cover grouping and mathematical positions at different zooms, sizes and UI scales. **The live Forever appearance is not yet approved or verified:** screenshots, clipping under custom minimap masks, city/zone maps and other map addons still require actual client tests. These tests are about fidelity to the existing design, not permission to redesign it.
+
+## November 5 — compact settings menu
+
+After the first Forever installation showed the world-map checkbox but no new discoveries, the map control was changed to a small **GatherMap** button that opens four ON/OFF rows. This makes the previously separate recording policy visible alongside the two display controls. The optional diagnostic toggle controls temporary chat detail, while a short last-capture result appears in the panel. This menu does not redesign the four-corner marker language, and retains independent saved preferences. Its layout and click behavior are currently verified only with mocked UI frames.
 
 ## Areas requiring genuine user testing
 

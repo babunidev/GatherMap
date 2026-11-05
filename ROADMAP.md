@@ -15,6 +15,15 @@
 - [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
 - [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
+### November 5 — first real installation feedback
+
+- [x] Investigate no recorded nodes despite working addon-list entry and map control. Found the recorder is independently **OFF by default**; the former checkbox only changed world-map visibility.
+- [x] Replace the world-map checkbox with one expandable GatherMap settings button for four independent switches (minimap/world display, recording, diagnostic messages).
+- [x] Add explicit Forever gathering spell IDs, source-matched `LOOT_OPENED` retry and opt-in counters/rejection reporting, without allowing unsupported or failed gather records.
+- [x] Add mocked menu and capture regressions to the source test workflow.
+- [ ] **In-game:** validate that the menu switches recording ON and that actual harvested herbs/minerals are added and displayed; capture `/gmap capture debug` if not.
+- [ ] **In-game:** test map button click/layer behavior, settings persistence and no unintended gameplay actions.
+
 ## 2. Development tasks outside the client
 
 - [x] Recheck declared map, minimap, skill, cast, loot and tooltip APIs against Forever UI-source **1.60.1.70790**; see [API audit](docs/FOREVER_API_AUDIT.md). **Runtime behavior remains unverified.**
@@ -39,7 +48,7 @@
 - [ ] Verify real MapCanvas pin callbacks, `CreateVector2D`, minimap radius, zoom/rotation and profession skill APIs/modifiers.
 
 ### Gathering and node recording
-- [ ] Gather herbs, mine veins, skin creatures, open ordinary chests and pick locks; verify source/name/position/count.
+- [ ] Turn **Record discoveries ON** in the GatherMap map menu, gather herbs and mine veins, then skin creatures/open chests/pick locks; verify correct source/name/position/count and `/gmap capture debug` counters.
 - [ ] Test failed/interrupted casts, delayed loot, autoloot, multiple loot sources, missing tooltips, repeated gather and neighboring nodes.
 - [ ] Test unknown/custom resource names, localization, delayed events and absent GUIDs. Verify no speculative/false discoveries.
 - [ ] Investigate any actual Forever Survival/Woodcutting mechanic without modifying unsupported historical records.

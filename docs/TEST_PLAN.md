@@ -17,19 +17,22 @@
 | Open world map; pan and zoom | Center icon and corners track the intended map position | Screenshots before/after, no blocked actions |
 | `/gmap clear` | Temporary pin disappears, SavedVariables unchanged | `/gmap status`, map screenshot |
 | `/gmap on` / `/gmap off` | Minimap only changes; world-map toggle does not | Side-by-side screenshots |
-| `/gmap world on` / `/gmap world off` or checkbox | World-map only changes; minimap remains independent | Side-by-side screenshots |
+| Click **GatherMap** on world map | Expand/collapse four-switch settings menu, without dragging or blocking map pins | Screenshot, Lua error check |
+| Switch **Minimap markers** / **World-map markers** independently | Each switches its own overlay; no shared discovery deletion | Screenshots before/after |
+| Switch **Record discoveries** / **Diagnostic chat** | Capture is OFF initially; each switch persists independently of displays | /gmap status and /gmap capture debug |
+| `/gmap world on` / `/gmap world off` | World-map only changes; minimap remains independent | Side-by-side screenshots |
 | Toggle map settings; `/reload` | Visibility preferences survive | Screenshot after reload |
 | Rotate, zoom and resize minimap; UI scale changes; move to city/custom map | No misaligned/stuck corners, Lua errors or map input blocking | Zone, minimap shape and UI-scale notes |
 | Hover markers, click map, drag map, combat on/off | Label appears without stealing GameTooltip or blocking normal actions | Errors, input behavior |
 
 ## B — Recording (enable only on disposable test data)
 
-1. Record saved-node counts with `/gmap status` before starting. Turn the experimental recorder on with `/gmap capture on`, and **off immediately after testing** with `/gmap capture off`.
-2. Gather one known herb, mine one vein, skin one creature, open an ordinary chest and pick a lock. Expected: each successful action creates one resource-kind record with the correct map position and classification; Skinning is an approximate hunting location.
+1. Record saved-node counts with `/gmap status` before starting. Open the world-map **GatherMap** button and turn **Record discoveries ON** (or use `/gmap capture on`). It begins OFF by default. Turn it OFF after testing. Temporarily enable **Diagnostic chat** if a successful gather is not saved.
+2. Gather one known herb (Forever spell `1235236`) and one ore vein (Forever spell `1235230`), then skin one creature, open an ordinary chest and pick a lock. Expected: each successful action creates one resource-kind record with the correct map position and classification; Skinning is an approximate hunting location.
 3. Repeat one location and then visit a nearby different node. Expected: occurrence count increases only after a new verified gather; distinct resources remain distinct.
 4. Deliberately interrupt a gathering cast, gather from an unrelated source, test autoloot/delayed-loot and missing-tooltip situations. Expected: no speculative records; inspect actual `UNIT_SPELLCAST_*` and `LOOT_READY` behavior rather than inferring success from cast stops.
 5. Inspect unusual/special Forever resources, any localized client, Skinning and lockpicking. Expected: unknown thresholds remain purple; no assumed Survival/Woodcutting action.
-6. Confirm `/reload`, logout and a second character retain shared discoveries without copying current-character profession ranks to `GatherMapDB`.
+6. Run `/gmap capture debug` after each gather and note recognized casts, success, loot events, source matches, saved records and last refusal. Then confirm `/reload`, logout and a second character retain shared discoveries and display/recording switches without copying current-character profession ranks to `GatherMapDB`.
 
 ## C — Difficulty and character state
 
