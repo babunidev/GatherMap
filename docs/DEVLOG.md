@@ -148,3 +148,9 @@ The previous overlay placed the whole set of markers only a few times per second
 Even after the markers began following the map more often, the little outlines could still change shape as I walked. A rectangle became a square, then returned a moment later. The resource hadn't moved; the addon was repeatedly deciding which saved locations belonged together based on what happened to be visible right then.
 
 The next AI-assisted correction separates those ideas. Nearby discoveries now keep their group in a fixed map coordinate space, while only the finished marker is tested against the moving minimap boundary. Its corners and shape can stay the same without regrouping on every step. The effect is supported by a reproduced boundary fixture, but will only be considered settled when it behaves that way in Forever.
+
+## November 5, 2026: the markers that wouldn't hold their shape
+
+Even with the resource groups calculated in a fixed place, the minimap corners still flickered as new markers came and went. A clearer symptom showed up in combat: the corners followed the character and only returned to their places after fighting ended.
+
+That sent the AI-assisted investigation back through GatherMap's frame pool, and into the minimap code of Gatherer, GatherMate2 and a Forever-specific overlay. The grouping was no longer the only problem. A reused frame could belong to a different resource on each refresh, and an explicit combat check stopped movement updates entirely. Those parts are now separated: a group keeps its marker frame, ordinary movement updates only its position, and combat no longer freezes the overlay. The original four corners are still there; whether they finally sit still on Forever's terrain remains to be confirmed in the game.

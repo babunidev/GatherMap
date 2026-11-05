@@ -25,6 +25,20 @@
 | Rotate, zoom and resize minimap; UI scale changes; move to city/custom map | No misaligned/stuck corners, Lua errors or map input blocking | Zone, minimap shape and UI-scale notes |
 | Hover markers, click map, drag map, combat on/off | Label appears without stealing GameTooltip or blocking normal actions | Errors, input behavior |
 
+### Regression: marker frame reassignment and combat tracking
+
+The user confirmed that the previous minimap fix still glitched, and that during combat the markers moved **with the character** until combat ended. Two source defects were identified: explicit combat returns in both minimap update paths, plus frame reuse by a changing ordinal rather than a stable resource-group identity.
+
+1. With a real Forever build, turn on minimap markers and identify one saved **merged four-corner rectangle** that remains visible while walking. Note its width and height relative to the terrain.
+2. Walk until a **different resource marker** enters and then leaves the minimap while the original remains visible. Repeat across several 0.35-second refreshes. **Expected:** the original frame never abruptly changes shape, color, position or resource identity; it remains anchored to the same terrain location.
+3. Enter combat near the resource and move continuously. **Expected:** the marker continues updating relative to the world terrain **during combat**, not moving with the character arrow or snapping back afterward. Compare immediately before/during/after combat.
+4. Zoom the minimap; turn Rotate Minimap on/off; move with different UI scales. Check that **each of the four 3px corner textures stays attached** to the same rectangle corners and does not blink/shear independently.
+5. If the client returns secret/unavailable position data, an uncertain marker should disappear temporarily rather than continuing to drift alongside the moving map. Record any error.
+6. Compare the marker motion with Blizzard's **golden Find Herbs/Find Minerals tracking dots**, without assuming those native engine dots are addon frames. Use `/gmap testpin`, `/gmap pinpos`, and `/gmap clear` on a temporary unsaved point when helpful.
+7. Record actual client build and settings, `/reload`, and test alongside one verified Forever-compatible gathering addon only after the solo test.
+
+**Verification:** Mocked Lua tests exercise combat movement, non-resizing frames and group churn. No new in-game success is claimed.
+
 ### Regression: periodic marker shape changes while walking
 
 After the first frame-rate movement fix, a real Forever playtest still showed GatherMap four-corner markers alternating between square and rectangular shapes and snapping approximately every 0.35–0.5 seconds. The source cause was a visibility-filtered regrouping pass that changed group membership as nearby nodes crossed the minimap boundary.

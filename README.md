@@ -30,6 +30,14 @@ The first Forever playtest reported a protected `Frame:SetPassThroughButtons()` 
 
 The minimap projection now applies the inverse of the character's counterclockwise facing when the map rotates, and respects `C_Minimap.IsRotateMinimapIgnored()`. `/gmap testpin` remains deliberately **temporary and unsaved**: the marker's world location should remain fixed as the character walks. `/gmap pinpos` exposes the stored/current coordinates and separation for diagnosing a remaining live-client problem. Automated pin-acquisition and walking tests are not proof of visual correctness in the actual client.
 
+## Stable minimap pin identity and combat tracking — November 5
+
+A further **real Forever report** established that shapes and positions still glitched after cached grouping, and that markers stopped following the terrain as soon as combat started. Root-cause review found two remaining defects: the minimap pass reused frames by their changing **visible-list index**, restyling/resizing existing pins as the list changed; and both minimap positioning passes returned early in combat.
+
+The correction keeps an existing marker frame owned by its **same saved resource group** while visible, and applies size/color styling only when a new group is assigned. Its fixed world-coordinate anchor continues to update at frame rate **during combat** as well as outside combat. The four 3px corner textures opt out of pixel snapping where supported, reducing fractional-scale distortions. The world map remains independent and retains its protected-operation safeguards. If a position cannot be read, obsolete minimap pins are hidden instead of sticking to the moving minimap.
+
+These design choices were checked against [GatherMate2, ForeverPlusPlus and historical Gatherer](docs/FOREVER_MINIMAP_RESEARCH.md); no third-party code or art was copied. **Simulated Lua regressions passed; no confirmed in-game resolution yet.**
+
 ## Stable minimap grouping — development correction (November 5)
 
 The previous movement fix repositioned pins each frame, but still **regrouped only visible resource nodes every 0.35 seconds**. As the character approached the minimap boundary, nearby nodes dropped out of the group and the four-corner marker abruptly changed from a rectangle to a square, sometimes snapping to another center.

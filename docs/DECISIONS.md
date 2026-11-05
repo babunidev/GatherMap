@@ -85,6 +85,12 @@ A real Forever playtest established that faster marker repositioning alone did n
 
 This preserves the original transitive merging and potentially rectangular four-corner shapes rather than forcing every marker to be square. It avoids making costly resource grouping run each frame. The technical cost is a full-map group cache, plus a spatial index for large databases, invalidated on meaningful data/zoom/style changes. Real rotating-minimap and large-group presentation still require testing.
 
+## November 5, 2026 — stop reassigning visible frames, keep updating during combat
+
+After two attempted rendering corrections, the client still showed intermittent shape flipping and, crucially, markers frozen to the minimap during combat. The combat freeze was traced to two explicit `InCombatLockdown` checks in minimap-only paths. The other suspected cause was confirmed in source: a pooled frame could be reassigned at every slow redraw based on its **list index**, changing its size and identity as other groups came into view.
+
+The approved intent remains fixed world locations and four-corner rectangles. Rather than replacing the marker system with Blizzard's unaddressable internal resource dots or importing another addon's code, the implementation now follows the shared principle seen in GatherMate2 and ForeverPlusPlus: **stable frame ownership and movement-only position updates**. The original world-map provider remains separate; combat restrictions are preserved only where required. Texture snapping is disabled where supported. The source-level reasoning is recorded in `docs/FOREVER_MINIMAP_RESEARCH.md`; the actual client result is still a pending verification.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

@@ -3,6 +3,15 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — minimap frame stability and combat tracking (November 5, 2026)
+
+- Investigated continued **real-client** shape flipping and minimap drift despite fixed-world grouping. Found that a visible-group ordinal determined the pooled frame, and `Style` reapplied dimensions each slower refresh. A group entering or leaving view could cause one frame to be resized/reassigned to another resource.
+- Pinned frame ownership to its **specific cached resource group**. Unchanged visible groups retain their frames and width/height; only a genuinely reassigned frame receives new styling. A separate active-pins list keeps hover and fast movement tracking consistent.
+- Removed the explicit combat freeze from both minimap update functions. Independent world-map canvas operations remain combat-guarded; unavailable or secret map positions now hide stale minimap pins rather than leaving them attached to the player.
+- Optional `SetSnapToPixelGrid(false)` and `SetTexelSnappingBias(0)` calls prevent independent 3px corner snapping at fractional offsets when available.
+- Added Lua fixture tests for movement during combat, stable frame ownership and resizing when unrelated groups enter/leave the minimap; source review documented in `docs/FOREVER_MINIMAP_RESEARCH.md`.
+- **No in-game confirmation of the new fix** and no public release. Source-level checks are not evidence of the client's rendering stability.
+
 ## Unreleased — stable minimap group geometry (November 5, 2026)
 
 - Diagnosed and corrected the second real Forever minimap report: resource groups were recalculated from only currently visible nodes on every 0.35-second refresh, causing a transitive merged rectangle to shrink into a square or change center as member nodes crossed the viewport boundary.

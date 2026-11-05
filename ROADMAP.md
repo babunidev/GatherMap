@@ -15,6 +15,18 @@
 - [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
 - [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
+### November 5 — repeated in-game minimap glitch: frame ownership and combat
+
+- [x] Trace the **combat-only freeze** to explicit `InCombatLockdown()` returns inside both minimap render paths; keep the world-map protected guard, but continue updating GatherMap's own non-secure minimap frames during combat.
+- [x] Trace recurring visual changes to the use of `AcquireMini(count)`: the frame at an ordinal list position was repeatedly assigned a different visible group and restyled/resized.
+- [x] Keep a marker frame assigned to its resource-group identity for as long as that group is visible; release frames only when their group leaves the view.
+- [x] Avoid redundant `SetSize`, color updates, and clear/reanchor operations during unchanged per-frame and slow redraws; opt out of independently snapped 3px corner textures.
+- [x] Review [historical Gatherer, GatherMate2, ForeverPlusPlus and Forever's minimap tracking declarations](docs/FOREVER_MINIMAP_RESEARCH.md). The native gold dots are drawn by the client and expose no documented arbitrary-saved-node pin API.
+- [x] Add combat-movement regression and surviving-frame ownership/size assertions during other nodes entering and leaving view; keep previous viewport grouping tests.
+- [ ] **In-game:** confirm pinned groups stay in position **during combat**, while walking and turning, not merely snap back afterward.
+- [ ] **In-game:** check whether four-corner marker shape, size and position remain stable when other groups enter/leave view, at several zoom/UI scales and with custom minimaps.
+- [ ] **In-game:** if any residual jump persists, capture the Forever build, rotation, `/gmap pinpos`, and compare the native blip to marker movement to identify position API update delay.
+
 ### November 5 — stable minimap shapes and regrouping fix
 
 - [x] Diagnose the reported half-second square/rectangle change: screen-space groups were rebuilt from individually clipped nodes as the player moved, so membership, size and center changed at the 0.35-second boundary.

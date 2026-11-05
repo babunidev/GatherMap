@@ -19,6 +19,16 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — stable frame ownership, corner rendering and combat update
+
+After world-space grouping was implemented, actual Forever reports still showed shape flipping and movement errors. The remaining problems were frame **ownership**, not just the grouping algorithm: the previous `AcquireMini(count)` reused an existing frame based on the group's **position in the visible array**, and `Style` reset frame size and corners every 0.35 seconds, potentially for a different saved group. The other proven defect was the direct `InCombatLockdown` return in `TrackMiniPositions` and `DrawMinimap`.
+
+`miniPins` is now an owned, bounded frame pool. Each cached group maintains a temporary `group.pin` link, while the frame maintains `pin.group`. The slow pass selects visible groups and marks their generation, releases only group/frame pairs absent from that generation, and assigns free frames only to new visible groups. Persistent pairs are not resized, recolored or re-created on routine updates. `activeMiniPins` lists currently displayed frames, and both hover and per-frame positioning use that list. There are still at most 300 active minimap groups, and saved records are never modified.
+
+The minimap's unprotected frame positions continue updating in combat, based on its current player/world location. Client map/position/radius unavailability now hides stale frames, invalidates the transient view and schedules a later rebuild; it does not allow pins to move along with the player at the last offset. The **native world-map** provider, lazy UI setup and protected map-canvas calls retain their combat guards. The 3px corner textures may opt out of pixel-grid snapping to avoid edges independently shifting at fractional offsets; the grouped rectangle dimensions remain unchanged for each assigned group.
+
+See [comparative minimap source research](FOREVER_MINIMAP_RESEARCH.md) for Forever's native tracking blips, GatherMate2 pin identity/movement, ForeverPlusPlus drawing and historical Gatherer's offset method. No third-party implementation was copied. Unit/mock tests test combat updates and frame identity; actual client taint, secure restrictions, FPS and visual behavior remain unverified.
+
 ## November 5 — stable group identity between minimap redraws
 
 The user-reported half-second rectangle/square flicker exposed a second flaw after per-frame positioning was added: `DrawMinimap` still grouped **only nodes passing `MiniPoint` visibility clipping** at the character's current position. When one of two nearby resources crossed the view boundary, the next 0.35-second pass silently changed the group bounds from a merged rectangle to a single square. This also changed its center and caused a periodic snap independent of the per-frame tracking rate.
