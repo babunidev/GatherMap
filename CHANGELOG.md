@@ -3,6 +3,14 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## Unreleased — stable minimap group geometry (November 5, 2026)
+
+- Diagnosed and corrected the second real Forever minimap report: resource groups were recalculated from only currently visible nodes on every 0.35-second refresh, causing a transitive merged rectangle to shrink into a square or change center as member nodes crossed the viewport boundary.
+- Rebuilt minimap group membership in a stationary unrotated world coordinate system, **independent of player movement and temporary viewport clipping**. Group dimensions and world centers are cached across view updates and used by the existing per-frame marker positioning.
+- Extended the existing spatial index to locate nearby pre-projected groups; preserved transitive same-resource merging, four-corner colors, the 300-displayed-group cap, original SavedVariables, independent controls and native world-map/quest pins.
+- Added walking-boundary regression fixtures (a 2-node rectangle remaining stable when one member leaves the viewport) and group-index data validation checks.
+- No public release; actual client appearance, rotated grouped rectangles and performance require in-game retesting.
+
 ## Unreleased — frame-rate minimap marker tracking (November 5, 2026)
 
 - Addressed a real Forever movement report: a GatherMap marker stayed world-located but advanced in visible jumps, apparently drawing back toward the character before stopping again.

@@ -15,6 +15,16 @@
 - [x] Spatial indexing, pooled marker frames, event-aware rendering and large synthetic regression fixtures.
 - [x] Lua 5.1/5.4 syntax and mock/fixture checks in GitHub Actions.
 
+### November 5 — stable minimap shapes and regrouping fix
+
+- [x] Diagnose the reported half-second square/rectangle change: screen-space groups were rebuilt from individually clipped nodes as the player moved, so membership, size and center changed at the 0.35-second boundary.
+- [x] Build same-name/kind transitive groups once per map/data/zoom/style revision in a fixed world-coordinate plane; preserve rectangle bounds and group identity across character movement.
+- [x] Index stable group centers for large databases and query only nearby groups at the view refresh; reuse pooled frames and per-frame position tracking.
+- [x] Add a regression that crosses the exact viewport boundary where a two-node merged rectangle previously shrank to a single 14px square.
+- [ ] **In-game:** confirm no rectangle/square flip or periodic snap while walking, turning or approaching the edge of the minimap.
+- [ ] **In-game:** verify overlapping group bounds on rotating/non-square minimaps and confirm large groups are not visually oversized.
+- [ ] **In-game:** profile cache rebuilding at zoom/style/data changes and long travel, including frame behavior in combat.
+
 ### November 5 — minimap marker smoothness
 
 - [x] Identify coarse 0.35-second marker repositioning as a likely cause of the reported movement lag, distinct from Blizzard's normal overlapping quest-objective icon.

@@ -10,12 +10,13 @@ local function ValidCoord(n)
     return Finite(n) and n>=0 and n<=1
 end
 
-local function Build(nodes, project)
+local function Build(nodes, project, allowProjected)
     if type(nodes)~="table" or type(project)~="function" then return nil end
     local index={source=nodes, cells={}, all={}, valid=0}
     for i=1,#nodes do
         local node=nodes[i]
-        if type(node)=="table" and ValidCoord(node.x) and ValidCoord(node.y) then
+        if type(node)=="table" and (allowProjected
+            or (ValidCoord(node.x) and ValidCoord(node.y))) then
             local instance,x,y=project(node)
             if (type(instance)=="number" or type(instance)=="string")
                 and Finite(x) and Finite(y) then
@@ -80,4 +81,14 @@ local function Nearby(index,instance,x,y,radius)
     return result
 end
 
-ns.GatherMapSpatial={Build=Build,Nearby=Nearby,CellSize=CELL}
+-- Pre-projected display groups have world centers but no SavedVariables
+-- coordinates. Reuse the same spatial buckets without pretending that
+-- their world coordinates lie in normalized 0..1 map space.
+local function BuildGroups(groups,instance)
+    if type(groups)~="table" then return nil end
+    return Build(groups,function(group)
+        return instance,group.worldX,group.worldY
+    end,true)
+end
+ns.GatherMapSpatial={Build=Build,BuildGroups=BuildGroups,
+    Nearby=Nearby,CellSize=CELL}

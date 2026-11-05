@@ -70,6 +70,22 @@ assert(#S.Nearby(index,1,0,0,0)==0)
 assert(#S.Nearby(index,1,0/0,0,500)==0)
 assert(#S.Nearby(nil,1,0,0,500)==0)
 
+-- Minimap layouts are grouped once in world-space, then indexed by their
+-- fixed centers. Their display bounds are never recomputed during walking.
+local layoutGroups={
+    {name="A",kind="herb",worldX=7500,worldY=8500,order=1},
+    {name="B",kind="mineral",worldX=7600,worldY=8500,order=2},
+    {name="C",kind="treasure",worldX=22000,worldY=22000,order=3},
+}
+local groupedIndex=assert(S.BuildGroups(layoutGroups,1))
+assert(groupedIndex.valid==3,"group centers must index world-space positions")
+local visible=S.Nearby(groupedIndex,1,7500,8500,200)
+assert(#visible==2 and visible[1] and visible[2],
+    "nearby groups must come from the same immutable layout")
+assert(#S.Nearby(groupedIndex,2,7500,8500,200)==0,
+    "other instances remain separate")
+assert(layoutGroups[1].worldX==7500 and layoutGroups[1].worldY==8500,
+    "index building must not modify cached group coordinates")
 -- Worst case for an old nine-cell, all-pairs neighbor test: dense nodes
 -- in a single 14px cell, all of the same name and kind.
 local dense={}

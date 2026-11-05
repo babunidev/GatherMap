@@ -74,3 +74,7 @@ Regression fixtures simulate blocked inherited pin methods and player movement; 
 Babuni reported a minimap marker moving in visible steps and clarified that a nearby quest-objective indicator was normal Blizzard behavior. AI investigation found that the Forever runtime projected visible resource groups only at a 0.35-second refresh. The new code retains throttled resource grouping and builds a per-group fixed world-space center for frame-rate repositioning, with inverse projection and rotation/clipping guards. Tests simulate 0.016-second movement and require the resource-group call count not to increase during those frames.
 
 No Blizzard quest indicator was modified. The private client was not accessible; smoothness and any performance impact remain game-unverified.
+
+## November 5, 2026 — repeatable minimap group-shape regression
+
+Babuni reported rectangle/square changes and snapbacks at roughly half-second intervals despite the earlier frame-rate tracking work. AI source review found that the 0.35-second rebuild still used viewport-clipped resource positions for transitive grouping, so group dimensions and identities changed as the player moved. The implementation now caches groups in a static world coordinate plane and checks only whole-group visibility on movement. The regression fixture simulates a two-node merged chest rectangle straddling the clip edge, requiring unchanged dimensions and no unnecessary regroup across multiple refreshes. No actual Forever gameplay was performed by AI, and release approval was neither requested nor granted.

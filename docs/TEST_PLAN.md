@@ -25,6 +25,18 @@
 | Rotate, zoom and resize minimap; UI scale changes; move to city/custom map | No misaligned/stuck corners, Lua errors or map input blocking | Zone, minimap shape and UI-scale notes |
 | Hover markers, click map, drag map, combat on/off | Label appears without stealing GameTooltip or blocking normal actions | Errors, input behavior |
 
+### Regression: periodic marker shape changes while walking
+
+After the first frame-rate movement fix, a real Forever playtest still showed GatherMap four-corner markers alternating between square and rectangular shapes and snapping approximately every 0.35–0.5 seconds. The source cause was a visibility-filtered regrouping pass that changed group membership as nearby nodes crossed the minimap boundary.
+
+1. Stand near **two records of the same name and kind** that overlap as one rectangle. Record its outline.
+2. Walk until one source lies beyond the edge of the minimap but the grouped center remains visible. Continue walking and stopping across several refresh intervals. **Expected:** the same rectangle dimensions and world center throughout; no shape flip, frame re-assignment or snap back.
+3. Rotate and zoom the minimap. Confirm corner geometry remains coherent, especially with a non-square minimap or a custom mask. **Expected:** no protected action or unexpected repeated regrouping during movement; a deliberate zoom/style change may rebuild the layout.
+4. Compare a solitary resource square and the grouped rectangle, and verify they remain distinct from Blizzard quest markers. Test with 0, 100, 1,000 and 10,000+ saved resources.
+5. Test when other saved resources enter/leave view, after `/reload`, and in combat. Record the actual build, FPS and any shape/position mismatch.
+
+The automated boundary regression exercises this source behavior with a mocked Forever UI. It is **not** a completed in-game test.
+
 ### Regression: smooth marker movement without changing quest indicators
 
 The screenshot's highlighted quest objective and its minimap pointer are the game's ordinary quest overlay. Test GatherMap's **four-corner resource marker** separately; do not classify the Blizzard quest objective as an addon error.

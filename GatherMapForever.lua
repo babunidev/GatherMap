@@ -13,10 +13,10 @@ local miniPins, mapPins = {}, {}
 local worldCache = setmetatable({}, { __mode = "k" })
 local activeTooltip, dirty, tick, skillDirty = nil, true, 0, false
 local hoverTick, providerRetryTick = 0, 0
-local renderRevision, dataRevision = 0, 0
+local renderRevision = 0
 local worldDirty = true
 local visibleMiniPins = 0
-local spatialCache, spatialMapID, worldLayout, previewCache
+local miniGroups, worldLayout, previewCache
 local miniContext, worldContext = {}, {}
 local miniCache
 local mapLabel, mapLabelText
@@ -26,13 +26,12 @@ local f = CreateFrame("Frame")
 
 local function MarkStyleDirty()
     renderRevision = renderRevision + 1
-    worldLayout = nil
+    miniGroups, worldLayout = nil, nil
     worldDirty = true
     dirty = true
 end
 local function MarkDirty()
-    dataRevision = dataRevision + 1
-    spatialCache, previewCache = nil, nil
+    previewCache = nil
     MarkStyleDirty()
 end
 local function Print(s)
@@ -208,19 +207,19 @@ local function WorldPosition(id,x,y,node)
     if node then worldCache[node]={id=id,x=x,y=y,instance=instance,wx=wx,wy=wy} end
     return instance,wx,wy
 end
--- Only candidate points near the character are grouped on movement.
--- The world-space index rebuilds after a saved observation or explicit import.
-local function SpatialProject(node)
-    return WorldPosition(spatialMapID, node.x, node.y, node)
-end
-local function ProjectMini(node)
+-- Group once in a fixed, unrotated world-coordinate plane. Translating
+-- the player viewpoint must NEVER change which resource nodes form one
+-- four-corner rectangle or how large that rectangle is.
+local function ProjectMiniLayout(node)
     local context=miniContext
     local instance,x,y=WorldPosition(context.mapID,node.x,node.y,node)
-    if instance~=context.instance or not markers.Finite(x) or not markers.Finite(y) then
-        return nil
-    end
-    return markers.MiniPoint(x-context.x,y-context.y,context.radius,
-        context.width,context.height,context.facing,context.rotate)
+    if instance~=context.instance or not markers.Finite(x)
+        or not markers.Finite(y) then return nil end
+    return -y*context.width/(context.radius*2),
+        x*context.height/(context.radius*2)
+end
+local function SortMiniGroups(a,b)
+    return a.order<b.order
 end
 local function ProjectWorld(node)
     return markers.WorldPoint(node.x,node.y,worldContext.width,
@@ -367,37 +366,56 @@ local function DrawMinimap()
     miniContext.radius, miniContext.width, miniContext.height =
         radius, width, height
     miniContext.facing, miniContext.rotate = facing, rotate
-    local candidates=nodes
-    if spatial and #nodes>=MIN_INDEX_NODES then
-        if not spatialCache or spatialCache.mapID~=mapID
-            or spatialCache.source~=nodes
-            or spatialCache.revision~=dataRevision then
-            spatialMapID=mapID
-            local built=spatial.Build(nodes, SpatialProject)
-            if built and (built.valid>0 or #nodes==0) then
-                built.mapID, built.revision=mapID, dataRevision
-                spatialCache=built
-            else
-                spatialCache=nil
-            end
+    local layout=miniGroups
+    if not layout or layout.mapID~=mapID or layout.instance~=instance
+        or layout.source~=nodes or layout.radius~=radius
+        or layout.width~=width or layout.height~=height
+        or layout.revision~=renderRevision then
+        local groups=markers.Group(nodes,ProjectMiniLayout,
+            ShowNode,Difficulty,Icon)
+        local worldXFactor=radius*2/height
+        local worldYFactor=-radius*2/width
+        for i=1,#groups do
+            local group=groups[i]
+            group.worldX=(group.bottom+group.top)/2*worldXFactor
+            group.worldY=(group.left+group.right)/2*worldYFactor
+            group.worldInstance=instance
+            group.order=i
         end
-        if spatialCache then
-            candidates=spatial.Nearby(spatialCache,instance,wx,wy,radius)
+        local index
+        if spatial and #groups>=MIN_INDEX_NODES then
+            index=spatial.BuildGroups(groups,instance)
         end
+        layout={mapID=mapID,instance=instance,source=nodes,
+            radius=radius,width=width,height=height,
+            revision=renderRevision,groups=groups,index=index}
+        miniGroups=layout
     end
-    local groups = markers.Group(candidates, ProjectMini, ShowNode, Difficulty, Icon)
-    local count = math.min(#groups, MAX_PINS)
-    for i = 1, count do
-        local group, pin = groups[i], AcquireMini(i)
-        Style(pin,group)
-        local sx=(group.left+group.right)/2
-        local sy=(group.bottom+group.top)/2
-        pin.worldX,pin.worldY=markers.MiniWorldAnchor(sx,sy,wx,wy,
+
+    -- Only visibility and position depend on the moving viewpoint.
+    -- The immutable group dimensions and members are shared by both passes.
+    local candidates=layout.groups
+    if layout.index then
+        candidates=spatial.Nearby(layout.index,instance,wx,wy,
+            radius*1.15)
+        table.sort(candidates,SortMiniGroups)
+    end
+    local count=0
+    for i=1,#candidates do
+        if count>=MAX_PINS then break end
+        local group=candidates[i]
+        local sx,sy=markers.MiniPoint(group.worldX-wx,group.worldY-wy,
             radius,width,height,facing,rotate)
-        pin.worldInstance=instance
-        pin:ClearAllPoints()
-        pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
-        pin:Show()
+        if sx then
+            count=count+1
+            local pin=AcquireMini(count)
+            Style(pin,group)
+            pin.worldX,pin.worldY=group.worldX,group.worldY
+            pin.worldInstance=instance
+            pin:ClearAllPoints()
+            pin:SetPoint("CENTER",Minimap,"CENTER",sx,sy)
+            pin:Show()
+        end
     end
     HideMini(count+1)
     visibleMiniPins=count

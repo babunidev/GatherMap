@@ -19,6 +19,16 @@ The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lo
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
+## November 5 — stable group identity between minimap redraws
+
+The user-reported half-second rectangle/square flicker exposed a second flaw after per-frame positioning was added: `DrawMinimap` still grouped **only nodes passing `MiniPoint` visibility clipping** at the character's current position. When one of two nearby resources crossed the view boundary, the next 0.35-second pass silently changed the group bounds from a merged rectangle to a single square. This also changed its center and caused a periodic snap independent of the per-frame tracking rate.
+
+The corrected layout projects all valid visible-to-profession nodes of the current map into a **fixed, north-up world coordinate plane** at the current minimap world-unit scale. `GatherMapMarkers.Group` performs the original transitive same-kind/name overlap there, independent of the player, minimap position or rotation. The resulting groups store stable world-space centers, dimensions and source ordering. `miniGroups` caches this layout by map, instance, source table, radius, canvas dimensions and render revision. Large layouts use `GatherMapSpatial.BuildGroups` to index cached world centers; `spatial.Nearby` finds candidates at slow intervals, with deterministic original ordering and a 300 displayed-group cap.
+
+`DrawMinimap` now **only assigns visible cached groups** to frame-pool entries, and `TrackMiniPositions` continues to move those same frames every game frame using the fixed centers. Viewport clipping no longer removes group members or recomputes group shapes. Explicit changes to source nodes, profession colors, zone/instance, minimap zoom/size or cache revision still rebuild layout as appropriate. This uses additional linear memory and grouping work on a change rather than repeated regrouping on every walk update. Since grouping uses the stationary north-up plane, rectangles retain their own dimensions while the player rotates; actual visual fidelity with rotated world maps requires a Forever client check.
+
+The 0.35-second grouping pass described below is an **obsolete historical implementation detail**, superseded by this stationary layout. No saved data or native quest overlays are modified.
+
 ## November 5 — frame-rate minimap positioning over cached resource groups
 
 The first live movement report showed world-fixed markers advancing in small jumps instead of keeping pace with the minimap. The source cause is likely the previous `DrawMinimap` path: it projected every displayed group only at the 0.35-second throttled redraw, even though the character position can change each frame.

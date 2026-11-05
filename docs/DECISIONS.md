@@ -79,6 +79,12 @@ The latest Forever playtest clarified that the overlapping quest-objective indic
 
 This preserves the original four-corner markers, SavedVariables, independent toggles, resource grouping and 300-group display limit. The source solution is covered by short-frame fixtures, but no direct Forever FPS or smoothness evidence exists yet.
 
+## November 5, 2026 — fixed-world grouping instead of a moving viewport
+
+A real Forever playtest established that faster marker repositioning alone did not fix the layout: grouped corner markers changed from rectangles to squares as the player moved, typically at the slower regrouping cadence. Source analysis found the grouping set itself was changing because it was clipped to the minimap before clustering. The decision is to **group the world data in a stable coordinate plane**, then clip only the already-grouped results for display.
+
+This preserves the original transitive merging and potentially rectangular four-corner shapes rather than forcing every marker to be square. It avoids making costly resource grouping run each frame. The technical cost is a full-map group cache, plus a spatial index for large databases, invalidated on meaningful data/zoom/style changes. Real rotating-minimap and large-group presentation still require testing.
+
 ## Observed design evolution
 
 | Date | Evidence | Design direction shown in the implementation |

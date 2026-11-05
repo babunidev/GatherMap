@@ -251,6 +251,33 @@ for _,fr in ipairs(frames) do
     if fr.parent==Minimap and fr:IsShown() then miniCount=miniCount+1 end
 end
 assert(miniCount>0,"minimap group must appear")
+-- Simulate a viewport boundary. Previously the first chest fell just offscreen
+-- on the next 0.35s pass; its merged rectangle shrank to one 14px square.
+-- Fixed-world grouping must preserve the shape across repeated refreshes.
+local chestPin
+for _,fr in ipairs(frames) do
+    if fr.parent==Minimap and fr.name=="Battered Chest"
+        and fr:IsShown() then chestPin=fr;break end
+end
+assert(chestPin and chestPin:GetHeight()>14,
+    "two nearby chest nodes must form the original merged rectangle")
+local fixedWidth,fixedHeight=chestPin:GetWidth(),chestPin:GetHeight()
+local initialGroupCalls=groupCalls
+playerX=0.78
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin:IsShown(),"merged chest center remains on the minimap edge")
+assert(chestPin:GetWidth()==fixedWidth and chestPin:GetHeight()==fixedHeight,
+    "viewport clipping must not turn a rectangle into a square")
+assert(groupCalls==initialGroupCalls,
+    "walking must not regroup world-anchored resource locations")
+playerX=0.77
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin:GetWidth()==fixedWidth and chestPin:GetHeight()==fixedHeight)
+playerX=0.5
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(chestPin:GetWidth()==fixedWidth and chestPin:GetHeight()==fixedHeight)
+assert(groupCalls==initialGroupCalls,
+    "repeated slow refreshes must use the same stable world groups")
 -- A temporary testpin must stay fixed in world coordinates while the
 -- character moves, rather than remaining attached to the player arrow.
 SlashCmdList.GATHERMAP("testpin")

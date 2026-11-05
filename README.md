@@ -30,6 +30,14 @@ The first Forever playtest reported a protected `Frame:SetPassThroughButtons()` 
 
 The minimap projection now applies the inverse of the character's counterclockwise facing when the map rotates, and respects `C_Minimap.IsRotateMinimapIgnored()`. `/gmap testpin` remains deliberately **temporary and unsaved**: the marker's world location should remain fixed as the character walks. `/gmap pinpos` exposes the stored/current coordinates and separation for diagnosing a remaining live-client problem. Automated pin-acquisition and walking tests are not proof of visual correctness in the actual client.
 
+## Stable minimap grouping — development correction (November 5)
+
+The previous movement fix repositioned pins each frame, but still **regrouped only visible resource nodes every 0.35 seconds**. As the character approached the minimap boundary, nearby nodes dropped out of the group and the four-corner marker abruptly changed from a rectangle to a square, sometimes snapping to another center.
+
+GatherMap now constructs resource groups in a fixed unrotated world-coordinate plane and caches their sizes, names and fixed world centers. Player movement changes **only their screen positions/visibility**; it does not change merged-group membership or rectangle size. A second spatial index retrieves nearby stable groups, with the same 300-group display limit. Style changes, new discoveries, map changes and zoom changes still invalidate the layout as necessary. The native world-map pins and Blizzard's quest objectives are untouched.
+
+**Verified:** automated fixture reproducing the rectangle-to-square boundary transition and checks no regroup across successive 0.35-second walking updates; Lua compatibility and current Forever visual smoothness still require their separate verification statuses.
+
 ## Smooth minimap tracking — development fix (November 5)
 
 The Forever playtest confirmed that the quest objective overlapping the minimap was **Blizzard's normal quest overlay**, not a GatherMap resource marker. GatherMap's own saved/test markers were reported to lag and jump toward the player during movement.

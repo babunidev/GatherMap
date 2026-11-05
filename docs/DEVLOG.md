@@ -142,3 +142,9 @@ AI-assisted investigation traced that call through Forever's native map canvas a
 The quest pointer on my minimap turned out to be doing exactly what Blizzard intended. GatherMap's little square was the one with an awkward gait: it held the right general location, but slid toward my character in short steps while moving through the world.
 
 The previous overlay placed the whole set of markers only a few times per second. With AI-assisted changes, the map still groups nearby discoveries at that slower pace, while each existing marker keeps its own world-space anchor and can move smoothly against the player's position every frame. The four corners, the account's saved places and the quest overlay remain untouched. Actual movement in Forever will decide whether the new timing matches the terrain.
+
+## November 5, 2026: why the corners kept changing
+
+Even after the markers began following the map more often, the little outlines could still change shape as I walked. A rectangle became a square, then returned a moment later. The resource hadn't moved; the addon was repeatedly deciding which saved locations belonged together based on what happened to be visible right then.
+
+The next AI-assisted correction separates those ideas. Nearby discoveries now keep their group in a fixed map coordinate space, while only the finished marker is tested against the moving minimap boundary. Its corners and shape can stay the same without regrouping on every step. The effect is supported by a reproduced boundary fixture, but will only be considered settled when it behaves that way in Forever.
