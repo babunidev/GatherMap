@@ -1,7 +1,14 @@
 # GatherMap — verified commit history
 
-**Creator:** Babuni.dev  
+**Creative direction:** Babuni  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
+
+## Unreleased — documentation reconciliation and repository hygiene (November 6, 2026)
+
+- Aligned the current README, concept, roadmap, architecture, design, test plan, journal, decisions and AI credits with the actual Forever runtime: four **6×6 image-textured** corners, separate minimap combat tracking, observed spell 2368 and independent map-menu settings. Historical 0.4.3 sections remain explicitly historical.
+- Recorded Babuni's limited in-game evidence: map overlay loaded, combat movement became steadier while slight corner flicker remained, and a live Silverleaf cast exposed spell 2368. Post-fix capture, textured-dot appearance and full game regressions remain open.
+- Repaired a relative link in the archived roadmap, updated documentation roles to **Babuni** (creative) versus **babuni.dev** (website), and refreshed the review date.
+- Corrected the preceding `f326c1b` commit's accidental executable-bit changes on 82 tracked files, removed a tracked Python `__pycache__` bytecode file, and added `.gitignore` to prevent regeneration from being staged (`62260f4`). No runtime logic or authored image pixels were changed in this documentation/cleanup pass.
 
 ## Unreleased — illustrated difficulty corner textures (November 5, 2026)
 
@@ -18,7 +25,7 @@
 - Removed the explicit combat freeze from both minimap update functions. Independent world-map canvas operations remain combat-guarded; unavailable or secret map positions now hide stale minimap pins rather than leaving them attached to the player.
 - Optional `SetSnapToPixelGrid(false)` and `SetTexelSnappingBias(0)` calls prevent independent 3px corner snapping at fractional offsets when available.
 - Added Lua fixture tests for movement during combat, stable frame ownership and resizing when unrelated groups enter/leave the minimap; source review documented in `docs/FOREVER_MINIMAP_RESEARCH.md`.
-- **No in-game confirmation of the new fix** and no public release. Source-level checks are not evidence of the client's rendering stability.
+- **Later player feedback:** movement was substantially steadier, including during combat, while minor corner flicker remained; this is not a comprehensive visual regression test or a public release.
 
 ## Unreleased — stable minimap group geometry (November 5, 2026)
 

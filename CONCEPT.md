@@ -1,8 +1,8 @@
 # GatherMap — concept and original creative direction
 
-**Creator and creative director:** Babuni.dev  
+**Creative direction:** Babuni  
 **Public project:** Gather Map, formerly Octo Gather  
-**Target:** Vanilla WoW 1.12-compatible addons, with additional named custom maps.
+**Current target:** World of Warcraft Forever exclusively. **Historical target:** Vanilla 1.12-compatible client and custom maps (archived 0.4.3).
 
 ## Learn the world by exploring it
 
@@ -39,13 +39,13 @@ In September the project moved from **Octo Gather** to the more provider-neutral
 
 ## Creative authorship, not an invented origin story
 
-These principles are grounded in the original README, feature history and current source. The available commits do **not** reproduce all of Babuni.dev's original thinking or show who drafted every function. The creator's core ideas and direction remain credited to Babuni.dev. The AI documentation assistant's later analysis and wording are a separate contribution.
+These principles are grounded in the original README, feature history and current source. The available commits do **not** reproduce all of Babuni's original thinking or show who drafted every function. The original creative ideas and direction remain credited to Babuni. The AI documentation assistant's later analysis and wording are a separate contribution.
 
-Do not replace this living exploration record with a generic imported-mining database, excessive map clutter or a conventional web-map dashboard without the creator's decision.
+Do not replace this living exploration record with a generic imported-mining database, excessive map clutter or a conventional web-map dashboard without Babuni's decision.
 
 ## Current platform direction (November 2026)
 
-Future development targets **World of Warcraft Forever exclusively**. The original self-learning map, account-wide memory, current-character difficulty colors and four-corner presentation remain the concept. Previous 1.12 implementation details are retained as history, not an instruction to support another client. This decision authorizes preparation, not a completed port or public version.
+Active development supports **World of Warcraft Forever exclusively**. The original self-learning map, account-wide memory, current-character difficulty colors and four-corner presentation remain the concept. Previous 1.12 implementation details are retained as history, not a second supported client. A Forever implementation exists in the development branch, but its gameplay workflows are not comprehensively verified in-game and no public Forever version has been authorized.
 
 ## November 6 — diagnosing a missing discovery
 

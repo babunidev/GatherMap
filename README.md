@@ -4,7 +4,7 @@
 
 **Creative direction:** Babuni. **Target:** Forever 1.60.1, Interface `16001` (verify the actual installed build). **Development version:** `0.5.0-alpha`. **SavedVariables:** `GatherMapDB`. **Development branch:** [`feat/forever-port`](https://github.com/babunidev/GatherMap/tree/feat/forever-port). **Published release:** historical `v0.4.3` only; no public Forever release has been authorized.
 
-> **Verification status:** Lua 5.1/5.4 compilation, static checks, mocked API/UI behavior, large-node stress tests and backup fixtures pass in GitHub Actions. No gathering, map placement, migration, actual performance or addon coexistence has been verified **inside the Forever client**. Recording remains **disabled by default**.
+> **Verification status:** Lua 5.1/5.4 compilation, static checks, mocked API/UI behavior, large-node stress tests and backup fixtures pass in GitHub Actions. Player-reported Forever playtests confirm that the addon loaded and its map controls appeared, and that marker movement became substantially steadier, including during combat; small apparent size/shape flicker remained. A live Silverleaf spell trace identified ID 2368. Successful recording **after the November 6 fixes**, six-texture appearance, migration, actual performance and addon coexistence remain unverified in-game. Recording remains **disabled by default**.
 
 ## Install the development build — not for public distribution
 
@@ -19,7 +19,7 @@ The historical `GatherMap.toc` (`Interface: 11200`) and `GatherMap.lua` remain i
 ## Implemented in source
 
 - **Discovery:** Experimental confirmation of herbs, ore, skinning materials/hunting locations, normal treasure and lockpicking using recognized cast success plus matching loot sources. Forever-specific gathering spell IDs `1235236` (Herb Gathering) and `1235230` (Mining) are explicitly recognized alongside legacy IDs, and confirmed loot can be retried on `LOOT_OPENED` when not ready on `LOOT_READY`. Interrupted, unrelated and duplicate actions are rejected. Survival/Woodcutting history is retained, but no current Forever recording mechanic has been established.
-- **Display:** Four 3px colored corners, world-map resource icons and passive hover labels. Markers merge transitively only for matching resource type and name. Display is limited to 300 **groups**, not 300 saved nodes.
+- **Display:** Four 6×6 illustrated difficulty-colored corner dots, world-map resource icons and passive hover labels. Markers merge transitively only for matching resource type and name. Display is limited to 300 **groups**, not 300 saved nodes.
 - **Difficulty:** Red, orange, yellow, green, gray and unknown purple. Documented Forever-specific thresholds exist for 28 herbs and 9 ore nodes; missing thresholds remain purple. Effective profession skill includes bonuses; ordinary chest difficulty uses player level. Shared records produce different colors for different characters.
 - **Performance:** Event-aware redraws, reusable minimap frames, grouped world-map pins and a spatial index for larger saved zone databases.
 - **Historical data:** Raw schema-v1/v2/v3 and old `continent:zone` entries are preserved. An opt-in importer supports explicit mapping, preview, two real-world coordinate anchors, before/after snapshots and guarded rollback; no automatic historical zone conversion occurs.
@@ -42,9 +42,9 @@ The minimap projection now applies the inverse of the character's counterclockwi
 
 A further **real Forever report** established that shapes and positions still glitched after cached grouping, and that markers stopped following the terrain as soon as combat started. Root-cause review found two remaining defects: the minimap pass reused frames by their changing **visible-list index**, restyling/resizing existing pins as the list changed; and both minimap positioning passes returned early in combat.
 
-The correction keeps an existing marker frame owned by its **same saved resource group** while visible, and applies size/color styling only when a new group is assigned. Its fixed world-coordinate anchor continues to update at frame rate **during combat** as well as outside combat. The four 3px corner textures opt out of pixel snapping where supported, reducing fractional-scale distortions. The world map remains independent and retains its protected-operation safeguards. If a position cannot be read, obsolete minimap pins are hidden instead of sticking to the moving minimap.
+The correction keeps an existing marker frame owned by its **same saved resource group** while visible, and applies size/color styling only when a new group is assigned. Its fixed world-coordinate anchor continues to update at frame rate **during combat** as well as outside combat. The corner textures request non-snapped rendering where supported, but fractional-scale distortions can still occur. The world map remains independent and retains its protected-operation safeguards. If a position cannot be read, obsolete minimap pins are hidden instead of sticking to the moving minimap.
 
-These design choices were checked against [GatherMate2, ForeverPlusPlus and historical Gatherer](docs/FOREVER_MINIMAP_RESEARCH.md); no third-party code or art was copied. **Simulated Lua regressions passed; no confirmed in-game resolution yet.**
+These design choices were checked against [GatherMate2, ForeverPlusPlus and historical Gatherer](docs/FOREVER_MINIMAP_RESEARCH.md); no third-party code or art was copied. **Simulated Lua regressions passed.** Babuni later reported that movement, including during combat, was much steadier; minor flickering still occurred. That is partial player evidence, not a full regression pass.
 
 ## Stable minimap grouping — development correction (November 5)
 
@@ -90,6 +90,12 @@ The last capture result appears at the bottom of the panel. For more detailed re
 | `/gmap migrate rollback <old-key>` | Restore a snapshot only when no later discovery would be lost |
 
 **Migration is intentionally conservative:** A matching zone name is insufficient. Two historical anchor locations, each within 1.5% on both normalized axes and separated by at least 10% of the map, are required on the same client build before applying. The requirement is necessary but does **not** prove every spot in that zone aligns.
+
+## Forever playtest observations — November 5–6
+
+Babuni reported that the addon loaded, displayed its map control, and showed previously saved discoveries. During the minimap investigation, markers initially shifted while walking and followed the character in combat. After the frame-ownership and combat-update fixes, movement became substantially steadier and charging no longer displaced the markers; a small candle-like change in the dots' apparent size/shape remained. The later six-image texture change has **not** been confirmed in a live screenshot or a complete movement test.
+
+A subsequent Silverleaf gather produced a live `UNIT_SPELLCAST_SENT`/`SUCCEEDED` spell-2368 trace, helping diagnose missing discoveries. The November 6 source fixes and mock tests do **not** prove a post-fix saved node, reload persistence, or full herb/ore/skin/treasure/lock behavior. These observations and still-open checks are recorded in [the test plan](docs/TEST_PLAN.md).
 
 ## Testing, safety and project history
 

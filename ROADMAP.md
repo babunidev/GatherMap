@@ -1,6 +1,6 @@
 # GatherMap — Forever development roadmap
 
-**Target:** World of Warcraft Forever exclusively. **Development:** `feat/forever-port`, `0.5.0-alpha` / Interface `16001`. **Last review:** November 4, 2026. Historical releases and legacy source are preserved, not actively supported.
+**Target:** World of Warcraft Forever exclusively. **Development:** `feat/forever-port`, `0.5.0-alpha` / Interface `16001`. **Last review:** November 6, 2026. Historical releases and legacy source are preserved, not actively supported.
 
 `[x]` means implemented or verified in the **source/automated environment**, **not** in-game; each live-client verification remains separately unchecked. The detailed former roadmap is retained in [the roadmap history archive](docs/ROADMAP_ARCHIVE_2026-11-04.md).
 
@@ -28,7 +28,7 @@
 - [x] Trace the **combat-only freeze** to explicit `InCombatLockdown()` returns inside both minimap render paths; keep the world-map protected guard, but continue updating GatherMap's own non-secure minimap frames during combat.
 - [x] Trace recurring visual changes to the use of `AcquireMini(count)`: the frame at an ordinal list position was repeatedly assigned a different visible group and restyled/resized.
 - [x] Keep a marker frame assigned to its resource-group identity for as long as that group is visible; release frames only when their group leaves the view.
-- [x] Avoid redundant `SetSize`, color updates, and clear/reanchor operations during unchanged per-frame and slow redraws; opt out of independently snapped 3px corner textures.
+- [x] Avoid redundant `SetSize`, color updates, and clear/reanchor operations during unchanged per-frame and slow redraws; opt out of independently snapped corner textures (now 6×6 illustrated images).
 - [x] Review [historical Gatherer, GatherMate2, ForeverPlusPlus and Forever's minimap tracking declarations](docs/FOREVER_MINIMAP_RESEARCH.md). The native gold dots are drawn by the client and expose no documented arbitrary-saved-node pin API.
 - [x] Add combat-movement regression and surviving-frame ownership/size assertions during other nodes entering and leaving view; keep previous viewport grouping tests.
 - [ ] **In-game:** confirm pinned groups stay in position **during combat**, while walking and turning, not merely snap back afterward.
@@ -93,6 +93,8 @@
 - [ ] Fix any API, display, capture, saved-data or performance defects discovered during the game tests.
 
 ## 3. In-game verification — Forever only
+
+**Player-reported partial observations, November 5–6:** The addon loaded and map controls appeared; previously saved markers displayed. Following the frame-ownership/combat patches, marker movement became markedly steadier and markers no longer followed the charging character during combat. Small corner-size/shape flicker remained. A live Silverleaf cast showed spell 2368 in both SENT and SUCCEEDED. These observations are real-client evidence for those *specific symptoms only*, not full completion of the checkboxes below. The six-image appearance and post-November-6 discovery save have not been confirmed in-game.
 
 ### Client start and API behavior
 - [ ] Record `/dump GetBuildInfo()` and confirm the actual Interface and flavor TOC selected; start with only GatherMap enabled.
