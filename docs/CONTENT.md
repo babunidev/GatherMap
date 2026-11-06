@@ -1,6 +1,6 @@
 # GatherMap — resource content, coordinate data and art provenance
 
-**Creative author / project maintainer:** Babuni.dev.  
+**Creative direction:** Babuni.  
 **Source:** Committed Lua lookup tables, icon directory, screenshots and README.
 
 ## Data content categories
@@ -49,7 +49,7 @@ The repository contains **29 `Icons/Herb*.tga` files** and **four `Screenshots/*
 - [Overlapping same-resource marker groups](../Screenshots/world-map-merged-markers.png)
 - [Custom Grim Reaches map](../Screenshots/world-map-grim-reaches.png)
 
-The icon textures and coordinate constants are **not solely original Babuni.dev art/data**:
+The icon textures and coordinate constants are **not solely original Babuni art/data**:
 - [Gatherer](https://github.com/jsb/Gatherer) is credited for original Vanilla herb artwork and minimap scaling.
 - [MetaHunt](https://github.com/DuvelCorp/MetaHunt) is credited for Grim Reaches dimensions.
 - [Interact](https://github.com/lookino/Interact) is an optional integration API, not a bundled source asset.

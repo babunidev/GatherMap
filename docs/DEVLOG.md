@@ -1,6 +1,6 @@
 # GatherMap — narrative development journal
 
-**Original creator and creative director:** Babuni.dev  
+**Creative direction:** Babuni  
 **Retrospective written:** October 26, 2026 from GitHub commits, repository README, Lua, migration utility, tests and screenshots. No missing original chat transcript has been fabricated.
 
 ## The first idea: let the map learn the player's routes
@@ -11,7 +11,7 @@ That distinction is the heart of the creative contribution. It is modest in term
 
 The initial substantive commit, **`0cd8e97` on September 5, 2026**, arrived as “Initial Octo Gather release.” It included a nearly finished herbalism prototype, `OctoGather.lua`, a 1.12 TOC at version **0.2.6**, 29 herb art files, and four documentation screenshots. That first version displayed saved herbs on both the minimap and selected zone world map with difficulty-colored rectangular outlines. It read current Herbalism skill and compared it against requirements, initially drawing a maximum of 100 pins.
 
-The source already credited [Gatherer](https://github.com/jsb/Gatherer) for original zone scaling and herb artwork and [MetaHunt](https://github.com/DuvelCorp/MetaHunt) for the Grim Reaches map dimensions. Those aren't incidental footnotes: using verified existing map geometry and recognizable game artwork made the creator's own recording and UI logic usable in an older game client. The portfolio must distinguish **Babuni.dev's creative/system design** from those upstream resources.
+The source already credited [Gatherer](https://github.com/jsb/Gatherer) for original zone scaling and herb artwork and [MetaHunt](https://github.com/DuvelCorp/MetaHunt) for the Grim Reaches map dimensions. Those aren't incidental footnotes: using verified existing map geometry and recognizable game artwork made the creator's own recording and UI logic usable in an older game client. The portfolio must distinguish **Babuni's creative/system design** from those upstream resources.
 
 The original repository history does not contain a separate recorded ideation conversation. This journal interprets the intent through the README and code, rather than claiming to quote an unavailable design discussion.
 
@@ -67,7 +67,7 @@ The next visible commits on **October 26** updated the TOC/README author attribu
 
 A complete public account must preserve several boundaries. The saved map is a **memory of observed points**, not a live spawn oracle. Skinning is a hunting approximation. Marker color derives from current skill, not a frozen reward label. Custom-client zones have configured dimensions rather than universal compatibility guarantees. The original visual and technical work belongs to the creator, while upstream artwork/data belong with the credited projects.
 
-**Human contribution:** Babuni.dev's creative idea and authority over the implementation's direction. **AI contribution in this October 26 session:** source and Git audit, reconstruction of the feature/visual/history chronology, technical risk analysis, and authored/committed Markdown documentation. The inspected history cannot identify who wrote every earlier code line or recreate discussions that were not supplied.
+**Human contribution:** Babuni's creative idea and authority over the implementation's direction. **AI contribution in this October 26 session:** source and Git audit, reconstruction of the feature/visual/history chronology, technical risk analysis, and authored/committed Markdown documentation. The inspected history cannot identify who wrote every earlier code line or recreate discussions that were not supplied.
 
 **Verified this session:** Git tree and code structure, commit differences, docs/link state after the documentation commit (when checked). **Not performed:** modifying Lua or other runtime files, running a live Vanilla client, a PowerShell migration, the Python/Lua hook fixture, or reading the user's SavedVariables.
 
@@ -168,3 +168,9 @@ The map remembered yesterday's gathering, but new herbs stopped appearing after 
 AI-assisted review added clearer event and position diagnostics, along with a simulated journey into a previously empty zone. The automated map check passes, and the next live trace identified the missing spell: 2368. Recognition now includes that observed herb action, while post-fix gameplay still needs confirmation.
 
 The broader review also reproduced a separate timing defect: an item name arriving after its loot source could lose an already confirmed gather. That retry now keeps the source association, with automated checks for exactly one saved discovery.
+
+## November 6, 2026: a steadier map, with a little flicker left
+
+After the changes to combat updates and marker ownership, the corners finally stayed against the terrain even when I charged into a fight. Ordinary movement was noticeably smoother too. They still flickered a little in apparent size and shape while moving, like a candle, but that was small enough to leave the positioning system alone. The next change gave each difficulty color its own subtly illustrated dot instead of four plain squares.
+
+Those six textures are now in the addon, though I have not yet confirmed how they render in Forever. The live Silverleaf spell trace and later recording fixes are likewise a useful diagnosis, not proof of a saved discovery after the fix. A follow-up repository review aligned the current instructions with what the code and my playtests actually showed; AI-assisted work also corrected accidental file permissions and removed generated Python bytecode from Git. The documented gameplay gaps remain open rather than being declared solved.

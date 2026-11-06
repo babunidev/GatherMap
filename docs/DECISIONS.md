@@ -1,6 +1,6 @@
 # GatherMap — evidence-based design decisions
 
-**Creative authority:** Babuni.dev. This is a retrospective code/commit record, not an invented series of meetings.
+**Creative authority:** Babuni. This is a retrospective code/commit record, not an invented series of meetings.
 
 ## November 4, 2026 — confirmed Forever-only development direction
 
@@ -125,7 +125,7 @@ The Git messages/diffs demonstrate **what changed**. They don't contain an indep
 - **Optional Interact wrapping:** convenience requires careful wrapper chain ownership and regression coverage.
 - **Rename with migration:** provider-neutral identity improves clarity but requires work to preserve earlier player data.
 
-## Open questions requiring Babuni.dev decision
+## Open questions requiring Babuni's decision
 
 1. Should dense resource categories or skinning spots have user-controlled filters in addition to profession filtering?
 2. Should future versions store a stable zone identity to support saved-data moves across clients with different zone indices?
@@ -133,9 +133,9 @@ The Git messages/diffs demonstrate **what changed**. They don't contain an indep
 4. Should rendering be made event-driven/adaptive rather than always running at ~10 Hz?
 5. Which non-English locales and custom zones should be tested as actual supported environments?
 6. Should the player see a confidence indicator for loot-inferred resources or moving-creature hunting spots?
-7. How should Babuni.dev license the original code while retaining required credits and permissions for bundled art and upstream scaling data?
+7. How should Babuni license the original code while retaining required credits and permissions for bundled art and upstream scaling data?
 
-**Proposed alternatives remain proposals**, not prior author decisions. No implementation changes were made during the current documentation audit.
+**Proposed alternatives remain proposals**, not prior creative decisions. The earlier October 26 documentation-only audit did not modify runtime files; subsequent Forever source development is recorded separately.
 
 ## November 6 — investigate recognition without weakening confirmation
 

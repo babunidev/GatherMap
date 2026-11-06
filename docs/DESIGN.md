@@ -1,6 +1,6 @@
 # GatherMap — visual, navigation and interaction design
 
-**Creator and creative director:** Babuni.dev.
+**Creative direction:** Babuni.
 
 ## A map that remembers, not a map that reveals everything
 
@@ -12,7 +12,7 @@ The work is not an alternative full-screen navigation app. It attaches to the na
 
 A small resource is marked by **four colored corner dots**, leaving its center mostly clear on the minimap. Historically these were 3-pixel flat squares; the November 5 Forever development uses small rounded illustrated textures displayed at 6×6 UI units. When the world map is open, a resource icon sits inside matching colored corners. The design moved here from early full rectangular outlines, with a visible September 7 commit documenting that choice.
 
-Hovering uses a separate compact label frame so the map can display the resource name without competing with the native GameTooltip used during gathering. This is especially appropriate in a 1.12 UI, where tooltip behavior and mouse layers vary.
+Hovering uses a separate compact label frame so the map can display the resource name without competing with the native GameTooltip used during gathering. This avoids interfering with Forever's native map tooltip and mouse layers.
 
 ![Minimap tooltip](../Screenshots/minimap-tooltip.png)
 
@@ -40,11 +40,11 @@ The status command prints total saved points, type counts, skill ranks and wheth
 
 ## Forever map presentation checkpoint (November 4, 2026)
 
-The existing four-corner design is retained: 3px corner dots, no central minimap icon, a small resource icon on world-map markers, transitive visual grouping for matching kinds/names, and 85%-opacity gray. The new Forever map uses Blizzard's native map-canvas pins rather than an independent overlay on the old `WorldMapButton`.
+At this November 4 checkpoint the four-corner design retained **flat 3px dots** (replaced by 6×6 illustrated textures on November 5), no central minimap icon, a small resource icon on world-map markers, transitive grouping for matching kinds/names, and 85%-opacity gray. The new Forever map uses Blizzard's native map-canvas pins rather than an independent overlay on the old `WorldMapButton`.
 
 The cursor label is a private, mouse-disabled miniature tooltip. It avoids interfering with Blizzard's GameTooltip while gathering and leaves map click/drag handling alone. Minimap and world-map switches retain their original independent scope and SavedVariables. A 300-group display limit does not discard recorded discoveries.
 
-Lua fixtures cover grouping and mathematical positions at different zooms, sizes and UI scales. **The live Forever appearance is not yet approved or verified:** screenshots, clipping under custom minimap masks, city/zone maps and other map addons still require actual client tests. These tests are about fidelity to the existing design, not permission to redesign it.
+Lua fixtures cover grouping and mathematical positions at different zooms, sizes and UI scales. **Player-reported partial evidence:** minimap movement became steadier, even during combat, but subtle shape/size flicker remained. Six-image appearance, clipping under custom minimap masks, city/zone maps and other map addons still require live tests. These tests are about fidelity to the existing design, not permission to redesign it.
 
 ## November 5 — compact settings menu
 

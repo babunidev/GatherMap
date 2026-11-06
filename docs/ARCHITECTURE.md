@@ -1,21 +1,21 @@
 # GatherMap — technical architecture
 
-**Source audited:** `GatherMap.lua` (1,237 lines), `GatherMap.toc`, saved-data helper and tests, October 26, 2026. **Static code review, not client execution.**
+**Sources:** current `feat/forever-port` runtime and `GatherMap_Camelot.toc` (reviewed November 6, 2026); preserved 0.4.3 legacy source and its October 26 audit are described separately below. Automated review is distinct from Babuni's partial live-playtest reports.
 
 ## Status of this architecture
 
-This document describes the **preserved legacy 1.12 implementation** in `GatherMap.lua` and `GatherMap.toc`, version 0.4.3, not a tested Forever runtime. New development targets **Forever only** and must replace the old map, skill and cast/event integrations after independent client/API verification. The current code is the functional specification for intended behavior, not proof of compatibility. See [FOREVER_PORT.md](FOREVER_PORT.md).
+The sections above **Historical 0.4.3 source architecture** describe the **implemented Forever development runtime**, not a published or completely game-verified release. Later sections preserve the original 1.12 implementation as historical reference only. Babuni has reported some client observations, including a steadier minimap during combat; full functionality still needs live verification. See [FOREVER_PORT.md](FOREVER_PORT.md).
 
 ## Forever compatibility shell (unreleased, November 4, 2026)
 
-The new `GatherMap_Camelot.toc` loads `GatherMapData.lua` (inherited resource lookup tables and icon references), `GatherMapDifficulty.lua` (modern character-aware thresholds), `GatherMapWorldPins.xml` (virtual native map pin template), then `GatherMapForever.lua` (Forever map runtime). The old `GatherMap.lua` and `GatherMap.toc` remain unchanged for provenance.
+The current `GatherMap_Camelot.toc` loads, in order, `GatherMapData.lua`, `GatherMapMarkers.lua`, `GatherMapSpatial.lua`, `GatherMapDifficulty.lua`, `GatherMapMigration.lua`, `GatherMapForever.lua`, `GatherMapWorldPins.xml`, and `GatherMapCapture.lua`. The mixin is defined **before** its XML template loads. The historical `GatherMap.lua` and `GatherMap.toc` are not loaded by Forever.
 
 - **Map:** `C_Map.GetBestMapForUnit` and `C_Map.GetMapInfo` identify zone `UiMapID`; `C_Map.GetPlayerMapPosition` and `GetWorldPosFromMapPos` provide normalized and world positions. Only `GatherMapDB.nodes["map:" .. UiMapID]` renders; legacy keys are retained without interpretation. Minimap locations use `C_Minimap.GetViewRadius` and player-facing rotation.
 - **Skills:** `GatherMapDifficulty.lua` reads `C_SkillInfo` skills and modifiers (with `C_TradeSkillUI` fallback), uses 37 community-documented resource tables, and leaves unknown thresholds purple. No Survival skill is assumed. Live values are unverified.
-- **Map UI:** Native `MapCanvasDataProviderMixin` and `MapCanvasPinMixin` create world-map pins; pooled minimap frames draw four 3px colored corners. Same-resource-only transitive merging is retained. The world-map checkbox and `/gmap on/off` remain independent. The hover pass avoids taking native map mouse clicks.
-- **Events:** Frame callbacks explicitly accept `(self, event, ...)`. `ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, map/zone events and skill/equipment/aura/level events trigger refresh. A throttled minimap update handles player movement; the former periodic skill scan was removed.
+- **Map UI:** Native `MapCanvasDataProviderMixin` and `MapCanvasPinMixin` create world-map pins; pooled minimap frames show four 6×6 illustrated corner textures from six local TGA assets. Same-resource-only transitive merging is retained. The **GatherMap** settings button independently controls minimap markers, world-map markers, capture and debug; mouse-disabled hover labels do not intercept native map clicks.
+- **Events:** Frame callbacks accept `(self, event, ...)`. `ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, map/zone and skill/equipment/aura/level events trigger refresh. Resource grouping uses an approximately 0.35-second bounded pass; **existing minimap frames track fixed world anchors on each game frame, including combat**, without re-grouping each frame.
 - **Recording at the Phase 2 checkpoint:** The compatibility shell itself has no gathering hooks or Interact wrapping. Phase 3 adds a **separate, opt-in** recording module, `GatherMapCapture.lua`, which is disabled by default until in-game verification. `/gmap testpin` remains an unsaved presentation fixture; no legacy records are deleted or rewritten.
-- **Restrictions:** Avoids opening player/map panels programmatically, defers map-provider creation while in combat and skips combat redraw. Exact event behavior, pin pooling and map alignment are still unverified inside Forever.
+- **Restrictions:** Native world-map provider creation and protected canvas operations retain combat guards; unprotected minimap position updates continue through combat. Missing/secret map data hides stale markers. Exact edge cases and protected behavior still require live Forever testing.
 
 Static test: `python3 -m unittest discover -s tests -p 'test_forever_*.py'`; syntax: `luac -p GatherMapData.lua GatherMapForever.lua` where installed. Passing mock/static tests does not prove the overlay works in-game.
 
@@ -33,7 +33,7 @@ After world-space grouping was implemented, actual Forever reports still showed 
 
 `miniPins` is now an owned, bounded frame pool. Each cached group maintains a temporary `group.pin` link, while the frame maintains `pin.group`. The slow pass selects visible groups and marks their generation, releases only group/frame pairs absent from that generation, and assigns free frames only to new visible groups. Persistent pairs are not resized, recolored or re-created on routine updates. `activeMiniPins` lists currently displayed frames, and both hover and per-frame positioning use that list. There are still at most 300 active minimap groups, and saved records are never modified.
 
-The minimap's unprotected frame positions continue updating in combat, based on its current player/world location. Client map/position/radius unavailability now hides stale frames, invalidates the transient view and schedules a later rebuild; it does not allow pins to move along with the player at the last offset. The **native world-map** provider, lazy UI setup and protected map-canvas calls retain their combat guards. The 3px corner textures may opt out of pixel-grid snapping to avoid edges independently shifting at fractional offsets; the grouped rectangle dimensions remain unchanged for each assigned group.
+The minimap's unprotected frame positions continue updating in combat, based on its current player/world location. Client map/position/radius unavailability now hides stale frames, invalidates the transient view and schedules a later rebuild; it does not allow pins to move along with the player at the last offset. The **native world-map** provider, lazy UI setup and protected map-canvas calls retain their combat guards. The current 6×6 illustrated corner textures may opt out of pixel-grid snapping to reduce independent edge shifting at fractional offsets; the grouped rectangle dimensions remain unchanged for each assigned group.
 
 See [comparative minimap source research](FOREVER_MINIMAP_RESEARCH.md) for Forever's native tracking blips, GatherMate2 pin identity/movement, ForeverPlusPlus drawing and historical Gatherer's offset method. No third-party implementation was copied. Unit/mock tests test combat updates and frame identity; actual client taint, secure restrictions, FPS and visual behavior remain unverified.
 
@@ -100,10 +100,10 @@ The map identity check is a **conservative candidate validation**, not evidence 
 ## Forever map presentation (Phase 5, source implementation)
 
 - `GatherMapMarkers.lua`: independent spatial grouping and pixel projection. A 14px resource hit rectangle is associated only with the same `kind` and `name`; a 14px grid and union-find combine any transitive overlap without changing account-wide saved node entries. Priority follows the existing color table. Group display is capped at 300 frames per map; database storage is not capped.
-- Minimap: pooled mouse-disabled frames draw four 3px corner textures, gray at alpha 0.85. `C_Map` world positions are projected through `C_Minimap.GetViewRadius()`, facing and the minimap width/height, rejecting off-map/invalid positions. Cached unchanged view/data revisions skip expensive regrouping. Moves/zooms are redrawn at about 0.35 seconds, independently of hover.
+- Minimap: pooled mouse-disabled frames draw four 6×6 difficulty-image corner textures, with gray at alpha 0.85. Resource groups are built in a stable world-coordinate plane, then screened using `C_Minimap.GetViewRadius()`, facing and minimap dimensions. Existing frames keep their resource-group ownership and follow the player's changing position every game frame, including combat; grouping/view selection remains throttled near 0.35 seconds. Invalid/secret positions hide markers instead of leaving them stuck to the moving map.
 - World map: an ordinary `MapCanvasDataProviderMixin` drives a virtual `MapCanvasPinMixin` template. The marker's center is normalized to `map:GetCanvas()`; grouping is measured in canvas pixels multiplied by `map:GetCanvasScale()`. MapCanvas handles pan and map changes; group recomputation on scale/size changes is deferred until the next bounded tick.
 - Hover: separate, lazy-created label frame with texture border, mouse disabled, checked against visible pin bounds using each pin's effective scale. Its position refreshes approximately every 0.10 seconds without using GameTooltip, allowing normal map clicking and gathering tooltip use.
-- Display preferences: `GatherMapDB.enabled` and `GatherMapDB.worldMapEnabled` remain independent. The world-map checkbox has a guaranteed visible text label and optional `/gmap world on|off` commands; neither mutates discoveries or `recordingEnabled`.
+- Display preferences: `GatherMapDB.enabled`, `GatherMapDB.worldMapEnabled`, `GatherMapDB.recordingEnabled` and debug state are controlled independently by the map's **GatherMap** button or slash commands. Display toggles never delete discoveries; recording defaults OFF.
 - Tests: pure marker geometry, simulated map canvas/UI scale, runtime/static assertions and Lua 5.1/5.4 compilation. These are mocked/off-client checks; no in-game fidelity or compatibility is established by passing them.
 
 ## Forever dynamic difficulty (Phase 4, source implementation)
@@ -121,6 +121,10 @@ Skill changes, item/equipment changes, aura changes, and level changes mark the 
 The state machine is `UNIT_SPELLCAST_SENT` (candidate) → `UNIT_SPELLCAST_SUCCEEDED` (completed) → `LOOT_READY` (confirm matching loot source) → validated observation. A failed/interrupted cast cancels pending work; timeouts and `LOOT_CLOSED` clear context. Only GameObject GUIDs are accepted for gathering and chests; Creature GUIDs for Skinning. Skinning saves material-based hunting-location hints. The Pick Lock spell may be correlated with a later Opening for the same source during a bounded window. Named treasure checks reject generic opening of quest objects.
 
 The writer validates map IDs, normalized positions, resource names, difficulty requirements and optional texture; deduplicates on same kind/name/map within 0.004 normalized units and a short event window. It does not modify legacy numeric continent-zone records. The live Forever client's spell/loot behavior remains unverified, and new data writes must not be enabled by default before that verification.
+
+## Historical 0.4.3 source architecture — reference only
+
+The remaining sections document `GatherMap.lua` and `GatherMap.toc` from the archived 1.12-era implementation. Their old `Interact` integration, zone numbers, world-map checkbox and flat 3px corners are **not** the active Forever runtime or a second supported client.
 
 ## Lifecycle, events and state
 
