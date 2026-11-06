@@ -233,3 +233,9 @@ Skinning requirement inversely calculates Vanilla's level/skill rule: creature l
 Two fixture tests are committed. `tests/test_interact_hook.py` requires **lupa/Lua 5.1**; `tests/test_upgrade.ps1` runs on PowerShell. Neither is evidence of client correctness absent execution logs.
 
 **No actual game testing or helper execution occurred in this documentation-only review.**
+
+## November 6 — recording diagnostics and delayed item names
+
+Capture diagnostics distinguish all public player SENT/SUCCEEDED events from recognized gathering counters and retain only the last public spell ID. Unavailable cast-time positions produce explicit refusals. Herb/mineral attempts with confirmed success and a matching loot source remain pending when no name is available, allowing the existing LOOT_OPENED retry within MAX_WAIT; no cast-start or generic-loot fallback is introduced. Status reports current-zone saved counts separately from account totals.
+
+Spell **2368** is now recognized as herb gathering based on the November 6 live Silverleaf SENT/SUCCEEDED trace. Preserve this regression, including the optional castBarID argument, interruption and wrong-source rejection. Other rank-specific spell IDs still require evidence.

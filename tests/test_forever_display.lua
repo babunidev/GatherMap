@@ -516,3 +516,37 @@ assert(Minimap.mouseEnabled~=false,
 print("PASS: native provider coexists with another provider; malformed records and missing map functions fail closed")
 
 
+-- Crossing into an unlearned zone must clear the old overlay, then display
+-- the first confirmed discovery there without modifying the original zone.
+local previousZone=GatherMapDB.nodes['map:37']
+local previousCount=#previousZone
+local originalBest=C_Map.GetBestMapForUnit
+local originalMap=WorldMapFrame.GetMapID
+C_Map.GetBestMapForUnit=function() return 1432 end
+WorldMapFrame.GetMapID=function() return 1432 end
+playerX,playerY=0.5,0.5
+WorldMapFrame:Show()
+SlashCmdList.GATHERMAP('world on')
+mainFrame.scripts.OnEvent(mainFrame,'ZONE_CHANGED_NEW_AREA')
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(#WorldMapFrame.pins==0,'new zone must not display previous zone pins')
+SlashCmdList.GATHERMAP('status')
+local found=false
+for _,message in ipairs(chats) do
+    if message:find('Current zone saved records: 0',1,true) then found=true end
+end
+assert(found,'status must distinguish an empty current zone from total saved records')
+local id,x,y=ns.GatherMapPosition()
+assert(id==1432)
+assert(ns.GatherMapRecord({mapID=id,x=x,y=y,kind='herb',name='Silverleaf'}))
+mainFrame.scripts.OnUpdate(mainFrame,0.4)
+assert(#GatherMapDB.nodes['map:1432']==1 and #WorldMapFrame.pins==1)
+local newMini=false
+for _,fr in ipairs(frames) do
+    if fr.parent==Minimap and fr:IsShown() and fr.name=='Silverleaf' then newMini=true end
+end
+assert(newMini,'first new-zone discovery must appear on minimap')
+assert(GatherMapDB.nodes['map:37']==previousZone and #previousZone==previousCount)
+C_Map.GetBestMapForUnit=originalBest
+WorldMapFrame.GetMapID=originalMap
+print('PASS: new-zone discovery appears on both maps; old-zone data preserved')

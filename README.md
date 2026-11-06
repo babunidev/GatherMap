@@ -101,3 +101,9 @@ The last capture result appears at the bottom of the panel. For more detailed re
 - [Concept](CONCEPT.md), [Changelog](CHANGELOG.md) and [Development journal](docs/DEVLOG.md).
 
 The project originates in Babuni's creative direction. Historical Gatherer/MapNotes and MetaHunt contributions retain attribution. Source portability, API declarations, synthetic performance and static CI are **not** evidence of successful Forever gameplay. Do not distribute a public package or publish a tag until the applicable rights, release settings and in-game verification are confirmed and a specific public version is approved.
+
+## Recording troubleshooting — November 6
+
+If gathering produces loot but no marker, run `/gmap capture status`, then `/gmap capture debug` immediately after one gather. The diagnostics now distinguish recognized gathering casts from all public player SENT/SUCCEEDED events and show the last public spell ID. Missing cast-time coordinates produce an explicit refusal. `/gmap status` also reports the current zone's saved-record count and both overlay switches, separately from the account total. A live Silverleaf trace identified spell **2368**, absent from the recognition table; that observed ID is now recognized. Reload the addon before retesting. Other unobserved spell IDs are not inferred from profession rank.
+
+Confirmed herb/mineral attempts now retain their matching source when an item name is delayed, allowing the existing loot-open retry. A reproduced Lua regression failed before this correction and passes afterward; the missing spell 2368 recognition separately explains the reported zero recognized casts.

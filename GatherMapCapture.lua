@@ -8,10 +8,13 @@ local pending, unlock, lootCaptured
 local stats={
     casts=0,successes=0,loot=0,sourceMatches=0,saved=0,
     rejected=0,failures=0,last="No gathering captured yet",
+    sentEvents=0,successEvents=0,lastSpell="none",
 }
 local MAX_WAIT, UNLOCK_WAIT = 10, 18
 local spellKinds = {
-    [2366] = "herb", [1235236] = "herb",
+    -- 2368 was observed in both SENT and SUCCEEDED for a successful
+    -- Silverleaf gather on Forever (November 6). Do not infer IDs by rank.
+    [2366] = "herb", [2368] = "herb", [1235236] = "herb",
     [2575] = "mineral", [1235230] = "mineral",
     [8613] = "skin", [8617] = "skin", [8618] = "skin",
     [10768] = "skin", [3365] = "treasure", [22810] = "treasure",
@@ -181,6 +184,8 @@ local function CaptureContext(kind,target)
 end
 local function Start(unit,target,castGUID,spellID)
     if not Enabled() or PublicString(unit) ~= "player" then return end
+    stats.sentEvents=stats.sentEvents+1
+    stats.lastSpell=tostring(PublicNumber(spellID) or "unavailable")
     local kind=SpellKind(spellID)
     if not kind then
         -- Another action supersedes any previous unfinished gathering attempt.
@@ -197,6 +202,8 @@ local function Start(unit,target,castGUID,spellID)
 end
 local function Completed(unit,castGUID,spellID)
     if not Enabled() or PublicString(unit) ~= "player" then return end
+    stats.successEvents=stats.successEvents+1
+    stats.lastSpell=tostring(PublicNumber(spellID) or "unavailable")
     local kind=SpellKind(spellID)
     if not kind then return end
     local cast=PublicString(castGUID)
@@ -268,7 +275,11 @@ local function LootInfo(slot)
 end
 local function Record(kind,name,ctx,texture)
     local pos=ctx.position
-    if not pos or not PublicString(name) then return false end
+    if not pos then
+        Reject("Gathering position unavailable at cast time")
+        return false
+    end
+    if not PublicString(name) then return false end
     if not ns.GatherMapRecord then return false end
     local requirement=ctx.required or KindRequirement(kind,name)
     local observed={
@@ -343,6 +354,9 @@ local function LootReady()
             Record(kind,name,ctx,matching[1].texture)
         else
             Reject("Resource name unavailable from target, tooltip or loot")
+            -- Source data can precede the item name. Retain this confirmed,
+            -- source-bound attempt for the existing LOOT_OPENED retry.
+            return
         end
     elseif kind=="skin" then
         -- Skinning points are remembered material/hunting locations, not spawns.
@@ -374,7 +388,9 @@ ns.GatherMapCaptureDiagnostics=function()
     return "Casts "..stats.casts..", success "..stats.successes..
         ", loot "..stats.loot..", matched "..stats.sourceMatches..
         ", saved "..stats.saved..", refused "..stats.rejected..
-        ", failed "..stats.failures..". Last: "..stats.last
+        ", failed "..stats.failures..". Player events sent "..stats.sentEvents..
+        ", succeeded "..stats.successEvents..", last spell "..stats.lastSpell..
+        ". Last: "..stats.last
 end
 ns.GatherMapCaptureLast=function()
     return stats.last

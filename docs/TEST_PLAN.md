@@ -122,3 +122,14 @@ Only source checks can be automated; no game-client test has been run by AI.
 ## Record format
 
 For each test record: **date**, Forever **build/interface**, development **commit**, character class and relevant profession ranks (no name), test case, reproduction steps, observed result, expected result, screenshot/log reference (redacted), **pass/fail/unverified**, and any issue/commit fixing it. A mocked CI pass is not a gameplay pass.
+
+## November 6 — gathering stops after travel
+
+1. Run `/gmap capture status` and `/gmap status`; distinguish recording, overlay switches and the current zone's saved count.
+2. Gather one herb successfully, then immediately run `/gmap capture debug`. Compare recognized casts/successes with public player event counts and last spell ID. Missing/secret events must not create discoveries.
+3. Record the actual public SENT/SUCCEEDED spell ID and resource identity before extending recognition. A loot message or skill increase alone is not the recorder's confirmation.
+4. After any recognition fix, repeat in the new zone, verify both overlays, then `/reload` and check persistence. Test interruption and unrelated loot as negative cases.
+
+The November 6 local Lua 5.1/5.4 fixtures verify a first discovery in a new zone appears on both overlays while the old zone remains unchanged. This is mock evidence, not an in-game outcome.
+
+Observed before the fix: successful Silverleaf gathering emitted spell **2368** in both SENT and SUCCEEDED while GatherMap counted zero recognized casts. The missing ID is corrected in source. Retest after `/reload`, then gather and inspect `/gmap capture debug`; finally reload again and verify the learned point persists.

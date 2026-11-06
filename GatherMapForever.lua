@@ -805,6 +805,12 @@ local function Status()
     end
     Print("Forever preview: "..mapped.." UiMapID records, "..legacy..
         " untouched legacy records. Map "..tostring(PlayerMapID()))
+    local currentID=PlayerMapID()
+    local currentNodes=currentID and db.nodes["map:"..currentID]
+    Print("Current zone saved records: "..
+        (currentID and tostring(type(currentNodes)=="table" and #currentNodes or 0)
+            or "map unavailable").."; minimap "..(db.enabled and "ON" or "OFF")..
+        "; world map "..(db.worldMapEnabled and "ON" or "OFF"))
     local function SkillText(kind)
         local observed = difficulty.Skill(kind)
         if not observed or not observed.present then return "not learned" end

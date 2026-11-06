@@ -130,3 +130,11 @@
 - [ ] Receive Babuni's explicit approval **for a named public version**; only then tag/publish and confirm GitHub/CurseForge results.
 
 No public Forever version is authorized. The previous public GatherMap `v0.4.3` is historical only.
+
+## November 6 — recording investigation
+
+- [x] Distinguish public spell events from recognized gathering casts, report missing coordinates and current-zone record counts.
+- [x] Reproduce and fix loss of a confirmed herb/mineral attempt when the loot source arrives before its item name.
+- [x] Exercise new-zone display, source-bound delayed-name retry and duplicate suppression with Lua 5.1/5.4 mocks.
+- [x] Identify missing herb spell 2368 from the live SENT/SUCCEEDED trace and add recognition with positive, interrupted and unrelated-source regressions.
+- [ ] Verify post-fix gathering, both overlays and reload persistence in Forever; test higher profession ranks separately.

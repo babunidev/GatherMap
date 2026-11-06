@@ -66,3 +66,7 @@ This is a **texture replacement**, not a nine-slice redesign or a change to save
 - Whether hidden-profession defaults match the creator's preferred exploration style.
 
 These are evaluation questions, **not** an approved redesign or a claimed accessibility test.
+
+## November 6 — empty-map diagnostics
+
+`/gmap status` now separates the current zone's saved-record count from the total and lists both overlay states. Capture diagnostics distinguish event arrival, recognition and missing position. This improves troubleshooting without changing the map controls or marker design.

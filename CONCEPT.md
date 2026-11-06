@@ -46,3 +46,7 @@ Do not replace this living exploration record with a generic imported-mining dat
 ## Current platform direction (November 2026)
 
 Future development targets **World of Warcraft Forever exclusively**. The original self-learning map, account-wide memory, current-character difficulty colors and four-corner presentation remain the concept. Previous 1.12 implementation details are retained as history, not an instruction to support another client. This decision authorizes preparation, not a completed port or public version.
+
+## November 6 — diagnosing a missing discovery
+
+The recording investigation retains the personal-learning boundary: actual spell success and correlated loot are required. Clearer diagnostics should explain an empty map without substituting a static resource catalog or speculative gathering writes.

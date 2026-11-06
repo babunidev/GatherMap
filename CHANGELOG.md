@@ -180,3 +180,12 @@
 - `e61febe` linked the preliminary documentation from README.
 
 The present pass turns that scaffold into a fuller, source-specific portfolio record without changing the 0.4.3 runtime package.
+
+## Unreleased — recording diagnostics (November 6, 2026)
+
+- Added public player spell-event counts and the last public spell ID to capture diagnostics, so zero recognized casts no longer hides whether events arrived. Restricted IDs remain unavailable.
+- Report missing gathering coordinates instead of silently abandoning a confirmed interaction.
+- Added current-zone saved counts and independent overlay state to `/gmap status`.
+- Added Lua regressions for diagnostics and the first discovery after a zone transition, preserving the previous zone. Recognize spell 2368 after a live Silverleaf SENT/SUCCEEDED trace established the missing gathering ID. Its regression fails with the previous table and passes after the fix. Post-fix gameplay confirmation is still pending.
+
+Confirmed herb/mineral attempts now retain their matching source when an item name is delayed, allowing the existing loot-open retry. A reproduced Lua regression failed before this correction and passes afterward; the missing spell 2368 recognition separately explains zero recognized casts.

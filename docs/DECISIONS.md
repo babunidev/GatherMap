@@ -136,3 +136,7 @@ The Git messages/diffs demonstrate **what changed**. They don't contain an indep
 7. How should Babuni.dev license the original code while retaining required credits and permissions for bundled art and upstream scaling data?
 
 **Proposed alternatives remain proposals**, not prior author decisions. No implementation changes were made during the current documentation audit.
+
+## November 6 — investigate recognition without weakening confirmation
+
+Babuni requested investigation of missing new discoveries and a general review. AI implementation adds diagnostic distinctions and fixes a reproduced delayed-item-name retry defect. Generic loot and skill increases remain insufficient to write a discovery. The subsequent live Silverleaf trace identified 2368 in both SENT and SUCCEEDED; recognition now includes that evidence-backed herb ID. Other rank IDs are not guessed. Recording defaults and data migration remain unchanged.

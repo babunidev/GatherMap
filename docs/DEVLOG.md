@@ -160,3 +160,11 @@ That sent the AI-assisted investigation back through GatherMap's frame pool, and
 The four dots still belong around each remembered gathering place, but the plain squares looked slightly restless as I moved. Rather than changing what the marks mean, the next idea was to give each difficulty color its own tiny, softly rounded graphic—just enough texture to feel deliberate without covering the map.
 
 Six AI-generated images now supply those dots, prepared as transparent TGA textures and fitted to the same four corner anchors. The rectangle that remembers nearby resources, and the color that describes their difficulty, remain untouched. Automated tests can confirm that each texture loads by its correct path in the code; whether the details settle cleanly on the actual minimap still has to be seen in Forever.
+
+## November 6, 2026: finding where the memory stops
+
+The map remembered yesterday's gathering, but new herbs stopped appearing after moving into another zone. A successful harvest increased my Herbalism skill while GatherMap reported loot without a recognized gathering cast. That placed the investigation before the drawing code.
+
+AI-assisted review added clearer event and position diagnostics, along with a simulated journey into a previously empty zone. The automated map check passes, and the next live trace identified the missing spell: 2368. Recognition now includes that observed herb action, while post-fix gameplay still needs confirmation.
+
+The broader review also reproduced a separate timing defect: an item name arriving after its loot source could lose an already confirmed gather. That retry now keeps the source association, with automated checks for exactly one saved discovery.

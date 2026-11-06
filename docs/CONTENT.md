@@ -83,3 +83,7 @@ The [MetaHunt mirror](https://octowow.st/git/Meta/MetaHunt) was located, but the
 `GatherMapDifficulty.lua` adds separate **Forever-specific full skill-color boundaries** for 28 herbs and nine ore nodes, taken from the community-maintained Warcraft Wiki [Forever herbalism techniques](https://warcraft.wiki.gg/wiki/Forever_herbalism_techniques) and [Forever mining techniques](https://warcraft.wiki.gg/wiki/Forever_mining_techniques), consulted November 4, 2026. This information is distinct from the inherited, unverified minimum-requirement lookup in `GatherMapData.lua`. Actual colors and all thresholds still require in-game comparison.
 
 Dreamfoil demonstrates why the old uniform skill offsets are insufficient: its minimum/yellow/green/gray levels are **270/290/315/370**. Some ore veins, variants and new Forever resources have no published complete row, and Skinning/Lockpicking have no validated full progression. Those cases are purple unless a directly observed minimum establishes red. Do not fill missing data by guessing. The data is used for presentation only and does not change account-wide node records.
+
+## November 6 — diagnostic text
+
+Runtime diagnostics now include public player spell-event counts, the last public spell ID, missing cast-time coordinates, current-zone record count and independent overlay states. No private saved-data samples or new resource/art assets are added.

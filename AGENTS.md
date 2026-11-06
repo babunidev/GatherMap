@@ -108,3 +108,9 @@ The 2026-10-26 pass is **documentation-only**, not permission to alter Lua, bina
 ## Repository-local documentation standard
 
 Before writing or changing project documentation, read [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md). These rules travel with this repository and do not depend on the babuni.dev ChatGPT Project. Preserve all project-specific technical, creative, canon, safety, licensing, and historical rules in this file; follow the linked standard for public first-person narrative, human–AI attribution, concise development journals, decision records, and evidence-based verification. **Babuni** is the human creative; **babuni.dev** is the website/portfolio, not the person. Preserve third-party credits and historical legal notices. References above to a dated “documentation-only audit” describe that past task, not a permanent ban on later authorized implementation.
+
+## November 6 — recording investigation
+
+Preserve public player event counts separately from recognized gathering counters; never stringify restricted spell IDs. Missing cast-time position must produce a diagnostic refusal. A confirmed herb/mineral attempt with a matching source but missing item name must remain eligible for the bounded LOOT_OPENED retry, with duplicate and unrelated-source protection. Zero recognized casts alone does not establish missing events or justify accepting generic loot.
+
+Spell **2368** is now recognized as herb gathering based on the November 6 live Silverleaf SENT/SUCCEEDED trace. Preserve this regression, including the optional castBarID argument, interruption and wrong-source rejection. Other rank-specific spell IDs still require evidence.

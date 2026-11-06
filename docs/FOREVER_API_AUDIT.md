@@ -30,3 +30,7 @@ The [Gethe/wow-ui-source `forever` branch](https://github.com/Gethe/wow-ui-sourc
 ## Remaining API verification
 
 Record the installed build and Interface first. Trace observed `UNIT_SPELLCAST_*`, `LOOT_READY`, `LOOT_CLOSED`, GUID/source availability, tooltip type and `C_SkillInfo` data using safe, non-personal diagnostics. Test world-pin template loading, `MapCanvas` provider callbacks, `CreateVector2D` and combat restrictions on that build. Only then reclassify any runtime behavior from source-confirmed to tested-in-game.
+
+## November 6 — local installation and event recheck
+
+Local installation metadata reports Forever **1.60.1.70790**, matching the existing source baseline; this is not an in-client GetBuildInfo result. The current upstream [Unit declarations](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitDocumentation.lua) still declare SENT(unit,target,castGUID,spellID) and SUCCEEDED(unit,castGUID,spellID,castBarID). A live Silverleaf gather supplied SENT(player,target,castGUID,2368) and SUCCEEDED(player,castGUID,2368,castBarID); these confirm that payload for the observed action. Recognition now includes 2368. No private GUID is retained here.

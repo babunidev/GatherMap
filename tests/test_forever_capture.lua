@@ -119,6 +119,23 @@ loot();check("herb","Silverleaf")
 clear()
 
 -- Forever 1.60.1 gathering spells have new active spell IDs.
+-- Live November 6 trace: Silverleaf gathering emitted spell 2368, with an
+-- additional castBarID on SUCCEEDED. No name fallback is available here.
+target,tooltipName,lootName="Silverleaf","Silverleaf","Silverleaf"
+npcGuid,lootGuid="GameObject-live-herb","GameObject-live-herb"
+sent(2368)
+event("UNIT_SPELLCAST_SUCCEEDED","player","cast-"..now,2368,"CastBar-fixture")
+loot();check("herb","Silverleaf")
+clear()
+sent(2368)
+event("UNIT_SPELLCAST_INTERRUPTED","player","cast-"..now,2368)
+loot();assert(#records==0)
+clear()
+sent(2368);succeeded(2368)
+lootGuid="GameObject-wrong-herb"
+loot();assert(#records==0)
+clear()
+
 target,tooltipName,lootName="Peacebloom","Peacebloom","Peacebloom"
 npcGuid,lootGuid="GameObject-forever-herb","GameObject-forever-herb"
 sent(1235236);succeeded(1235236);loot()
@@ -154,6 +171,33 @@ assert(#messages>messagesBefore,"opt-in diagnostic chat should report correlated
 ns.GatherMapSetCaptureDebug(false)
 assert(GatherMapDB.captureDebug==false)
 clear()
+
+-- Item names can arrive after the source GUID. Keep the confirmed attempt
+-- available for LOOT_OPENED, just as when the initial item count is zero.
+target,tooltipName,lootName="","",nil
+npcGuid,lootGuid="GameObject-delayed-name","GameObject-delayed-name"
+sent(2366);succeeded(2366);loot()
+assert(#records==0)
+lootName="Silverleaf"
+event("LOOT_OPENED",false,false)
+check("herb","Silverleaf")
+event("LOOT_OPENED",false,false)
+assert(#records==1,'delayed name retry must not duplicate a discovery')
+clear()
+for _,mode in ipairs({'different source','expired','closed'}) do
+    target,tooltipName,lootName="","",nil
+    npcGuid,lootGuid="GameObject-original","GameObject-original"
+    sent(2366);succeeded(2366);loot()
+    lootName="Silverleaf"
+    if mode=='different source' then lootGuid="GameObject-other"
+    elseif mode=='expired' then now=now+11
+    else event('LOOT_CLOSED') end
+    event('LOOT_OPENED',false,false)
+    assert(#records==0,'delayed retry must reject '..mode)
+    clear()
+end
+npcGuid,lootGuid="GameObject-original","GameObject-original"
+target,tooltipName,lootName="Peacebloom","Peacebloom","Peacebloom"
 
 -- FAILED and INTERRUPTED events both suppress recording.
 sent(2366)
@@ -222,6 +266,29 @@ clear()
 -- Unrelated player spell and unrelated loot do not record.
 sent(133);succeeded(133);loot()
 assert(#records==0)
+assert(ns.GatherMapCaptureDiagnostics():find("last spell 133",1,true),
+    "unrecognized spell IDs must remain available for diagnosis")
+assert(ns.GatherMapCaptureDiagnostics():find("Player events sent ",1,true))
+clear()
+
+-- Missing position must explain why confirmed gathering was not saved.
+local savedPosition=ns.GatherMapPosition
+ns.GatherMapPosition=function() return nil end
+target,tooltipName,lootName="Peacebloom","Peacebloom","Peacebloom"
+npcGuid,lootGuid="GameObject-position","GameObject-position"
+sent(2366);succeeded(2366);loot()
+assert(#records==0)
+assert(ns.GatherMapCaptureLast()=="Gathering position unavailable at cast time")
+ns.GatherMapPosition=savedPosition
+clear()
+
+-- Restricted spell IDs must never be compared or exposed in diagnostics.
+local secret={}
+issecretvalue=function(value) return value==secret end
+sent(secret);succeeded(secret);loot()
+assert(#records==0)
+assert(ns.GatherMapCaptureDiagnostics():find("last spell unavailable",1,true))
+issecretvalue=nil
 ns.GatherMapSetCapture(false)
 local offNotice=#messages
 ns.GatherMapSetCapture(false)
