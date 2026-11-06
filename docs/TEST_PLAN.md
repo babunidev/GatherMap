@@ -1,6 +1,13 @@
 # GatherMap Forever — reproducible in-game test plan
 
-**Status:** Procedures prepared, **no in-game tests performed**. Only World of Warcraft Forever is supported. Keep public-release decisions separate from this checklist.
+**Status:** Procedures prepared. **Babuni has performed partial Forever playtests**; AI has not run the client. The complete regression checklist remains open. Only World of Warcraft Forever is supported. Keep public-release decisions separate from this checklist.
+
+## Evidence already reported by the player (November 5–6, 2026)
+
+- The addon loaded and displayed its map control and earlier discoveries. That does not prove recording was enabled or a new node was saved.
+- The initial minimap marker jumped, changed rectangle/square shape and followed the player in combat. After group/frame-ownership and combat-update fixes, Babuni reported much steadier movement and no longer saw the combat charge displace markers; slight corner-size/shape shimmer remained while walking. This is a **partial pass for the reported movement symptom**, not a verified result across zoom, UI scales, custom minimaps or all node groups.
+- A successful Silverleaf gather produced `UNIT_SPELLCAST_SENT` and `UNIT_SPELLCAST_SUCCEEDED` with spell **2368**, absent from the earlier capture table. Recognition and delayed-name retry were subsequently fixed in source; post-fix record creation and reload persistence are **not** confirmed.
+- The illustrated six-color TGA corner textures were added *after* the movement report. Their appearance and whether they improve shimmer are still **unverified in-game**.
 
 ## Before any test
 
@@ -32,7 +39,7 @@ The user confirmed that the previous minimap fix still glitched, and that during
 1. With a real Forever build, turn on minimap markers and identify one saved **merged four-corner rectangle** that remains visible while walking. Note its width and height relative to the terrain.
 2. Walk until a **different resource marker** enters and then leaves the minimap while the original remains visible. Repeat across several 0.35-second refreshes. **Expected:** the original frame never abruptly changes shape, color, position or resource identity; it remains anchored to the same terrain location.
 3. Enter combat near the resource and move continuously. **Expected:** the marker continues updating relative to the world terrain **during combat**, not moving with the character arrow or snapping back afterward. Compare immediately before/during/after combat.
-4. Zoom the minimap; turn Rotate Minimap on/off; move with different UI scales. Check that **each of the four 3px corner textures stays attached** to the same rectangle corners and does not blink/shear independently.
+4. Zoom the minimap; turn Rotate Minimap on/off; move with different UI scales. Check that **each of the four 6×6 illustrated corner textures stays attached** to the same rectangle corners and does not blink/shear independently.
 5. If the client returns secret/unavailable position data, an uncertain marker should disappear temporarily rather than continuing to drift alongside the moving map. Record any error.
 6. Compare the marker motion with Blizzard's **golden Find Herbs/Find Minerals tracking dots**, without assuming those native engine dots are addon frames. Use `/gmap testpin`, `/gmap pinpos`, and `/gmap clear` on a temporary unsaved point when helpful.
 7. Record actual client build and settings, `/reload`, and test alongside one verified Forever-compatible gathering addon only after the solo test.
@@ -91,7 +98,7 @@ Only source checks can be automated; no game-client test has been run by AI.
 ## B — Recording (enable only on disposable test data)
 
 1. Record saved-node counts with `/gmap status` before starting. Open the world-map **GatherMap** button and turn **Record discoveries ON** (or use `/gmap capture on`). It begins OFF by default. Turn it OFF after testing. Temporarily enable **Diagnostic chat** if a successful gather is not saved.
-2. Gather one known herb (Forever spell `1235236`) and one ore vein (Forever spell `1235230`), then skin one creature, open an ordinary chest and pick a lock. Expected: each successful action creates one resource-kind record with the correct map position and classification; Skinning is an approximate hunting location.
+2. Gather one known herb (observed spell `2368` or previously documented `1235236`, depending on actual cast) and one ore vein (previously documented spell `1235230`), then skin one creature, open an ordinary chest and pick a lock. Expected: each successful action creates one resource-kind record with the correct map position and classification; Skinning is an approximate hunting location.
 3. Repeat one location and then visit a nearby different node. Expected: occurrence count increases only after a new verified gather; distinct resources remain distinct.
 4. Deliberately interrupt a gathering cast, gather from an unrelated source, test autoloot/delayed-loot and missing-tooltip situations. Expected: no speculative records; inspect actual `UNIT_SPELLCAST_*` and `LOOT_READY` behavior rather than inferring success from cast stops.
 5. Inspect unusual/special Forever resources, any localized client, Skinning and lockpicking. Expected: unknown thresholds remain purple; no assumed Survival/Woodcutting action.

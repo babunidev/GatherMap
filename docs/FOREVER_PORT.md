@@ -1,6 +1,6 @@
 # GatherMap — Forever port preparation
 
-**Status:** Phases 2–7 implemented/tested in source. Migration requires two coordinate checks in addition to the explicit link/preview/backup. None has been validated inside the live Forever client.  
+**Status:** Phases 2–7 implemented/tested in source. Migration requires two coordinate checks in addition to the explicit link/preview/backup. Babuni has reported partial Forever client observations: the addon loaded and showed its map controls, minimap tracking became substantially steadier in combat, and a Silverleaf trace exposed spell 2368. Complete recording, the six new image textures, migration, actual performance and coexistence have **not** been verified in-game.  
 **Decision authority:** Babuni (human creative).  
 **Target:** World of Warcraft Forever **only**, baseline 1.60.1 / Interface `16001` (reverify on the live build).  
 **Development branch:** `feat/forever-port`, forked from legacy `main` commit `1df33f6365e47d885ee6a6ed0fbf87158a8ca726`.  

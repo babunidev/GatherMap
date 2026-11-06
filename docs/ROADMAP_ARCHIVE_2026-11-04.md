@@ -123,7 +123,7 @@ Source-complete items are **not game-tested**. The capture feature defaults OFF 
 
 Completed checkbox items describe **source implementation**, not in-game verification. No release is authorized.
 
-The older 1.12 verification backlog below is retained as an audit and regression reference, **not** a plan to continue supporting that client. Technical findings and evidence: [docs/FOREVER_PORT.md](docs/FOREVER_PORT.md).
+The older 1.12 verification backlog below is retained as an audit and regression reference, **not** a plan to continue supporting that client. Technical findings and evidence: [docs/FOREVER_PORT.md](FOREVER_PORT.md).
 
 ## Implemented in source as of October 26, 2026
 

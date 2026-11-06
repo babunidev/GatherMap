@@ -1,10 +1,10 @@
 # GatherMap — human–AI collaboration and provenance
 
-**Creative owner and director:** Babuni.dev.
+**Creative direction:** Babuni.
 
 ## Keep the actual creative author visible
 
-The original project and its distinctive **self-learning** world-memory concept belong to Babuni.dev. Existing history also shows a coherent visual language of four colored corners, merging nodes, skill-aware coloring and a gradual expansion beyond herbs. The late documentation assistant did **not** originate those decisions.
+The original project and its distinctive **self-learning** world-memory concept belong to Babuni. Existing history also shows a coherent visual language of four colored corners, merging nodes, skill-aware coloring and a gradual expansion beyond herbs. The late documentation assistant did **not** originate those decisions.
 
 Upstream third-party sources are explicitly acknowledged:
 - **Gatherer** — minimap coordinate scaling and bundled herb artwork.
@@ -28,10 +28,10 @@ This session provided **research, editorial organization and technical interpret
 ## Standard to use for future iterations
 
 Document, alongside source changes:
-1. **Creator direction:** What Babuni.dev wanted, what game feeling motivated it, and constraints.
+1. **Creative direction:** What Babuni requested, what game feeling motivated it, and constraints.
 2. **AI proposals:** What any assistant suggested or implemented, explicitly separate from the user's ideas.
 3. **Alternatives and corrections:** Rejected marker styles, failed experiments, compatibility bugs and why direction changed.
-4. **Creator decisions:** Only those actually accepted/rejected/postponed; do not upgrade suggestions into approvals.
+4. **Creative decisions:** Only those actually accepted/rejected/postponed; do not upgrade suggestions into approvals.
 5. **Implementation:** Which game scripts, art assets, migration code and documentation files changed; exact commit/PR.
 6. **Verification:** Test command and version, in-game client details, results, screenshots and remaining unverified points.
 
@@ -96,3 +96,9 @@ This work was approved for **development implementation**, not a release. Any im
 Babuni reported that yesterday's discoveries remained visible but new gathering failed after travel, and supplied a live diagnostic showing loot events without recognized gathering casts. AI reviewed the recorder, map transition and persistence paths, inspected local installation metadata and saved-data settings read-only, and implemented clearer diagnostics plus zone-transition regressions. Private account identifiers and coordinates are excluded from the documentation. The original self-learning concept, recording-OFF default and saved discoveries remain intact. A subsequent live Silverleaf trace identified spell 2368, which the AI added to recognition and covered with success/failure regressions. No commit, release or post-fix in-game resolution is claimed.
 
 Local verification: all six Forever Lua fixtures and runtime loadfile syntax checks passed using Lupa-provided Lua 5.1 and 5.4, including the 24k-node benchmark and alternate-provider mock. All 12 Python static tests, the Interact regression, the 44-file package audit and `git diff --check` passed. The new spell-2368 fixture was also run against the old table and failed as expected. PowerShell was unavailable, so its backup/rename fixture was not rerun; Lua migration fixtures did pass. Existing repository-wide executable-bit differences were left untouched.
+
+## November 6, 2026 — documentation audit and repository cleanup
+
+Babuni requested a check of whether the Forever development was documented accurately, then authorized corrections. AI compared the current branch, runtime, test suite, commit history and all Markdown documents. The review found current-state contradictions (3px squares versus 6×6 images, checkbox versus settings button, partial playtest evidence versus blanket no-client-testing claims), stale credit labels, an archived-roadmap link error, and unintended mode/bytecode additions in the latest commit.
+
+The correction restores normal file modes, excludes Python cache artifacts and reconciles current documentation while retaining date-marked historical checkpoints. **Player-provided evidence** covers loading/map controls, improved motion through combat with residual flicker, and a Silverleaf spell-2368 event trace. **Automated evidence** covers mock tests and CI; image readability, post-fix gathering persistence, full gameplay regressions, licensing and publication remain unverified. No gameplay code, SavedVariables, license or public release was changed by this audit.
