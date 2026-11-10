@@ -2,7 +2,7 @@
 
 **A self-learning resource map overlay for World of Warcraft 1.12**
 
-**Creator:** Babuni.dev  
+**Creative:** Babuni
 **Addon version:** 0.4.3 · **Interface:** 11200 · **SavedVariables:** `GatherMapDB`  
 **Implementation:** [`GatherMap.lua`](GatherMap.lua), [`GatherMap.toc`](GatherMap.toc)  
 **Documentation audit:** 2026-10-26 — verified against source and Git history; **no new in-game tests performed**.
