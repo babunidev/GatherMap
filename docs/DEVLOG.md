@@ -1,6 +1,6 @@
-# GatherMap — narrative development journal
+# GatherMap — development journal
 
-**Original creator and creative director:** Babuni.dev  
+**Creative:** Babuni  
 **Retrospective written:** October 26, 2026 from GitHub commits, repository README, Lua, migration utility, tests and screenshots. No missing original chat transcript has been fabricated.
 
 ## The first idea: let the map learn the player's routes
