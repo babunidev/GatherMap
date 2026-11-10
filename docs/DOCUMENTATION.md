@@ -1,53 +1,72 @@
-# Documentation and Human–AI Collaboration Standard
+# Writing documentation for people
 
-This document is the repository-local standard for project documentation. Read it alongside the root `AGENTS.md` and the relevant source files before writing or revising project records. It must remain usable independently of any ChatGPT Project, agent session, or another GitHub repository.
+This guide travels with the repository. Read it with [AGENTS.md](../AGENTS.md) and the relevant project files before making changes. It is a writing and evidence standard, not a replacement for project-specific rules.
 
-## Authority, identity, and attribution
+## Begin with the reader
 
-- The human **creative** supplies the original ideas, motivation, creative direction, constraints, corrections, and final decisions. AI may propose, research, draft, code, edit, test, and operate tools; credit it only for work supported by evidence.
-- In Babuni's own project narratives, **Babuni** identifies the human creative; **babuni.dev** identifies the website/portfolio, not the person. Preserve a repository's explicitly established public byline, historical legal notices, and distinct third-party original-idea or contributor credits. Do not overwrite them with a blanket attribution.
-- Use **creative**, not **creator**, as the role label for a person who conceives or makes a work. Do not rewrite verbatim historical quotations, licenses, or third-party notices to enforce this editorial preference.
-- Never imply that the human manually wrote AI-generated code, or that AI originated a human-supplied concept. Never treat an AI suggestion, speculative design, or remembered discussion as an approved decision.
+A visitor should understand **what this project is, why it exists, what works today, and where to go next** without reading a development transcript.
 
-## Public narrative and development-journal voice
+- Start with a clear introduction in ordinary language. Explain jargon when it first matters.
+- Keep the `README.md` an entry point, not a running stream of version notes, internal audits or AI work reports. Put detailed technical evidence and dated history in linked documents.
+- Give each document a distinct job. Use informative headings, connected paragraphs, short lists where useful, and links to deeper material. A small navigation table is helpful only when there are genuine choices.
+- Move dense or older material to a clearly labeled reference or historical page when necessary; **do not silently delete evidence or collapse an important disagreement**.
+- Avoid repeating status disclaimers or the same background across multiple sections. Use a concise status summary and link to the evidence.
+- Treat Markdown as a reading surface: sensible heading levels, readable tables, correctly fenced code, descriptive links and relative paths that work on GitHub.
+- Write for the project's audience. A player guide, story, technical specification, journal and AI instruction file should not sound identical.
 
-- Tell public-facing development narratives from the human creative's **first-person perspective**, naturally using “I” and “my” within sentences, but **never begin a narrative sentence with “I” or “My.”** Avoid telling the creative's own story in third person.
-- Write concise, thoughtful prose for human readers rather than an AI status report or a chronological dump of tool calls. A small change may need only a few sentences; group related micro-steps.
-- Describe what prompted the work, how the idea or problem developed, what the creative directed or decided, what AI contributed, what changed in the repository, and what was actually verified. Include a rejected approach, failed attempt, correction, or disagreement when it explains the outcome.
-- Technical specifications, architecture, changelogs, test inventories, and instructions may use neutral language when clearer. Fiction and in-world prose follow their own project-specific writing guides, not the development-journal voice.
-- When history is incomplete, label it **retrospective reconstruction** and state the limitation. Paraphrase relevant conversations; do not invent quotes, feelings, motives, dialogue, dates, accepted proposals, commits, or tests.
+## Authorship and development history
 
-## Documentation responsibilities
+**Babuni is the human creative; babuni.dev is the website**, not the person. Preserve established project-specific bylines, original-idea credits, contributor attributions, licenses and third-party notices. Use **creative**, not *creator*, as the role label for someone making a work, without rewriting protected quotations or legal material.
 
-Use the existing files when present; create a missing file only when the repository needs it. Project-specific structures, canonical design archives, story guides, historical logs, and content taxonomies remain authoritative for their own subjects.
+AI can research, propose, draft, write code, test and edit files. Credit its actual contribution without transferring the human creative's ideas or decisions to AI. Do not say the creative wrote code that AI produced. An AI suggestion is not approved merely because it was recorded.
 
-| File | Responsibility |
+Tell public development history **from the human creative's first-person perspective**, using *I* and *my* naturally within sentences but **never beginning a sentence with “I” or “My.”** Write in a reflective, concrete, readable voice rather than as an AI activity report. Explain what prompted a meaningful change, how the creative directed or corrected it, what AI did, and what resulted.
+
+A small change may need only two or three sentences. Group related micro-steps. Preserve the disagreements, failed attempts and alternatives needed to understand the result. If earlier history cannot be verified, label it a **retrospective reconstruction** instead of inventing a seamless narrative.
+
+Technical specifications, changelogs and reference instructions may use neutral language. Fiction and world lore follow their own writing standards.
+
+## Keep documents in their proper place
+
+| Document | Reader's question |
 | --- | --- |
-| `README.md` | Public entry point, project purpose, usage and current status |
-| `CONCEPT.md` | Human creative vision, motivations, approved goals and boundaries |
-| `ROADMAP.md` | Planned, in-progress, completed and deferred work with truthful status |
-| `CHANGELOG.md` | Actual repository changes; no proposals or unimplemented features |
-| `AGENTS.md` | Repository-specific agent, technical, safety and workflow rules |
-| `docs/DOCUMENTATION.md` | This shared writing and attribution standard |
-| `docs/DEVLOG.md` | Short, publishable first-person account of meaningful development |
-| `docs/DECISIONS.md` | Confirmed decisions, important alternatives, reasoning and open questions |
-| `docs/DESIGN.md` | Visual, interaction or experience design, when relevant |
-| `docs/ARCHITECTURE.md` | Source-backed structure, interfaces and technical constraints, when relevant |
-| `docs/CONTENT.md` | Project content organization and editorial rules, when relevant |
-| `docs/AI_COLLABORATION.md` | Attribution methodology, evidence and roles |
+| `README.md` | What is this, how do I use or explore it, and where should I read next? |
+| `CONCEPT.md` | What is the creative idea, and what boundaries matter? |
+| `ROADMAP.md` | What is planned, underway, completed or deferred? |
+| `CHANGELOG.md` | What actually changed in the repository or release? |
+| `docs/DEVLOG.md` | How did the work and decisions develop, in the creative's voice? |
+| `docs/DECISIONS.md` | What was accepted, rejected or left unresolved, and why? |
+| `docs/ARCHITECTURE.md` | How does the implemented or proposed system fit together? |
+| `docs/DESIGN.md` | What are the visual and interaction choices? |
+| `docs/CONTENT.md` | How is the material organized and published? |
+| `docs/AI_COLLABORATION.md` | How are evidence, roles and attribution handled? |
+| `AGENTS.md` | What must contributors and AI agents obey in this repository? |
 
-Do not force every repository to have software tests, a UI design, or the same folder layout. An archive, game, addon, website, tool, and story project may legitimately differ.
+Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.
 
-## Evidence and change workflow
+## Make claims that the evidence supports
 
-1. Read `AGENTS.md`, this standard, the relevant project documentation, current code/content, and available history. Do not assume access to earlier private conversations.
-2. Separate **creative direction**, **AI proposals**, **iterations/corrections**, **explicit decisions**, **implementation**, and **verification**. Record only stages supported by the available evidence.
-3. Make narrowly scoped, reviewable edits. Preserve historical documents and the repository's established facts, identity, licenses, privacy safeguards, and project-specific constraints.
-4. For substantial implementation, update the affected documents in the same change when practical: describe the new behavior, decision, changed paths/commit, test command and environment, observed results, and limitations. Update the changelog only for actual changes.
-5. For discussion-only work, document approved or pending directions without claiming implementation. For documentation-only work, do not edit runtime behavior or call code untested merely because its documentation was revised.
-6. Verify paths, relative links, contradictions, and the final diff. Distinguish source review, automated or mocked checks, actual target-environment testing, release and deployment; one is not proof of another.
-7. Exclude credentials, keys, private chats, personal records, unpublished sensitive material, and unrelated details from public documentation. Preserve third-party rights and attribution.
+Keep these categories separate:
+
+- **Creative direction:** a goal or constraint supplied by the human.
+- **Proposal:** an unapproved possibility.
+- **Decision:** a choice explicitly accepted by the human.
+- **Implementation:** work actually present in files or running systems.
+- **Verification:** a particular source review, test, device check, live integration or deployment observation.
+
+A source build is not a device test. A mock API is not a server integration. A Git tag is not a published release, and a deployed page is not proof that all interactions work. Date status claims and link to the relevant result.
+
+Do not guess test outcomes, acceptance, dates, commits, quotes or history. Preserve uncertainty. Do not describe unfinished code or an unratified design as live behavior.
+
+## Editing workflow
+
+1. Read `AGENTS.md`, this guide, related documentation and the actual source/history. Resolve contradictions rather than assuming one document is current.
+2. Identify the reader and the document's job. Improve the opening, order and navigation before polishing individual sentences.
+3. Preserve facts, creative decisions, canon, technical restrictions, public privacy boundaries, licensing and third-party credit. Keep significant historical material in a discoverable place.
+4. Make reviewable edits. For substantial implementation, update the relevant roadmap, decision record, changelog and brief development entry alongside code when practical.
+5. For discussion-only or documentation-only work, say so; never invent an implementation or test. Check relative links, titles, status language and the diff.
+6. Keep credentials, private conversations, real member/player records, tokens, personal information, unpublished secrets and unrelated details out of public repositories.
 
 ## Precedence
 
-The root `AGENTS.md` governs this repository's unique technical and creative constraints. Established project-specific source-of-truth documents govern their subject matter. This file governs shared documentation voice, provenance, attribution, and status reporting unless the human creative explicitly approves a different standard. If instructions conflict, identify the conflict rather than silently changing project direction.
+`AGENTS.md` and established project-specific source-of-truth documents govern their own subjects. This guide governs shared readability, documentation voice, attribution and evidence unless the creative explicitly approves another standard. Flag conflicts rather than silently rewriting the project's direction.
