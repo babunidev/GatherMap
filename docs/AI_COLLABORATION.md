@@ -1,5 +1,7 @@
 # GatherMap — human–AI collaboration and provenance
 
+Follow [the documentation standard](DOCUMENTATION.md) for first-person author voice throughout project documentation, factual changelogs, and naming the AI tool and verified model for each contribution.
+
 **Creative owner and director:** Babuni.dev.
 
 ## Keep the actual creative author visible
