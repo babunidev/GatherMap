@@ -122,7 +122,7 @@ The project **credits its creator Babuni.dev**. It also explicitly acknowledges:
 - [MetaHunt](https://github.com/DuvelCorp/MetaHunt) for Grim Reaches map dimensions.
 - [Interact](https://github.com/lookino/Interact) as an **optional** interoperability target, not a required embedded dependency.
 
-These contributions must stay credited. The current repository tree has **no LICENSE file**. Public GitHub visibility and upstream asset credits do not by themselves establish permission to reuse all code or art; resolve licensing/provenance before packaging or redistributing third-party files.
+These contributions must stay credited. Original code is now licensed under [MIT](LICENSE). Upstream art and data are **not** relicensed; see [asset rights](ASSET_RIGHTS.md) before redistributing third-party files.
 
 ## Project-development documentation
 
