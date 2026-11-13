@@ -41,3 +41,7 @@ The Git messages/diffs demonstrate **what changed**. They don't contain an indep
 7. How should Babuni.dev license the original code while retaining required credits and permissions for bundled art and upstream scaling data?
 
 **Proposed alternatives remain proposals**, not prior author decisions. No implementation changes were made during the current documentation audit.
+
+## 2026-11-13 — Licensing decision
+
+To make the reuse terms explicit, I approved MIT for original addon code, excluding Gatherer herb icons and upstream MetaHunt/Gatherer material. This applies only to material for which the relevant rights can be granted; third-party contributors keep their own credits and licenses. AI assistance committed the license notice and updated project-facing documentation. This was a legal/documentation change, not a runtime feature or test.
