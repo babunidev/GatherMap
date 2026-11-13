@@ -76,3 +76,7 @@ A complete public account must preserve several boundaries. The saved map is a *
 What does the player experience on a crowded minimap with hundreds of saved locations? How does the marker system feel for a Skinner who is chasing moving creatures rather than revisiting static resource nodes? How should custom map aliases be tested across game clients? When should the system prefer an unknown purple marker over a guessed requirement? These are productive next questions, not approvals to replace the existing system.
 
 The most revealing part of this project may be its pattern of iteration: **learn a herb, learn more kinds of world object, refine the marks, fix compatibility, preserve the player's memories through a rename**. That progression is worthy of a portfolio entry because the software's small map symbols tell a much larger story about preserving discovery.
+
+## 2026-11-13 — Giving the repository clear permissions
+
+Public source alone did not explain what others could reuse, so I approved MIT for original addon code while keeping Gatherer and MetaHunt material outside the grant. AI assistance added the license and brought the project notes into agreement, without changing how the application runs. Other people's content retains its own terms.
