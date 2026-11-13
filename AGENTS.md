@@ -20,7 +20,7 @@ Do not erase Babuni's creative authorship, invent older conversations, or claim 
 - Maintain backward compatibility for schema-v1 herb-only data, schema-v2 skin requirements and the **OctoGatherDB → GatherMapDB** rename migration. No user data should be overwritten or discarded casually.
 - Names and coordinates for custom zones require evidence; avoid guessed map sizes.
 - The rendering loop is about **0.10 seconds** with a 300-group display cap per map; profile any change for performance.
-- Keep third-party attribution for Gatherer icons/scaling and MetaHunt map data. No LICENSE file was observed: do not assign an unapproved license to authored or borrowed assets.
+- Keep third-party attribution for Gatherer icons/scaling and MetaHunt map data. Babuni approved MIT for original code on 13 November 2026; see `LICENSE`. The 29 borrowed herb icons, Gatherer references and MetaHunt data are outside Babuni's grant; see `ASSET_RIGHTS.md`.
 
 ## Development and validation process
 
