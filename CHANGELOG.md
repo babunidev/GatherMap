@@ -44,3 +44,8 @@
 - `e61febe` linked the preliminary documentation from README.
 
 The present pass turns that scaffold into a fuller, source-specific portfolio record without changing the 0.4.3 runtime package.
+
+## 2026-11-13 — License and rights
+
+- Established MIT for original addon code, excluding upstream artwork and data and updated repository documentation to explain the permission boundary.
+- Preserved third-party authorship and external assets' separate terms. No gameplay or runtime verification is claimed.
