@@ -2,11 +2,9 @@
 
 Follow [the documentation standard](DOCUMENTATION.md) for first-person author voice throughout project documentation, factual changelogs, and naming the AI tool and verified model for each contribution.
 
-**Creative owner and director:** Babuni.dev.
+## A map that learns as I gather
 
-## Keep the actual creative author visible
-
-The original project and its distinctive **self-learning** world-memory concept belong to Babuni.dev. Existing history also shows a coherent visual language of four colored corners, merging nodes, skill-aware coloring and a gradual expansion beyond herbs. The late documentation assistant did **not** originate those decisions.
+The idea behind GatherMap was a map that learns where I gather. Four colored corners, merging nodes and skill-aware colors gave that memory a visual language as the scope expanded beyond herbs.
 
 Upstream third-party sources are explicitly acknowledged:
 - **Gatherer** — minimap coordinate scaling and bundled herb artwork.
@@ -30,13 +28,17 @@ This session provided **research, editorial organization and technical interpret
 ## Standard to use for future iterations
 
 Document, alongside source changes:
-1. **Creator direction:** What Babuni.dev wanted, what game feeling motivated it, and constraints.
+1. **Creative direction:** What I wanted, what game feeling motivated it, and constraints.
 2. **AI proposals:** What any assistant suggested or implemented, explicitly separate from the user's ideas.
 3. **Alternatives and corrections:** Rejected marker styles, failed experiments, compatibility bugs and why direction changed.
-4. **Creator decisions:** Only those actually accepted/rejected/postponed; do not upgrade suggestions into approvals.
+4. **Creative decisions:** Only those actually accepted/rejected/postponed; do not upgrade suggestions into approvals.
 5. **Implementation:** Which game scripts, art assets, migration code and documentation files changed; exact commit/PR.
 6. **Verification:** Test command and version, in-game client details, results, screenshots and remaining unverified points.
 
 Retrospective writing must cite real sources and remain privacy-safe: don't publish raw private conversations, local user paths, credentials or actual SavedVariables without permission. Portfolio material can summarize creative evolution and use the project's committed screenshots while retaining source credits.
 
 The current audit is documentation-only and does not license third-party art or approve a redesign.
+
+## 18 November 2026 — Collaboration record review
+
+At my request, Codex (GPT-6) revised this record for first-person voice and checked the attribution against the available repository documentation. Where an earlier AI tool or model is missing from the record, its identity remains unconfirmed.
