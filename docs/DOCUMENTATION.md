@@ -44,7 +44,7 @@ A small change may need only two or three sentences. Group related micro-steps. 
 | `docs/AI_COLLABORATION.md` | How do I work with AI here, and who did what? |
 | `AGENTS.md` | What must contributors and AI agents obey in this repository? |
 
-Only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` belong in the repository root; every other document lives in `docs/`. Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.
+Only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` belong in the repository root; every other document lives in `docs/`. `docs/AI_COLLABORATION.md` keeps the same short text in every repository and receives no dated entries; the journal and the changelog record each contribution, naming the tool and model. Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.
 
 ## Make claims that the evidence supports
 
