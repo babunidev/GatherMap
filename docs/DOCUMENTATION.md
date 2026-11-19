@@ -41,7 +41,7 @@ A small change may need only two or three sentences. Group related micro-steps. 
 | `docs/ARCHITECTURE.md` | How does the implemented or proposed system fit together? |
 | `docs/DESIGN.md` | What are the visual and interaction choices? |
 | `docs/CONTENT.md` | How is the material organized and published? |
-| `docs/AI_COLLABORATION.md` | How are evidence, roles and attribution handled? |
+| `docs/AI_COLLABORATION.md` | How do I work with AI here, and who did what? |
 | `AGENTS.md` | What must contributors and AI agents obey in this repository? |
 
 Only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` belong in the repository root; every other document lives in `docs/`. Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.

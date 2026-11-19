@@ -1,44 +1,27 @@
-# GatherMap — human–AI collaboration and provenance
+# Human–AI collaboration
 
-Follow [the documentation standard](DOCUMENTATION.md) for first-person author voice throughout project documentation, factual changelogs, and naming the AI tool and verified model for each contribution.
+## How I work with AI
 
-## A map that learns as I gather
+Every project here begins with something I want to see in a game, on a screen or in a story. The ideas, the direction and the decisions are mine, and so are the playtests and the checks on my own devices. AI helps me get there. In my early projects that meant asking ChatGPT for Lua in a conversation, copying the changes into local files and trying them in the game. Today coding agents work directly in the repositories: they research, write code and documentation and run tests, while I decide what to build, try it out and say what works and what doesn't.
 
-The idea behind GatherMap was a map that learns where I gather. Four colored corners, merging nodes and skill-aware colors gave that memory a visual language as the scope expanded beyond herbs.
+Two rules hold this record together. Work is credited to whoever did it: the story is told in my voice, but when AI wrote code or a document, the record says so and names the tool and, where it is known, the model. And a plan is not a result: proposed, accepted, built, tested and published stay separate, and an automated test by an AI is not the same as my own check in the game or on my phone.
 
-Upstream third-party sources are explicitly acknowledged:
-- **Gatherer** — minimap coordinate scaling and bundled herb artwork.
-- **MetaHunt** — Grim Reaches zone map dimensions.
-- **Interact** — optional external addon API integration.
+## Who did what
 
-Maintaining upstream credit matters just as much as distinguishing author-written code from AI-assisted documentation. No blanket open-source license has been established by the current repository tree.
+| Who | Role | Model as recorded |
+| --- | --- | --- |
+| **Babuni** | Creative: ideas, direction, decisions, corrections, playtesting and device checks | — |
+| **Codex** | Coding agent in the repository: research, code, documentation and tests | GPT-6 |
+| **Claude Code** | Coding agent in the repository: research, code, documentation and tests | Claude Opus 5.5 |
+| **Earlier AI help** | Work that older entries describe only as “AI” | Tool and model not recorded |
 
-## AI work actually performed on 2026-10-26
+The journal and the changelog name the tool for each piece of AI work. A model that was not recorded stays unrecorded rather than guessed.
 
-The assistant:
-- Inspected repository files and history, including `GatherMap.lua` (1,237 lines), current TOC/README, both fixture tests, migration script, resource screenshots and September git diffs.
-- Distinguished initial **Octo Gather** version 0.2.6 from today's **Gather Map** 0.4.3 and identified all substantive September milestones.
-- Traced resource capture state and stored node structure, profession/level-based colors, custom maps, minimap/world-map marker grouping and 300-group cap.
-- Documented the **old recursive Interact hook problem and source fix** without claiming that the fix was verified in-game.
-- Explained account-wide database migrations, rename helper, third-party provenance, language constraints and possible performance risks.
-- Expanded or created eleven Markdown docs: README, CONCEPT, ROADMAP, CHANGELOG, AGENTS and `docs/` architecture/design/content/decisions/devlog/collaboration.
+## Where the details are
 
-This session provided **research, editorial organization and technical interpretation**. It did not inspect any private game account, change source/art/migration code, run the fixture tests, or claim responsibility for the original creative direction.
+- [Development journal](DEVLOG.md): the story of the project in my voice, including what I asked for and what AI did.
+- [Decision record](DECISIONS.md): what was decided, by whom and why.
+- [Changelog](../CHANGELOG.md): what changed and how it was checked.
+- [Documentation standard](DOCUMENTATION.md) and [AGENTS.md](../AGENTS.md): the writing and working rules for everyone who contributes, human or AI.
 
-## Standard to use for future iterations
-
-Document, alongside source changes:
-1. **Creative direction:** What I wanted, what game feeling motivated it, and constraints.
-2. **AI proposals:** What any assistant suggested or implemented, explicitly separate from the user's ideas.
-3. **Alternatives and corrections:** Rejected marker styles, failed experiments, compatibility bugs and why direction changed.
-4. **Creative decisions:** Only those actually accepted/rejected/postponed; do not upgrade suggestions into approvals.
-5. **Implementation:** Which game scripts, art assets, migration code and documentation files changed; exact commit/PR.
-6. **Verification:** Test command and version, in-game client details, results, screenshots and remaining unverified points.
-
-Retrospective writing must cite real sources and remain privacy-safe: don't publish raw private conversations, local user paths, credentials or actual SavedVariables without permission. Portfolio material can summarize creative evolution and use the project's committed screenshots while retaining source credits.
-
-The current audit is documentation-only and does not license third-party art or approve a redesign.
-
-## 18 November 2026 — Collaboration record review
-
-At my request, Codex (GPT-6) revised this record for first-person voice and checked the attribution against the available repository documentation. Where an earlier AI tool or model is missing from the record, its identity remains unconfirmed.
+The earlier, longer version of this record, as it stood on 18 November 2026, is kept in the [Git history](https://github.com/babunidev/GatherMap/blob/326d0e8455308b2fd9715649d36ba1604da92fcb/docs/AI_COLLABORATION.md).
