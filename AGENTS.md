@@ -5,7 +5,7 @@
 
 ## Read before changing anything
 
-Start with `README.md`, `CONCEPT.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/DEVLOG.md`, `GatherMap.lua`, `GatherMap.toc`, `Upgrade-SavedData.ps1`, and the tests. The project is a self-learning resource map, **not** a static imported map-database frontend.
+Start with `README.md`, `docs/CONCEPT.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/DEVLOG.md`, `GatherMap.lua`, `GatherMap.toc`, `Upgrade-SavedData.ps1`, and the tests. The project is a self-learning resource map, **not** a static imported map-database frontend.
 
 Do not erase Babuni's creative authorship, invent older conversations, or claim past AI proposals were approved without evidence.
 
@@ -20,7 +20,7 @@ Do not erase Babuni's creative authorship, invent older conversations, or claim 
 - Maintain backward compatibility for schema-v1 herb-only data, schema-v2 skin requirements and the **OctoGatherDB → GatherMapDB** rename migration. No user data should be overwritten or discarded casually.
 - Names and coordinates for custom zones require evidence; avoid guessed map sizes.
 - The rendering loop is about **0.10 seconds** with a 300-group display cap per map; profile any change for performance.
-- Keep third-party attribution for Gatherer icons/scaling and MetaHunt map data. Babuni approved MIT for original code on 13 November 2026; see `LICENSE`. The 29 borrowed herb icons, Gatherer references and MetaHunt data are outside Babuni's grant; see `ASSET_RIGHTS.md`.
+- Keep third-party attribution for Gatherer icons/scaling and MetaHunt map data. Babuni approved MIT for original code on 13 November 2026; see `LICENSE`. The 29 borrowed herb icons, Gatherer references and MetaHunt data are outside Babuni's grant; see `docs/ASSET_RIGHTS.md`.
 
 ## Development and validation process
 
@@ -38,3 +38,7 @@ The 2026-10-26 pass is **documentation-only**, not permission to alter Lua, bina
 ## Repository-local documentation standard
 
 Follow [the documentation standard](docs/DOCUMENTATION.md) for first-person author voice throughout project documentation, factual changelogs, and naming the AI tool and verified model for each contribution. These rules travel with this repository and do not depend on the babuni.dev ChatGPT Project. Preserve all project-specific technical, creative, canon, safety, licensing, and historical rules in this file; follow the linked standard for public first-person narrative, human–AI attribution, concise development journals, decision records, and evidence-based verification. **Babuni** is the human creative; **babuni.dev** is the website/portfolio, not the person. Preserve third-party credits and historical legal notices. References above to a dated “documentation-only audit” describe that past task, not a permanent ban on later authorized implementation.
+
+## Repository layout
+
+The repository root holds only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` (plus any additional license files). All other documentation lives in `docs/`; put new documents there.

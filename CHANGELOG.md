@@ -3,6 +3,10 @@
 **Creator:** Babuni.dev  
 **Note:** Dates below are Git records, **not** claimed gameplay test dates or confirmed public releases.
 
+## 2026-11-19 — documentation moved into `docs/`
+
+- Moved `CONCEPT.md`, `ROADMAP.md` and `ASSET_RIGHTS.md` into `docs/`. The root keeps only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md`; links to the moved files and the documentation rules in `AGENTS.md` were updated. No code changed. Claude Code (Claude Opus 5.5).
+
 ## 2026-10-26 — expanded documentation
 
 - Rebuilt/expanded README, concept, roadmap, changelog and AGENTS rules, plus `docs/ARCHITECTURE.md`, `DESIGN.md`, `CONTENT.md`, `DECISIONS.md`, `DEVLOG.md` and `AI_COLLABORATION.md`.

@@ -33,8 +33,8 @@ A small change may need only two or three sentences. Group related micro-steps. 
 | Document | Reader's question |
 | --- | --- |
 | `README.md` | What is this, how do I use or explore it, and where should I read next? |
-| `CONCEPT.md` | What is the creative idea, and what boundaries matter? |
-| `ROADMAP.md` | What is planned, underway, completed or deferred? |
+| `docs/CONCEPT.md` | What is the creative idea, and what boundaries matter? |
+| `docs/ROADMAP.md` | What is planned, underway, completed or deferred? |
 | `CHANGELOG.md` | What actually changed in the repository or release? |
 | `docs/DEVLOG.md` | How did the work and decisions develop, in the creative's voice? |
 | `docs/DECISIONS.md` | What was accepted, rejected or left unresolved, and why? |
@@ -44,7 +44,7 @@ A small change may need only two or three sentences. Group related micro-steps. 
 | `docs/AI_COLLABORATION.md` | How are evidence, roles and attribution handled? |
 | `AGENTS.md` | What must contributors and AI agents obey in this repository? |
 
-Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.
+Only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` belong in the repository root; every other document lives in `docs/`. Use only files the project needs. Story archives, games, websites, addons and tools need different structures. Canonical world material and historical source archives retain their own authority.
 
 ## Make claims that the evidence supports
 

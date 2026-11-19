@@ -122,11 +122,11 @@ The project **credits its creator Babuni.dev**. It also explicitly acknowledges:
 - [MetaHunt](https://github.com/DuvelCorp/MetaHunt) for Grim Reaches map dimensions.
 - [Interact](https://github.com/lookino/Interact) as an **optional** interoperability target, not a required embedded dependency.
 
-These contributions must stay credited. Original code is now licensed under [MIT](LICENSE). Upstream art and data are **not** relicensed; see [asset rights](ASSET_RIGHTS.md) before redistributing third-party files.
+These contributions must stay credited. Original code is now licensed under [MIT](LICENSE). Upstream art and data are **not** relicensed; see [asset rights](docs/ASSET_RIGHTS.md) before redistributing third-party files.
 
 ## Project-development documentation
 
-- [Concept](CONCEPT.md) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
+- [Concept](docs/CONCEPT.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md)
 - [Architecture](docs/ARCHITECTURE.md) · [Interaction design](docs/DESIGN.md) · [Content and asset structure](docs/CONTENT.md)
 - [Design decisions](docs/DECISIONS.md) · [Narrative development journal](docs/DEVLOG.md)
 - [Human–AI collaboration](docs/AI_COLLABORATION.md) · [Developer/AI instructions](AGENTS.md)

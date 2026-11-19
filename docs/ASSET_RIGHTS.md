@@ -1,6 +1,6 @@
 # Original code and third-party materials
 
-Original GatherMap code and associated original software documentation are released under the [MIT License](LICENSE), to the extent Babuni holds the applicable rights.
+Original GatherMap code and associated original software documentation are released under the [MIT License](../LICENSE), to the extent Babuni holds the applicable rights.
 
 **The MIT grant does not license third-party artwork or code that Babuni cannot sublicense.**
 
